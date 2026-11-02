@@ -3,6 +3,10 @@
 All notable changes to jGlancer for Windows. Versions are `major.minor.patch`: the minor number grows with new
 features or something removed, the patch number with fixes; the version changes with each published release.
 
+## 0.5.3 — 2026-11-02
+
+- Changed: a new app icon: a white picture frame with mountains and a sun on dark glass, with blue and red light at the corners.
+
 ## 0.5.2 — 2026-11-02
 
 - Changed: a new app icon: a glowing sound wave on a dark tile in the colors of the app.
