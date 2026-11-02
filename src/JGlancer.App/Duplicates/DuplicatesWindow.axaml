@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="using:JGlancer.Design"
+        xmlns:l="using:JGlancer.App.Support"
+        x:Class="JGlancer.App.Duplicates.DuplicatesWindow"
+        Title="{l:T 'Duplicates'}"
+        Icon="avares://jGlancer/Assets/jGlancer.ico"
+        Width="{x:Static d:JGMetrics.SettingsWidth}"
+        Height="{x:Static d:JGMetrics.SettingsHeight}"
+        MinWidth="{x:Static d:JGMetrics.DialogWidth}"
+        MinHeight="{x:Static d:JGMetrics.QuickPreviewHeight}"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource JG.bg.panel}"
+        Foreground="{DynamicResource JG.text.primary}"
+        FontFamily="{x:Static d:JGFonts.Text}"
+        FontSize="13">
+  <!-- Find duplicates (W-78): a heading and what was found, the groups of copies with a box per copy (ticked: to the
+       Recycle Bin; one copy of each group always stays), and the button that proves and removes the ticked ones. -->
+  <DockPanel Margin="{x:Static d:JGInsets.Info}">
+    <StackPanel DockPanel.Dock="Top" Spacing="{x:Static d:JGSpacing.Xxs}" Margin="{x:Static d:JGInsets.PreviewHeader}">
+      <TextBlock Classes="heading" Text="{l:T 'Duplicates'}" Foreground="{DynamicResource JG.text.primary}" />
+      <TextBlock Name="SummaryText" Classes="body" Foreground="{DynamicResource JG.text.secondary}" TextWrapping="Wrap" />
+    </StackPanel>
+    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="{x:Static d:JGSpacing.Xs}" Margin="{x:Static d:JGInsets.PreviewFacts}">
+      <TextBlock Name="FreedText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+      <Button Name="CloseButton" Grid.Column="1" Content="{l:T 'Close'}" IsCancel="True" />
+      <Button Name="RemoveButton" Grid.Column="2" Classes="primary" IsEnabled="False" />
+    </Grid>
+    <Panel>
+      <ScrollViewer Name="Scroller" HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl Name="GroupList">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <VirtualizingStackPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </ScrollViewer>
+      <TextBlock Name="EmptyText" Classes="body" Foreground="{DynamicResource JG.text.tertiary}"
+                 HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False" />
+    </Panel>
+  </DockPanel>
+</Window>

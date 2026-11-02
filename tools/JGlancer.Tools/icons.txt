@@ -1,0 +1,31 @@
+# Lucide icons the app uses (https://lucide.dev, ISC). One name per line; regenerate with
+#   dotnet run --project tools/JGlancer.Tools -- icons <unpacked lucide-static package>
+# Kinds and library
+film
+image
+audio-lines
+star
+search
+hard-drive
+folder
+layers
+trash
+info
+plus
+x
+check
+chevron-right
+chevron-down
+chevron-left
+chevron-up
+arrow-up
+arrow-down
+# Players and viewers
+play
+pause
+rotate-ccw
+rotate-cw
+zoom-in
+zoom-out
+# Settings sections
+square-arrow-out-up-right

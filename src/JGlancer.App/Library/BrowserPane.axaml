@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:lib="using:JGlancer.App.Library"
+             xmlns:grid="using:JGlancer.App.Library.Grid"
+             x:Class="JGlancer.App.Library.BrowserPane"
+             x:DataType="lib:LibraryModel">
+  <!-- One pane of the library (DESIGN.md §8): top bar, the grid with its empty states, status bar. The split view
+       shows two, each with its own folder, filters, sort, size and selection; the active one has an accent edge. -->
+  <Panel>
+    <DockPanel>
+      <!-- Nothing to sort, filter or count before the first folder: the first-run screen stands alone. -->
+      <lib:TopBar Name="Header" DockPanel.Dock="Top" IsVisible="{Binding HasRoots}" />
+      <lib:StatusBar DockPanel.Dock="Bottom" IsVisible="{Binding HasRoots}" />
+
+      <!-- Folders dropped from Explorer join the library (files open in the viewer from W3). -->
+      <Panel Name="DropZone" DragDrop.AllowDrop="True">
+        <!-- First run: one headline, one line, one button. -->
+        <StackPanel Margin="{x:Static d:JGInsets.EmptyState}"
+                    MaxWidth="{x:Static d:JGMetrics.ReadableTextWidth}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Spacing="{x:Static d:JGSpacing.S}"
+                    IsVisible="{Binding !HasRoots}">
+          <d:JGSectionHeader Label="{l:T 'Library'}" />
+          <d:JGAccentText Classes="display"
+                          Markup="{l:T 'Add a **folder**.'}"
+                          Foreground="{DynamicResource JG.text.primary}"
+                          TextWrapping="Wrap" />
+          <TextBlock Classes="body"
+                     Text="{l:T 'Files stay where they are.'}"
+                     Foreground="{DynamicResource JG.text.secondary}"
+                     TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal"
+                      Spacing="{x:Static d:JGSpacing.Xs}"
+                      Margin="{x:Static d:JGInsets.EmptyStateActions}">
+            <Button Name="AddFolderButton" Classes="primary" Content="{l:T 'Add Folder…'}" IsDefault="True" />
+            <TextBlock Classes="body"
+                       Text="{l:T 'or drop a folder here'}"
+                       Foreground="{DynamicResource JG.text.tertiary}"
+                       VerticalAlignment="Center" />
+          </StackPanel>
+        </StackPanel>
+
+        <!-- An empty folder, or nothing of the chosen kinds: the small empty state. -->
+        <StackPanel Margin="{x:Static d:JGInsets.EmptyState}"
+                    MaxWidth="{x:Static d:JGMetrics.ReadableTextWidth}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Spacing="{x:Static d:JGSpacing.S}"
+                    IsVisible="{Binding IsEmptyFolder}">
+          <d:JGAccentText Classes="heading"
+                          Markup="{l:T 'Nothing **here**.'}"
+                          Foreground="{DynamicResource JG.text.primary}"
+                          TextWrapping="Wrap" />
+          <TextBlock Classes="body"
+                     Text="{l:T 'No files of the selected kinds.'}"
+                     Foreground="{DynamicResource JG.text.secondary}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+
+        <ScrollViewer Name="GridScroller"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto"
+                      IsVisible="{Binding HasRoots}">
+          <grid:LibraryGrid Name="TileGrid" AutomationProperties.Name="{l:T 'Library'}" />
+        </ScrollViewer>
+
+        <!-- The name being edited in place (F2), over its tile's caption. -->
+        <Canvas Name="RenameLayer" ClipToBounds="True" />
+
+        <Border Name="DropHighlight"
+                BorderBrush="{DynamicResource JG.accent}"
+                BorderThickness="{x:Static d:JGInsets.SelectionEdge}"
+                IsHitTestVisible="False"
+                IsVisible="False" />
+      </Panel>
+    </DockPanel>
+    <Border Name="ActiveEdge" BorderBrush="{DynamicResource JG.accent}" BorderThickness="{x:Static d:JGInsets.Outline}"
+            IsHitTestVisible="False" IsVisible="False" />
+  </Panel>
+</UserControl>

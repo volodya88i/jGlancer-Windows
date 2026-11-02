@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:lib="using:JGlancer.App.Library"
+             x:Class="JGlancer.App.Library.SidebarView"
+             Background="{DynamicResource JG.bg.panel}">
+  <!-- PINNED folders (W-76), FOLDERS (roots and their trees), the Trash at the bottom (DESIGN.md §8, macOS SidebarView). -->
+  <DockPanel>
+    <Border DockPanel.Dock="Bottom"
+            BorderBrush="{DynamicResource JG.line.hair}"
+            BorderThickness="0,1,0,0"
+            Padding="{x:Static d:JGInsets.SidebarRow}">
+      <!-- The Recycle Bin: a click shows it in Explorer; files dropped here go there (undoable). -->
+      <Button Name="TrashButton" Theme="{StaticResource JG.sidebarRow}"
+              Margin="{x:Static d:JGInsets.SidebarFooter}"
+              DragDrop.AllowDrop="True"
+              AutomationProperties.Name="{l:T 'Trash'}">
+        <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}">
+          <d:JGIcon Data="{x:Static d:JGIconData.Trash}" Foreground="{DynamicResource JG.text.secondary}" />
+          <TextBlock Classes="body" Text="{l:T 'Trash'}" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+    </Border>
+    <!-- Pinned folders: any depth, in the order pinned; rows built in code. Hidden while nothing is pinned. -->
+    <StackPanel Name="PinnedSection" DockPanel.Dock="Top" IsVisible="False">
+      <d:JGSectionHeader Label="{l:T 'Pinned'}" Margin="{x:Static d:JGInsets.SidebarHeader}" />
+      <StackPanel Name="PinnedRows" Margin="{x:Static d:JGInsets.SidebarRow}" />
+    </StackPanel>
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}">
+      <d:JGSectionHeader Label="{l:T 'Folders'}" VerticalAlignment="Center" />
+      <Button Name="AddButton"
+              Grid.Column="1"
+              Classes="icon"
+              ToolTip.Tip="{l:T 'Add Folder…'}"
+              AutomationProperties.Name="{l:T 'Add Folder…'}">
+        <d:JGIcon Data="{x:Static d:JGIconData.Plus}" />
+      </Button>
+    </Grid>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+      <StackPanel>
+      <ItemsControl Name="Rows"
+                    Margin="{x:Static d:JGInsets.SidebarRow}"
+                    Focusable="True"
+                    x:DataType="lib:SidebarRow">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="lib:SidebarRow">
+            <Button Theme="{StaticResource JG.sidebarRow}"
+                    Classes.selected="{Binding IsSelected}"
+                    Tag="{Binding}"
+                    Click="OnRowClick"
+                    AutomationProperties.Name="{Binding Name}">
+              <Button.ContextMenu>
+                <!-- Folders on disk: a subfolder, Explorer, the Recycle Bin (not for a library folder itself, which
+                     leaves the library instead; files stay). -->
+                <ContextMenu>
+                  <MenuItem Header="{l:T 'New Folder…'}" Tag="{Binding}" Click="OnNewFolder" IsEnabled="{Binding !IsOffline}" />
+                  <MenuItem Header="{l:T 'Show in Explorer'}" Tag="{Binding}" Click="OnShowFolder" IsEnabled="{Binding !IsOffline}" />
+                  <MenuItem Header="{l:T 'Pin to Sidebar'}" Tag="{Binding}" Click="OnTogglePin" IsVisible="{Binding !IsPinned}" />
+                  <MenuItem Header="{l:T 'Unpin'}" Tag="{Binding}" Click="OnTogglePin" IsVisible="{Binding IsPinned}" />
+                  <Separator />
+                  <MenuItem Header="{l:T 'Move to Recycle Bin'}" InputGesture="Delete" Tag="{Binding}" Click="OnTrashFolder"
+                            IsVisible="{Binding !IsRoot}" IsEnabled="{Binding !IsOffline}" />
+                  <MenuItem Header="{l:T 'Remove from Library'}" Tag="{Binding}" Click="OnRemoveRoot" IsVisible="{Binding IsRoot}" />
+                </ContextMenu>
+              </Button.ContextMenu>
+              <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}" Margin="{Binding Indent}">
+                <Panel Width="{x:Static d:JGSpacing.M}">
+                  <Button Classes="icon"
+                          Padding="0"
+                          IsVisible="{Binding HasChildren}"
+                          Tag="{Binding}"
+                          Click="OnChevronClick"
+                          Focusable="False">
+                    <d:JGIcon Data="{Binding Chevron}" Width="12" Height="12" Foreground="{DynamicResource JG.text.tertiary}" />
+                  </Button>
+                </Panel>
+                <d:JGIcon Data="{Binding Icon}" Foreground="{Binding $parent[Button].Foreground}" />
+                <TextBlock Classes="body"
+                           Text="{Binding Name}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center" />
+                <TextBlock Classes="label section"
+                           Text="{l:T 'Offline'}"
+                           IsVisible="{Binding IsOffline}"
+                           VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <!-- ALBUMS (macOS SidebarAlbums): + makes one; rows are built in code (cover, name, count, rename in place). -->
+      <Grid Name="AlbumsHeader" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}">
+        <d:JGSectionHeader Label="{l:T 'Albums'}" VerticalAlignment="Center" />
+        <Button Name="NewAlbumButton"
+                Grid.Column="1"
+                Classes="icon"
+                ToolTip.Tip="{l:T 'New Album'}"
+                AutomationProperties.Name="{l:T 'New Album'}">
+          <d:JGIcon Data="{x:Static d:JGIconData.Plus}" />
+        </Button>
+      </Grid>
+      <StackPanel Name="AlbumRows" Margin="{x:Static d:JGInsets.SidebarRow}" />
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

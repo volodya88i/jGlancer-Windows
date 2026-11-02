@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- OS-specific services behind Core's interfaces (WINDOWS_PORT "Platform layer"): Windows now, Linux in L1. -->
+  <PropertyGroup>
+    <RootNamespace>JGlancer.Platform</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JGlancer.Core\JGlancer.Core.csproj" />
+    <ProjectReference Include="..\JGlancer.Media\JGlancer.Media.csproj" />
+    <ProjectReference Include="..\JGlancer.Mpv\JGlancer.Mpv.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="JGlancer.Platform.Tests" />
+    <InternalsVisibleTo Include="JGlancer.Tools" />
+    <InternalsVisibleTo Include="jGlancer" />
+  </ItemGroup>
+</Project>

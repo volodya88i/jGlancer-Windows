@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="using:JGlancer.Design"
+        xmlns:shell="using:JGlancer.App.Shell"
+        xmlns:library="using:JGlancer.App.Library"
+        xmlns:fileops="using:JGlancer.App.FileOps"
+        xmlns:media="using:JGlancer.App.Viewer.Media"
+        xmlns:stems="using:JGlancer.App.Stems"
+        x:Class="JGlancer.App.Shell.MainWindow"
+        Title="jGlancer"
+        Icon="avares://jGlancer/Assets/jGlancer.ico"
+        Width="{x:Static d:JGMetrics.WindowDefaultWidth}"
+        Height="{x:Static d:JGMetrics.WindowDefaultHeight}"
+        MinWidth="{x:Static d:JGMetrics.WindowMinWidth}"
+        MinHeight="{x:Static d:JGMetrics.WindowMinHeight}"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource JG.bg.base}"
+        Foreground="{DynamicResource JG.text.primary}"
+        FontFamily="{x:Static d:JGFonts.Text}"
+        FontSize="13">
+  <!-- The title bar with the menu bar on top (W-04), the app below. -->
+  <DockPanel>
+    <shell:TitleBar Name="TitleBar" DockPanel.Dock="Top" />
+    <!-- The mini player (W-68), under the library and the viewers; hidden in full screen. -->
+    <Panel Name="NowPlayingHost" DockPanel.Dock="Bottom">
+      <media:NowPlayingBar Name="NowPlayingBar" IsVisible="False" />
+    </Panel>
+    <Panel>
+      <!-- The viewer opens over the library (which stays loaded, so selection and scroll survive). -->
+      <Panel Name="Body">
+        <library:LibraryView Name="Library" />
+      </Panel>
+      <!-- File operations' messages with Undo, over the library and the viewers. -->
+      <!-- Folders being added (W-70) above the file operations' messages, at the bottom. -->
+      <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center">
+        <library:ScanProgressView Name="ScanProgress" />
+        <!-- Songs being split into stems (W-85). -->
+        <stems:StemProgressView Name="StemProgress" />
+        <fileops:ToastView Name="Toasts" />
+      </StackPanel>
+    </Panel>
+  </DockPanel>
+</Window>

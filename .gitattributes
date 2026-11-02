@@ -1,0 +1,23 @@
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.sln text eol=crlf
+# Media and fonts are never touched by line-ending conversion.
+*.png binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.jpg binary
+*.JPG binary
+*.jpeg binary
+*.heic binary
+*.tif binary
+*.tiff binary
+*.gif binary
+*.mov binary
+*.mp4 binary
+*.mkv binary
+*.wav binary
+*.aiff binary
+*.m4a binary
+TestMedia/fixtures/** binary

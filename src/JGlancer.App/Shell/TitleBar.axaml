@@ -1,0 +1,97 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:chrome="using:Avalonia.Controls.Chrome"
+             x:Class="JGlancer.App.Shell.TitleBar"
+             Height="{x:Static d:JGMetrics.TitleBarHeight}"
+             Background="{DynamicResource JG.bg.panel}">
+  <!-- Copies the macOS menu bar (W-04): app icon and menus on the left, Windows caption buttons on the right.
+       Roles let Windows treat the empty part as the caption (drag, double-click, snap) and the buttons as native. -->
+  <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+    <Border Grid.ColumnSpan="4"
+            Background="Transparent"
+            chrome:WindowDecorationProperties.ElementRole="TitleBar" />
+    <Image Source="avares://jGlancer/Assets/icon-32.png"
+           Width="{x:Static d:JGMetrics.IconSize}" Height="{x:Static d:JGMetrics.IconSize}"
+           Margin="{x:Static d:JGInsets.TitleBarIcon}"
+           IsHitTestVisible="False" />
+    <Menu Name="MenuBar" Grid.Column="1" chrome:WindowDecorationProperties.ElementRole="User">
+      <MenuItem Name="FileMenu" Header="{l:T 'File|menu'}">
+        <MenuItem Name="AddFolderItem" Header="{l:T 'Add Folder…'}" />
+        <MenuItem Name="NewAlbumItem" Header="{l:T 'New Album'}" />
+        <Separator />
+        <!-- The registry's actions for the viewer's file or the library selection (W-45); shortcuts run in the window. -->
+        <MenuItem Name="OpenItem" Header="{l:T 'Open'}" InputGesture="Enter" />
+        <MenuItem Name="EditInItem" />
+        <MenuItem Name="GetInfoItem" Header="{l:T 'Get Info'}" />
+        <MenuItem Name="ShowInExplorerItem" Header="{l:T 'Show in Explorer'}" />
+        <MenuItem Name="CopyPathItem" Header="{l:T 'Copy Path'}" />
+        <!-- Flag ▸ the colored stars (filled when the menu opens, for the current target). -->
+        <MenuItem Name="FlagItem" Header="{l:T 'Flag'}" />
+        <Separator />
+        <MenuItem Name="MoveToItem" />
+        <MenuItem Name="CopyToItem" />
+        <MenuItem Name="RenameItem" />
+        <MenuItem Name="TrashItem" />
+        <Separator />
+        <MenuItem Name="SettingsItem" Header="{l:T 'Settings…'}" InputGesture="Ctrl+OemComma" />
+        <Separator />
+        <MenuItem Name="ExitItem" Header="{l:T 'Exit'}" InputGesture="Alt+F4" />
+      </MenuItem>
+      <MenuItem Name="EditMenu" Header="{l:T 'Edit|menu'}">
+        <MenuItem Name="UndoItem" Header="{l:T 'Undo'}" InputGesture="Ctrl+Z" />
+        <MenuItem Name="RedoItem" Header="{l:T 'Redo'}" InputGesture="Ctrl+Y" />
+        <Separator />
+        <MenuItem Name="CopyItem" Header="{l:T 'Copy'}" InputGesture="Ctrl+C" />
+        <MenuItem Name="SelectAllItem" Header="{l:T 'Select All'}" InputGesture="Ctrl+A" />
+        <MenuItem Name="FindItem" Header="{l:T 'Find'}" />
+        <MenuItem Name="DuplicatesItem" Header="{l:T 'Find Duplicates…'}" />
+      </MenuItem>
+      <MenuItem Name="ViewMenu" Header="{l:T 'View|menu'}">
+        <MenuItem Name="ShowPreviewItem" Header="{l:T 'Show Preview'}" ToggleType="CheckBox" />
+        <MenuItem Name="QuickPreviewItem" Header="{l:T 'Quick Preview'}" ToggleType="CheckBox" InputGesture="Space" />
+        <!-- The split view: one pane, two side by side, or two stacked (a choice, like Flag ▸). -->
+        <MenuItem Name="SplitItem" Header="{l:T 'Split View'}">
+          <MenuItem Name="SplitOffItem" Header="{l:T 'Off|split view'}" ToggleType="Radio" GroupName="split" />
+          <MenuItem Name="SplitSideItem" Header="{l:T 'Side by Side'}" ToggleType="Radio" GroupName="split" />
+          <MenuItem Name="SplitStackedItem" Header="{l:T 'Stacked'}" ToggleType="Radio" GroupName="split" />
+        </MenuItem>
+        <MenuItem Name="ShowNamesItem" Header="{l:T 'Show Names'}" ToggleType="CheckBox" />
+        <MenuItem Name="SubfoldersItem" Header="{l:T 'Include Subfolders'}" ToggleType="CheckBox" />
+      </MenuItem>
+      <MenuItem Header="{l:T 'Window|menu'}">
+        <MenuItem Name="MinimizeItem" Header="{l:T 'Minimize'}" />
+        <MenuItem Name="MaximizeItem" Header="{l:T 'Maximize'}" />
+      </MenuItem>
+      <MenuItem Header="{l:T 'Help|menu'}">
+        <MenuItem Name="AboutItem" Header="{l:T 'About jGlancer'}" />
+      </MenuItem>
+    </Menu>
+    <StackPanel Grid.Column="3" Orientation="Horizontal">
+      <Button Name="MinimizeButton"
+              Theme="{StaticResource JG.captionButton}"
+              Content="&#xE921;"
+              ToolTip.Tip="{l:T 'Minimize'}"
+              AutomationProperties.Name="{l:T 'Minimize'}"
+              chrome:WindowDecorationProperties.ElementRole="MinimizeButton" />
+      <Button Name="MaximizeButton"
+              Theme="{StaticResource JG.captionButton}"
+              Content="&#xE922;"
+              AutomationProperties.Name="{l:T 'Maximize'}"
+              chrome:WindowDecorationProperties.ElementRole="MaximizeButton" />
+      <Button Name="CloseButton"
+              Theme="{StaticResource JG.captionButton}"
+              Classes="close"
+              Content="&#xE8BB;"
+              ToolTip.Tip="{l:T 'Close'}"
+              AutomationProperties.Name="{l:T 'Close'}"
+              chrome:WindowDecorationProperties.ElementRole="CloseButton" />
+    </StackPanel>
+    <Border Grid.ColumnSpan="4"
+            Height="1"
+            VerticalAlignment="Bottom"
+            Background="{DynamicResource JG.line.hair}"
+            IsHitTestVisible="False" />
+  </Grid>
+</UserControl>

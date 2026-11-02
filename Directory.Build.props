@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <Deterministic>true</Deterministic>
+    <!-- Every library must stay NativeAOT and trimming safe (W-02). -->
+    <IsAotCompatible Condition="'$(IsTestProject)' != 'true' and '$(IsToolProject)' != 'true'">true</IsAotCompatible>
+    <Company>jGlancer</Company>
+    <Product>jGlancer</Product>
+    <!-- The one version of the app and its installer (W-72): major.minor.patch; see CHANGELOG.md. -->
+    <Version>0.5.0</Version>
+    <Copyright>© 2026 volodya88i</Copyright>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- UI-free logic (the counterpart of the macOS JGCore package). Never references Avalonia. -->
+  <PropertyGroup>
+    <RootNamespace>JGlancer.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- WithCulture=false: otherwise MSBuild reads ".ru" in the file name as a culture and moves the file into a
+         satellite assembly. -->
+    <EmbeddedResource Include="Localization\Strings\*.json" LogicalName="Strings.%(Filename).json" WithCulture="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="JGlancer.Core.Tests" />
+    <InternalsVisibleTo Include="JGlancer.Platform.Tests" />
+    <InternalsVisibleTo Include="JGlancer.Tools" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:lib="using:JGlancer.App.Library"
+             x:Class="JGlancer.App.Library.StatusBar"
+             x:DataType="lib:LibraryModel"
+             Height="{x:Static d:JGMetrics.StatusBarHeight}">
+  <!-- Counts and sizes in mono, background activity, the latest problem (macOS StatusBarView). -->
+  <Border BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,1,0,0" Padding="{x:Static d:JGInsets.Bar}">
+    <Grid ColumnDefinitions="*,Auto,Auto" VerticalAlignment="Center">
+      <TextBlock Classes="mono" Text="{Binding StatusText}" Foreground="{DynamicResource JG.text.secondary}" TextTrimming="CharacterEllipsis" />
+      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding ActivityText}" Foreground="{DynamicResource JG.text.tertiary}"
+                 IsVisible="{Binding !ProblemText.Length}" />
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}" IsVisible="{Binding ProblemText.Length}">
+        <TextBlock Classes="mono" Text="{Binding ProblemText}" Foreground="{DynamicResource JG.danger}" VerticalAlignment="Center" />
+        <Button Name="DismissButton" Classes="icon" Padding="0" AutomationProperties.Name="{l:T 'Dismiss'}">
+          <d:JGIcon Data="{x:Static d:JGIconData.X}" Width="{x:Static d:JGMetrics.IconSizeSmall}" Height="{x:Static d:JGMetrics.IconSizeSmall}" />
+        </Button>
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

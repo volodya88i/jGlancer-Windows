@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:v="using:JGlancer.App.Viewer"
+             x:Class="JGlancer.App.Viewer.CompareView"
+             Focusable="True">
+  <!-- Compare two photos (W-77): the viewer's top bar with link, swap, fit and 100 %; the two photos side by side on
+       bg.media with a hairline between them, each with its name and facts along its bottom edge. -->
+  <Grid RowDefinitions="Auto,*" Background="{DynamicResource JG.bg.media}">
+    <v:ViewerTopBar Name="TopBar">
+      <v:ViewerTopBar.Trailing>
+        <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+          <Button Name="LinkButton" Classes="viewer on">
+            <d:JGIcon Data="{x:Static d:JGCustomIcons.Link}" />
+          </Button>
+          <Button Name="SwapButton" Classes="viewer">
+            <d:JGIcon Data="{x:Static d:JGCustomIcons.Swap}" />
+          </Button>
+          <Button Name="FitButton" Classes="viewer" ToolTip.Tip="{l:T 'Fit'}" AutomationProperties.Name="{l:T 'Fit'}">
+            <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.FullScreenExit}" />
+          </Button>
+          <Button Name="ActualSizeButton" Classes="viewer" ToolTip.Tip="{l:T 'Actual Size'}" AutomationProperties.Name="{l:T 'Actual Size'}">
+            <d:JGIcon Data="{x:Static d:JGIconData.ZoomIn}" />
+          </Button>
+        </StackPanel>
+      </v:ViewerTopBar.Trailing>
+    </v:ViewerTopBar>
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*">
+      <Panel Name="LeftSide">
+        <v:PhotoCanvas Name="LeftCanvas" AutomationProperties.Name="{l:T 'Left Photo'}" />
+        <Border Classes="compareCaption">
+          <StackPanel>
+            <TextBlock Name="LeftName" Classes="body" Foreground="{DynamicResource JG.text.primary}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="LeftFacts" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
+      </Panel>
+      <Border Grid.Column="1" Width="{x:Static d:JGMetrics.OutlineWidth}" Background="{DynamicResource JG.line.strong}" />
+      <Panel Name="RightSide" Grid.Column="2">
+        <v:PhotoCanvas Name="RightCanvas" AutomationProperties.Name="{l:T 'Right Photo'}" />
+        <Border Classes="compareCaption">
+          <StackPanel>
+            <TextBlock Name="RightName" Classes="body" Foreground="{DynamicResource JG.text.primary}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="RightFacts" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
+      </Panel>
+    </Grid>
+  </Grid>
+  <UserControl.Styles>
+    <!-- The caption lies over the photo's bottom edge on the scrim, out of the pointer's way. -->
+    <Style Selector="Border.compareCaption">
+      <Setter Property="VerticalAlignment" Value="Bottom" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="Margin" Value="{x:Static d:JGInsets.CompareCaption}" />
+      <Setter Property="Padding" Value="{x:Static d:JGInsets.Badge}" />
+      <Setter Property="CornerRadius" Value="{StaticResource JG.radius.small}" />
+      <Setter Property="Background" Value="{DynamicResource JG.overlay.scrim}" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+  </UserControl.Styles>
+</UserControl>

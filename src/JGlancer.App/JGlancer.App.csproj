@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows-only until L1 adds the Linux platform layer. -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>JGlancer.App</RootNamespace>
+    <AssemblyName>jGlancer</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\jGlancer.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishAot>true</PublishAot>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <OptimizationPreference>Speed</OptimizationPreference>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <DebugType>none</DebugType>
+    <StripSymbols>true</StripSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JGlancer.Core\JGlancer.Core.csproj" />
+    <ProjectReference Include="..\JGlancer.Design\JGlancer.Design.csproj" />
+    <ProjectReference Include="..\JGlancer.Media\JGlancer.Media.csproj" />
+    <ProjectReference Include="..\JGlancer.Mpv\JGlancer.Mpv.csproj" />
+    <ProjectReference Include="..\JGlancer.Platform\JGlancer.Platform.csproj" />
+    <ProjectReference Include="..\JGlancer.Stems\JGlancer.Stems.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <!-- The licences of the bundled libraries and fonts, next to the app (About ▸ Third-Party Notices, the installer). -->
+    <None Include="Licenses\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- The GC compacts the large-object heap sooner: thumbnails and photos are large buffers (W-37). -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="7" />
+  </ItemGroup>
+  <!-- Native packages (Skia, HarfBuzz) ship their .pdb files; they do not belong in the app folder. -->
+  <Target Name="JGDropSymbolsFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+</Project>

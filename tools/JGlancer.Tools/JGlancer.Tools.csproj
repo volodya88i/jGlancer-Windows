@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Developer generators: design tokens, strings and icons → committed C# / JSON sources. Not shipped. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>JGlancer.Tools</RootNamespace>
+    <IsToolProject>true</IsToolProject>
+    <IsAotCompatible>false</IsAotCompatible>
+    <!-- Program.cs runs the whole process with the invariant culture, so generated text never depends on locale. -->
+    <NoWarn>$(NoWarn);CA1305</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\JGlancer.Platform\JGlancer.Platform.csproj" />
+    <ProjectReference Include="..\..\src\JGlancer.Mpv\JGlancer.Mpv.csproj" />
+    <ProjectReference Include="..\..\src\JGlancer.Stems\JGlancer.Stems.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="JGlancer.Design.Tests" />
+    <InternalsVisibleTo Include="JGlancer.Core.Tests" />
+  </ItemGroup>
+</Project>

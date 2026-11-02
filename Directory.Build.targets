@@ -1,0 +1,4 @@
+<Project>
+  <!-- No network from our builds (CLAUDE.md): replaces Avalonia.BuildServices' build statistics upload with a no-op. -->
+  <Target Name="AvaloniaStats" />
+</Project>

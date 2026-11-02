@@ -1,0 +1,34 @@
+# Build output
+bin/
+obj/
+artifacts/
+publish/
+*.user
+*.suo
+.vs/
+.idea/
+*.DotSettings.user
+
+# Tests and tools
+TestResults/
+*.trx
+coverage*/
+
+# Generated test media and benchmarks
+TestMedia/generated/
+build/
+
+# Native dependencies are fetched, not committed
+native/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Keys and secrets never belong here
+*.pem
+*.pfx
+*.p12
+*.key
+.env*

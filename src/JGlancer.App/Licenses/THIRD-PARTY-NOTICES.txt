@@ -1,0 +1,98 @@
+jGlancer for Windows — third-party notices
+
+jGlancer itself is free software under the GNU General Public License 3.0 (GPL-3.0.txt), with an additional
+permission for Microsoft DirectML: https://github.com/volodya88i/jGlancerWindows/blob/main/NOTICE.md
+
+jGlancer includes the software and fonts listed below. Each is the property of its authors and is used under the
+licence named with it. The full texts of the licences that require it are in this folder.
+
+
+libmpv (mpv) — LGPL-2.1-or-later
+  Copyright (C) mpv developers. https://mpv.io  Source: https://github.com/mpv-player/mpv
+  jGlancer uses libmpv-2.dll, an LGPL build of mpv with FFmpeg and its libraries, made by
+  https://github.com/zhongfly/mpv-winbuild (mpv-dev-lgpl-x86_64-20261013-git-c3ac7f3951). It is linked
+  dynamically: libmpv-2.dll may be replaced with another compatible build. The sources of this build are
+  available from the project pages above; licence text: LGPL-2.1.txt.
+
+FFmpeg — LGPL-2.1-or-later (inside libmpv-2.dll)
+  Copyright (C) FFmpeg developers. https://ffmpeg.org  Licence text: LGPL-2.1.txt.
+
+Avalonia — MIT
+  Copyright (c) AvaloniaUI OÜ and contributors. https://avaloniaui.net
+
+SkiaSharp and HarfBuzzSharp — MIT
+  Copyright (c) 2015-2016 Xamarin, Inc. Copyright (c) 2017-2018 Microsoft Corporation.
+  https://github.com/mono/SkiaSharp
+
+Skia — BSD-3-Clause
+  Copyright (c) Google Inc. https://skia.org
+
+HarfBuzz — MIT ("Old MIT")
+  Copyright (c) HarfBuzz authors. https://harfbuzz.github.io
+
+ANGLE — BSD-3-Clause
+  Copyright 2018 The ANGLE Project Authors. Licence text: BSD-ANGLE.txt.
+
+.NET runtime and libraries, Microsoft.Data.Sqlite — MIT
+  Copyright (c) .NET Foundation and Contributors. https://dot.net
+
+.NET Community Toolkit (CommunityToolkit.Mvvm) — MIT
+  Copyright (c) .NET Foundation and Contributors.
+
+SQLitePCLRaw — Apache-2.0
+  Copyright (c) Zumero, LLC (Eric Sink). https://github.com/ericsink/SQLitePCL.raw
+  Licence: https://www.apache.org/licenses/LICENSE-2.0
+
+SQLite — public domain. https://sqlite.org
+
+Inter — SIL Open Font License 1.1
+  Copyright (c) The Inter Project Authors. https://rsms.me/inter
+
+Unbounded — SIL Open Font License 1.1. Licence text: OFL-Unbounded.txt.
+
+JetBrains Mono — SIL Open Font License 1.1
+  Copyright 2020 The JetBrains Mono Project Authors. Licence text: OFL-JetBrainsMono.txt.
+
+ONNX Runtime — MIT
+  Copyright (c) Microsoft Corporation. https://onnxruntime.ai  Runs the stem splitter's model (onnxruntime.dll).
+  Its own third-party notices: ONNXRuntime-ThirdPartyNotices.txt.
+
+DirectML — Microsoft Software License Terms (redistributable)
+  Copyright (c) Microsoft Corporation. https://github.com/microsoft/DirectML  Runs the model on the GPU
+  (DirectML.dll). Licence text: DirectML-LICENSE.txt.
+
+Demucs (htdemucs, htdemucs_6s) — MIT
+  Copyright (c) Meta Platforms, Inc. and affiliates. https://github.com/facebookresearch/demucs
+  The stem splitter's models, converted to ONNX; not part of the installer, downloaded when a split first needs them.
+
+Lucide icons — ISC
+  Copyright (c) Lucide Contributors; parts Copyright (c) Cole Bemis (Feather, MIT). https://lucide.dev
+
+
+The MIT licence
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+  the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+
+The ISC licence (Lucide)
+
+  Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
+  granted, provided that the above copyright notice and this permission notice appear in all copies.
+
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+  PERFORMANCE OF THIS SOFTWARE.

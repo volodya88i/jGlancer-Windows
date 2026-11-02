@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:v="using:JGlancer.App.Viewer"
+             x:Class="JGlancer.App.Viewer.PhotoViewerView"
+             Focusable="True">
+  <!-- The photo viewer filling the window below the title bar (DESIGN.md §8, macOS PhotoViewerView): the photo on
+       bg.media, a HUD that fades after a short idle (the keyboard keeps working) with the top bar, ‹ › at the sides
+       and the filmstrip that slides in near the bottom edge. -->
+  <Panel Name="Root" Background="{DynamicResource JG.bg.media}">
+    <v:PhotoCanvas Name="Canvas" AutomationProperties.Name="{l:T 'Photo'}" />
+
+    <StackPanel Name="FailedMessage" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Spacing="{x:Static d:JGSpacing.S}" IsVisible="False" IsHitTestVisible="False">
+      <d:JGIcon Data="{x:Static d:JGIconData.Image}" HorizontalAlignment="Center"
+                Width="{x:Static d:JGMetrics.TileGlyphSize}" Height="{x:Static d:JGMetrics.TileGlyphSize}"
+                Foreground="{DynamicResource JG.text.tertiary}" />
+      <TextBlock Name="FailedText" Classes="body" Foreground="{DynamicResource JG.text.secondary}" />
+    </StackPanel>
+
+    <Grid Name="Hud" RowDefinitions="Auto,*">
+
+      <v:ViewerTopBar Name="TopBar">
+        <v:ViewerTopBar.Trailing>
+        <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+          <Button Name="RotateLeftButton" Classes="viewer" ToolTip.Tip="{l:T 'Rotate Left'}" AutomationProperties.Name="{l:T 'Rotate Left'}">
+            <d:JGIcon Data="{x:Static d:JGIconData.RotateCcw}" />
+          </Button>
+          <Button Name="RotateRightButton" Classes="viewer" ToolTip.Tip="{l:T 'Rotate Right'}" AutomationProperties.Name="{l:T 'Rotate Right'}">
+            <d:JGIcon Data="{x:Static d:JGIconData.RotateCw}" />
+          </Button>
+          <Button Name="FitButton" Classes="viewer" ToolTip.Tip="{l:T 'Fit'}" AutomationProperties.Name="{l:T 'Fit'}">
+            <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.FullScreenExit}" />
+          </Button>
+          <Button Name="ActualSizeButton" Classes="viewer" ToolTip.Tip="{l:T 'Actual Size'}" AutomationProperties.Name="{l:T 'Actual Size'}">
+            <d:JGIcon Data="{x:Static d:JGIconData.ZoomIn}" />
+          </Button>
+        </StackPanel>
+        </v:ViewerTopBar.Trailing>
+      </v:ViewerTopBar>
+      <!-- ‹ › at the sides; hidden at the ends of the folder. -->
+      <Button Name="PreviousButton" Grid.Row="1" Classes="page" HorizontalAlignment="Left" VerticalAlignment="Center"
+              Margin="{x:Static d:JGInsets.PageButton}" ToolTip.Tip="{l:T 'Previous'}" AutomationProperties.Name="{l:T 'Previous'}">
+        <d:JGIcon Data="{x:Static d:JGIconData.ChevronLeft}" />
+      </Button>
+      <Button Name="NextButton" Grid.Row="1" Classes="page" HorizontalAlignment="Right" VerticalAlignment="Center"
+              Margin="{x:Static d:JGInsets.PageButton}" ToolTip.Tip="{l:T 'Next'}" AutomationProperties.Name="{l:T 'Next'}">
+        <d:JGIcon Data="{x:Static d:JGIconData.ChevronRight}" />
+      </Button>
+
+      <!-- The filmstrip floats over the photo, so nothing moves when it comes and goes: near the bottom edge
+           (Automatic), or by its chevron (Button, Settings → Appearance). -->
+      <StackPanel Name="FilmstripArea" Grid.Row="1" VerticalAlignment="Bottom">
+        <Button Name="FilmstripToggle" Classes="filmstripToggle" HorizontalAlignment="Center" IsVisible="False">
+          <d:JGIcon Name="FilmstripToggleGlyph" Data="{x:Static d:JGIconData.ChevronDown}"
+                    Width="{x:Static d:JGMetrics.IconSizeSmall}" Height="{x:Static d:JGMetrics.IconSizeSmall}" />
+        </Button>
+        <Border Name="FilmstripPanel" BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,1,0,0"
+                Opacity="0" IsHitTestVisible="False">
+          <Panel>
+            <!-- What is behind, lightly frosted, under a lighter scrim than the bars'. -->
+            <l:BackdropBlur />
+            <Border Background="{DynamicResource JG.overlay.scrim}" Opacity="{x:Static d:JGMetrics.FilmstripScrimOpacity}" />
+            <v:Filmstrip Name="Strip" AutomationProperties.Name="{l:T 'Files in This Folder'}" />
+          </Panel>
+        </Border>
+      </StackPanel>
+    </Grid>
+  </Panel>
+</UserControl>

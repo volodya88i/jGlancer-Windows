@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="using:JGlancer.Design"
+        xmlns:l="using:JGlancer.App.Support"
+        x:Class="JGlancer.App.Actions.InfoWindow"
+        Title="{l:T 'Get Info'}"
+        Icon="avares://jGlancer/Assets/jGlancer.ico"
+        Width="{x:Static d:JGMetrics.PreviewPaneMaxWidth}"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource JG.bg.panel}"
+        Foreground="{DynamicResource JG.text.primary}"
+        FontFamily="{x:Static d:JGFonts.Text}"
+        FontSize="13">
+  <!-- Get Info (macOS InfoController): the name in heading type, then labels in the label style and values in mono;
+       for several files their count and total size. Esc closes it. -->
+  <StackPanel Name="Rows" Margin="{x:Static d:JGInsets.Info}" Spacing="{x:Static d:JGSpacing.S}" />
+</Window>

@@ -1,0 +1,14 @@
+
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Windows-only tests of the platform layer: real directories in %TEMP%, copies of TestMedia/fixtures. -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\JGlancer.Platform\JGlancer.Platform.csproj" />
+    <ProjectReference Include="..\..\src\JGlancer.Mpv\JGlancer.Mpv.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\JGlancer.Core.Tests\Support\TemporaryDirectory.cs" Link="Support\TemporaryDirectory.cs" />
+  </ItemGroup>
+</Project>

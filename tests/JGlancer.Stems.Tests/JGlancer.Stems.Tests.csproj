@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\JGlancer.Stems\JGlancer.Stems.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\JGlancer.Core.Tests\Support\TemporaryDirectory.cs" Link="Support\TemporaryDirectory.cs" />
+  </ItemGroup>
+</Project>

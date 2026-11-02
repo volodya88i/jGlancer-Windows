@@ -1,0 +1,208 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:v="using:JGlancer.App.Viewer"
+             x:Class="JGlancer.App.Viewer.Media.MediaViewerView"
+             Focusable="True">
+  <UserControl.Styles>
+    <!-- Video: the scrubber and controls on the scrim over the picture. Audio: on the stage, no panel, readable width. -->
+    <Style Selector="Border#ControlsPanel">
+      <Setter Property="Background" Value="{DynamicResource JG.overlay.scrim}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource JG.line.hair}" />
+      <Setter Property="BorderThickness" Value="0,1,0,0" />
+      <Setter Property="Padding" Value="{x:Static d:JGInsets.PlayerControls}" />
+    </Style>
+    <Style Selector="Border#ControlsPanel.audio">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="{x:Static d:JGInsets.AudioControls}" />
+      <Setter Property="MaxWidth" Value="{x:Static d:JGMetrics.PlayerMaxWidth}" />
+    </Style>
+    <!-- The controls row sits midway between the scrubber and the bottom: the gap above it is the padding below. -->
+    <Style Selector="Border#ControlsPanel > StackPanel">
+      <Setter Property="Spacing" Value="{x:Static d:JGSpacing.Xs}" />
+    </Style>
+    <Style Selector="Border#ControlsPanel.audio > StackPanel">
+      <Setter Property="Spacing" Value="{x:Static d:JGSpacing.M}" />
+    </Style>
+  </UserControl.Styles>
+  <!-- The video and audio viewer (DESIGN.md §8, macOS MediaViewerView). Video: the picture on bg.media; the top bar,
+       the filmstrip and the scrubber with the controls row lie over it and hide while the video plays and the pointer
+       rests. Audio: the stage with cover art and tags, the filmstrip, a large waveform scrubber and the controls,
+       always visible. -->
+  <Panel Name="Root" Background="{DynamicResource JG.bg.media}">
+    <!-- Audio: the cover as frosted glass behind everything (a tiny copy stretched), under a strong base wash. -->
+    <Panel Name="Backdrop" IsVisible="False" IsHitTestVisible="False" ClipToBounds="True">
+      <!-- The last song's backdrop under the new one while they blend (Settings → Appearance → Effects). -->
+      <l:SafeImage Name="BackdropBelow" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+      <l:SafeImage Name="BackdropImage" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+      <!-- While swiping, the neighbor song's backdrop shows as far as the swipe has gone. -->
+      <l:SafeImage Name="BackdropNeighbor" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" Opacity="0" />
+      <Border Background="{DynamicResource JG.bg.base}" Opacity="{x:Static d:JGMetrics.BackdropScrimOpacity}" />
+    </Panel>
+    <Panel Name="Surface">
+      <Panel.RenderTransform>
+        <TranslateTransform />
+      </Panel.RenderTransform>
+    </Panel>
+    <StackPanel Name="FailedMessage" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Spacing="{x:Static d:JGSpacing.S}" IsVisible="False" IsHitTestVisible="False">
+      <d:JGIcon Name="FailedGlyph" HorizontalAlignment="Center"
+                Width="{x:Static d:JGMetrics.TileGlyphSize}" Height="{x:Static d:JGMetrics.TileGlyphSize}"
+                Foreground="{DynamicResource JG.text.tertiary}" />
+      <TextBlock Name="FailedText" Classes="body" Foreground="{DynamicResource JG.text.secondary}" />
+    </StackPanel>
+
+    <Grid Name="Chrome" RowDefinitions="Auto,*,Auto">
+      <v:ViewerTopBar Name="TopBar" />
+
+      <!-- While a swipe drags the stage aside, the neighbor song (cover and name) comes in from the edge (macOS
+           SwipeNeighborAudio). -->
+      <StackPanel Name="NeighborStage" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Spacing="{x:Static d:JGSpacing.M}" IsVisible="False" IsHitTestVisible="False">
+        <StackPanel.RenderTransform>
+          <TranslateTransform />
+        </StackPanel.RenderTransform>
+        <Border CornerRadius="{StaticResource JG.radius.medium}" ClipToBounds="True"
+                Background="{DynamicResource JG.bg.raised}" HorizontalAlignment="Center"
+                Width="{x:Static d:JGMetrics.CoverArtSide}" Height="{x:Static d:JGMetrics.CoverArtSide}">
+          <Panel>
+            <d:JGIcon Name="NeighborGlyph" Data="{x:Static d:JGIconData.AudioLines}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Width="{x:Static d:JGMetrics.CoverGlyphSize}" Height="{x:Static d:JGMetrics.CoverGlyphSize}"
+                      Foreground="{DynamicResource JG.text.tertiary}" />
+            <l:SafeImage Name="NeighborCover" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="HighQuality" />
+          </Panel>
+        </Border>
+        <!-- The same fixed text box as the stage: the cover keeps its place. -->
+        <Border Height="{x:Static d:JGMetrics.StageTextHeight}" Width="{x:Static d:JGMetrics.ReadableTextWidth}">
+          <StackPanel Spacing="{x:Static d:JGSpacing.Xxs}" VerticalAlignment="Top">
+            <TextBlock Name="NeighborTitle" Classes="heading" Foreground="{DynamicResource JG.text.primary}" LineHeight="{x:Static d:JGMetrics.StageTitleLineHeight}"
+                       TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="NeighborSubtitle" Classes="body" Foreground="{DynamicResource JG.text.secondary}" LineHeight="{x:Static d:JGMetrics.StageSubtitleLineHeight}"
+                       TextAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <!-- Audio: cover art, then title and "artist · album" (macOS AudioStage); a drag across the stage area pages. -->
+      <StackPanel Name="AudioStage" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Spacing="{x:Static d:JGSpacing.M}" IsVisible="False" Background="Transparent">
+        <StackPanel.RenderTransform>
+          <TranslateTransform />
+        </StackPanel.RenderTransform>
+        <Border Name="CoverFrame" CornerRadius="{StaticResource JG.radius.medium}" ClipToBounds="True"
+                Background="{DynamicResource JG.bg.raised}" HorizontalAlignment="Center"
+                Width="{x:Static d:JGMetrics.CoverArtSide}" Height="{x:Static d:JGMetrics.CoverArtSide}">
+          <Panel>
+            <d:JGIcon Name="CoverGlyph" Data="{x:Static d:JGIconData.AudioLines}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Width="{x:Static d:JGMetrics.CoverGlyphSize}" Height="{x:Static d:JGMetrics.CoverGlyphSize}"
+                      Foreground="{DynamicResource JG.text.tertiary}" IsVisible="False" />
+            <l:SafeImage Name="CoverImage" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="HighQuality" />
+          </Panel>
+        </Border>
+        <!-- A fixed text box (two title lines, the subtitle line), text at its top: one-line titles and late tags never move the cover. -->
+        <Border Height="{x:Static d:JGMetrics.StageTextHeight}" Width="{x:Static d:JGMetrics.ReadableTextWidth}">
+          <StackPanel Spacing="{x:Static d:JGSpacing.Xxs}" VerticalAlignment="Top">
+            <TextBlock Name="TitleText" Classes="heading" Foreground="{DynamicResource JG.text.primary}" LineHeight="{x:Static d:JGMetrics.StageTitleLineHeight}"
+                       TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+            <TextBlock Name="SubtitleText" Classes="body" Foreground="{DynamicResource JG.text.secondary}" LineHeight="{x:Static d:JGMetrics.StageSubtitleLineHeight}"
+                       TextAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <!-- The filmstrip above the controls floats over the picture; by its chevron or automatic (FilmstripRevealer). -->
+      <StackPanel Name="FilmstripArea" Grid.Row="1" VerticalAlignment="Bottom">
+        <Button Name="FilmstripToggle" Classes="filmstripToggle" HorizontalAlignment="Center" IsVisible="False">
+          <d:JGIcon Name="FilmstripToggleGlyph" Data="{x:Static d:JGIconData.ChevronDown}"
+                    Width="{x:Static d:JGMetrics.IconSizeSmall}" Height="{x:Static d:JGMetrics.IconSizeSmall}" />
+        </Button>
+        <Border Name="FilmstripPanel" BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,1,0,0"
+                Opacity="0" IsHitTestVisible="False">
+          <Panel>
+            <!-- What is behind, lightly frosted, under a lighter scrim than the bars'. -->
+            <l:BackdropBlur />
+            <Border Background="{DynamicResource JG.overlay.scrim}" Opacity="{x:Static d:JGMetrics.FilmstripScrimOpacity}" />
+            <v:Filmstrip Name="Strip" AutomationProperties.Name="{l:T 'Files in This Folder'}" />
+          </Panel>
+        </Border>
+      </StackPanel>
+
+      <!-- Video: the picture behind the controls, lightly frosted under their scrim. -->
+      <l:BackdropBlur Name="ControlsBlur" Grid.Row="2" />
+      <!-- Grayscale text over the translucent panel: subpixel text there showed colored fringes in the light theme. -->
+      <Border Name="ControlsPanel" Grid.Row="2" TextOptions.TextRenderingMode="Antialias">
+        <StackPanel>
+          <d:JGScrubber Name="Scrubber" Height="{x:Static d:JGMetrics.ControlHeightCompact}" AutomationProperties.Name="{l:T 'Position'}" />
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+              <Button Name="PreviousButton" Classes="viewer" ToolTip.Tip="{l:T 'Previous'}" AutomationProperties.Name="{l:T 'Previous'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGCustomIcons.PreviousFilled}" />
+              </Button>
+              <Button Name="PlayButton" Classes="viewer">
+                <d:JGIcon Name="PlayGlyph" IsFilled="True" Data="{x:Static d:JGCustomIcons.PlayFilled}" />
+              </Button>
+              <Button Name="NextButton" Classes="viewer" ToolTip.Tip="{l:T 'Next'}" AutomationProperties.Name="{l:T 'Next'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGCustomIcons.NextFilled}" />
+              </Button>
+              <TextBlock Name="TimeText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}"
+                         VerticalAlignment="Center" Margin="{x:Static d:JGInsets.PlayerTime}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+              <!-- Segment selection (D-73, D-74): its range, the fades toggle (audio), the export button, the mode. -->
+              <TextBlock Name="SegmentLabel" Classes="mono" Foreground="{DynamicResource JG.accent.text}" VerticalAlignment="Center"
+                         Margin="{x:Static d:JGInsets.PlayerTime}" IsVisible="False" />
+              <Button Name="FadesButton" Classes="viewer" IsVisible="False"
+                      ToolTip.Tip="{l:T 'Fade the Ends'}" AutomationProperties.Name="{l:T 'Fade the Ends'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Fades}" />
+              </Button>
+              <Button Name="ExportButton" Classes="viewer" IsVisible="False"
+                      ToolTip.Tip="{l:T 'Drag to export the segment, click to save it'}"
+                      AutomationProperties.Name="{l:T 'Drag to export the segment, click to save it'}">
+                <d:JGIcon Name="ExportGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Export}" />
+              </Button>
+              <!-- Video: the current frame as a PNG next to the video (P), or on the clipboard (Shift+P, right click). -->
+              <Button Name="FrameButton" Classes="viewer" IsVisible="False" AutomationProperties.Name="{l:T 'Save Frame'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Frame}" />
+              </Button>
+              <!-- Video: its audio tracks (two or more; one, or several together) and subtitles (W-88). -->
+              <Button Name="AudioTracksButton" Classes="viewer" IsVisible="False"
+                      ToolTip.Tip="{l:T 'Audio Tracks'}" AutomationProperties.Name="{l:T 'Audio Tracks'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.AudioTracks}" />
+              </Button>
+              <Button Name="SubtitlesButton" Classes="viewer" IsVisible="False"
+                      ToolTip.Tip="{l:T 'Subtitles'}" AutomationProperties.Name="{l:T 'Subtitles'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Subtitles}" />
+              </Button>
+              <!-- Video: HDR through mpv's own window (W-87), on or off, remembered. -->
+              <Button Name="HdrButton" Classes="viewer" IsVisible="False">
+                <TextBlock Text="HDR" Classes="mono" VerticalAlignment="Center" />
+              </Button>
+              <Button Name="SegmentButton" Classes="viewer" AutomationProperties.Name="{l:T 'Select a Segment'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Segment}" />
+              </Button>
+              <Button Name="SpeedButton" Classes="tertiary" ToolTip.Tip="{l:T 'Speed'}" AutomationProperties.Name="{l:T 'Speed'}">
+                <TextBlock Name="SpeedText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" />
+              </Button>
+              <Button Name="MuteButton" Classes="viewer">
+                <d:JGIcon Name="MuteGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Volume}" />
+              </Button>
+              <d:JGSlider Name="VolumeSlider" Width="{x:Static d:JGMetrics.VolumeSliderWidth}" Minimum="0" Maximum="100"
+                               SmallChange="10" VerticalAlignment="Center" AutomationProperties.Name="{l:T 'Volume'}" />
+              <Button Name="LoopButton" Classes="viewer" ToolTip.Tip="{l:T 'Loop'}" AutomationProperties.Name="{l:T 'Loop'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Loop}" />
+              </Button>
+              <Button Name="PlayNextButton" Classes="viewer" ToolTip.Tip="{l:T 'Play Next'}" AutomationProperties.Name="{l:T 'Play Next'}">
+                <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.PlayNext}" />
+              </Button>
+              <Button Name="FullScreenButton" Classes="viewer">
+                <d:JGIcon Name="FullScreenGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.FullScreen}" />
+              </Button>
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Panel>
+</UserControl>

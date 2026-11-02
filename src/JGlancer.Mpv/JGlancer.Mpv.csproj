@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- libmpv bindings (source-generated P/Invoke, AOT-safe) and the player built on them. UI-free and cross-platform:
+       the video surface lives in the app. The native library comes from scripts\deps.ps1 (W-32). -->
+  <PropertyGroup>
+    <RootNamespace>JGlancer.Mpv</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JGlancer.Core\JGlancer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)..\..\build\deps\mpv-lgpl\libmpv-2.dll')">
+    <None Include="$(MSBuildThisFileDirectory)..\..\build\deps\mpv-lgpl\libmpv-2.dll" Link="libmpv-2.dll"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="JGlancer.Platform.Tests" />
+    <InternalsVisibleTo Include="jGlancer" />
+    <InternalsVisibleTo Include="JGlancer.Tools" />
+  </ItemGroup>
+</Project>

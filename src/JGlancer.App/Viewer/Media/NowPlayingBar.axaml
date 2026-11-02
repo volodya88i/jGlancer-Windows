@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             x:Class="JGlancer.App.Viewer.Media.NowPlayingBar"
+             Height="{x:Static d:JGMetrics.NowPlayingHeight}">
+  <!-- The mini player (W-68) at the bottom of the window, under the library and the viewers: cover, title, the folder
+       it plays from (a click shows it in the library), previous / play / next, time, the scrubber, speed, mute, volume
+       and close. -->
+  <Panel Background="{DynamicResource JG.bg.popup}">
+    <!-- The cover as frosted glass behind the bar, as in the big player (a tiny copy stretched, under the same wash). -->
+    <Panel Name="Backdrop" IsVisible="False" IsHitTestVisible="False" ClipToBounds="True">
+      <l:SafeImage Name="BackdropImage" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+      <Border Background="{DynamicResource JG.bg.base}" Opacity="{x:Static d:JGMetrics.BackdropScrimOpacity}" />
+    </Panel>
+  <Border BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,1,0,0"
+          Padding="{x:Static d:JGInsets.Bar}">
+    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="{x:Static d:JGSpacing.S}" VerticalAlignment="Center">
+      <Border CornerRadius="{StaticResource JG.radius.small}" ClipToBounds="True" Background="{DynamicResource JG.bg.base}"
+              Width="{x:Static d:JGMetrics.NowPlayingCoverSide}" Height="{x:Static d:JGMetrics.NowPlayingCoverSide}">
+        <Panel>
+          <d:JGIcon Data="{x:Static d:JGIconData.AudioLines}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Foreground="{DynamicResource JG.text.tertiary}" />
+          <l:SafeImage Name="CoverImage" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+        </Panel>
+      </Border>
+      <StackPanel Grid.Column="1" Width="{x:Static d:JGMetrics.NowPlayingTextWidth}" VerticalAlignment="Center">
+        <TextBlock Name="TitleText" Classes="body" Foreground="{DynamicResource JG.text.primary}" TextTrimming="CharacterEllipsis" />
+        <Button Name="FolderButton" Classes="tertiary" Padding="0" HorizontalAlignment="Left" MinHeight="0">
+          <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+            <d:JGIcon Data="{x:Static d:JGIconData.Folder}" Foreground="{DynamicResource JG.text.tertiary}"
+                      Width="{x:Static d:JGMetrics.IconSizeSmall}" Height="{x:Static d:JGMetrics.IconSizeSmall}" VerticalAlignment="Center" />
+            <TextBlock Name="FolderText" Classes="body" Foreground="{DynamicResource JG.text.secondary}"
+                       TextTrimming="CharacterEllipsis" MaxWidth="{x:Static d:JGMetrics.NowPlayingTextWidth}" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}" VerticalAlignment="Center">
+        <Button Name="PreviousButton" Classes="viewer" ToolTip.Tip="{l:T 'Previous'}" AutomationProperties.Name="{l:T 'Previous'}">
+          <d:JGIcon IsFilled="True" Data="{x:Static d:JGCustomIcons.PreviousFilled}" />
+        </Button>
+        <Button Name="PlayButton" Classes="viewer">
+          <d:JGIcon Name="PlayGlyph" IsFilled="True" Data="{x:Static d:JGCustomIcons.PlayFilled}" />
+        </Button>
+        <Button Name="NextButton" Classes="viewer" ToolTip.Tip="{l:T 'Next'}" AutomationProperties.Name="{l:T 'Next'}">
+          <d:JGIcon IsFilled="True" Data="{x:Static d:JGCustomIcons.NextFilled}" />
+        </Button>
+      </StackPanel>
+      <TextBlock Name="TimeText" Grid.Column="3" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" VerticalAlignment="Center" />
+      <d:JGScrubber Name="Scrubber" Grid.Column="4" Height="{x:Static d:JGMetrics.ControlHeightCompact}" VerticalAlignment="Center"
+                    AutomationProperties.Name="{l:T 'Position'}" />
+      <Button Name="SpeedButton" Grid.Column="5" Classes="tertiary" ToolTip.Tip="{l:T 'Speed'}" AutomationProperties.Name="{l:T 'Speed'}">
+        <TextBlock Name="SpeedText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" />
+      </Button>
+      <Button Name="MuteButton" Grid.Column="6" Classes="viewer">
+        <d:JGIcon Name="MuteGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Volume}" />
+      </Button>
+      <d:JGSlider Name="VolumeSlider" Grid.Column="7" Width="{x:Static d:JGMetrics.VolumeSliderWidth}" Minimum="0" Maximum="100"
+                       SmallChange="10" VerticalAlignment="Center" AutomationProperties.Name="{l:T 'Volume'}" />
+      <Button Name="CloseButton" Grid.Column="8" Classes="icon"
+              ToolTip.Tip="{l:T 'Close Mini Player'}" AutomationProperties.Name="{l:T 'Close Mini Player'}">
+        <d:JGIcon Data="{x:Static d:JGIconData.X}" />
+      </Button>
+    </Grid>
+  </Border>
+  </Panel>
+</UserControl>

@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:lib="using:JGlancer.App.Library"
+             x:Class="JGlancer.App.Viewer.ViewerTopBar">
+  <!-- The viewers' top bar on the scrim (macOS ViewerTopBar): back to the library, the file name, its position in the
+       folder in mono, then the viewer's own controls and Get Info. -->
+  <Border Background="{DynamicResource JG.overlay.scrim}" BorderBrush="{DynamicResource JG.line.hair}"
+          BorderThickness="0,0,0,1" Height="{x:Static d:JGMetrics.BarHeight}" Padding="{x:Static d:JGInsets.Bar}">
+    <Grid Name="BarGrid" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" VerticalAlignment="Center">
+      <Button Name="BackButton" Classes="tertiary" AutomationProperties.Name="{l:T 'Library'}">
+        <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+          <d:JGIcon Data="{x:Static d:JGIconData.ChevronLeft}" Foreground="{DynamicResource JG.text.secondary}" />
+          <TextBlock Classes="button" Text="{l:T 'Library'}" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+      <TextBlock Name="NameText" Grid.Column="1" Classes="body" Foreground="{DynamicResource JG.text.primary}"
+                 VerticalAlignment="Center" Margin="{x:Static d:JGInsets.ViewerName}" TextTrimming="PrefixCharacterEllipsis" />
+      <!-- The file's flag star, then its position in the folder. -->
+      <StackPanel Name="AfterName" Grid.Column="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.S}" VerticalAlignment="Center">
+        <lib:FlagStar Name="Star" />
+        <TextBlock Name="PositionText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" VerticalAlignment="Center" />
+      </StackPanel>
+      <ContentControl Name="TrailingHost" Grid.Column="4" />
+      <!-- A file from outside the library: its folder can join it (macOS D-65). -->
+      <Button Name="AddFolderButton" Grid.Column="3" Classes="tertiary" HorizontalAlignment="Right" IsVisible="False"
+              AutomationProperties.Name="{l:T 'Add Folder'}">
+        <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+          <d:JGIcon Data="{x:Static d:JGIconData.Plus}" Foreground="{DynamicResource JG.text.secondary}" />
+          <TextBlock Classes="button" Text="{l:T 'Add Folder'}" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+      <!-- Get Info (Alt+Enter) for the file shown, in every viewer (W6). -->
+      <Button Name="InfoButton" Grid.Column="5" Classes="viewer" ToolTip.Tip="{l:T 'Get Info'}" AutomationProperties.Name="{l:T 'Get Info'}">
+        <d:JGIcon Data="{x:Static d:JGIconData.Info}" />
+      </Button>
+    </Grid>
+  </Border>
+</UserControl>

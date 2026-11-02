@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:lib="using:JGlancer.App.Library"
+             xmlns:grid="using:JGlancer.App.Library.Grid"
+             xmlns:preview="using:JGlancer.App.Preview"
+             x:Class="JGlancer.App.Library.LibraryView"
+             x:DataType="lib:LibraryModel">
+  <!-- The library window (DESIGN.md §8, macOS LibraryView): sidebar · top bar / content / status bar · preview pane. -->
+  <Grid Name="Columns">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="{x:Static d:JGLayout.SidebarColumn}" />
+      <ColumnDefinition Width="{x:Static d:JGLayout.Hairline}" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+
+    <Border Name="PreviewHairline" Grid.Column="3" Width="{x:Static d:JGMetrics.OutlineWidth}" Background="{DynamicResource JG.line.hair}" />
+    <preview:PreviewPane Name="Pane" Grid.Column="4" />
+
+    <lib:SidebarView Name="Sidebar" />
+
+    <Border Grid.Column="1" Background="{DynamicResource JG.line.hair}" />
+    <!-- The sidebar's right edge: drag to widen or narrow it (as the preview pane's left edge). -->
+    <Border Name="SidebarHandle" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Right"
+            Width="{x:Static d:JGMetrics.ResizeHandleWidth}" Background="Transparent" Cursor="SizeWestEast" />
+
+    <!-- One pane, or two side by side or stacked with a splitter between them (View ▸ Split View). -->
+    <Grid Name="PaneArea" Grid.Column="2">
+      <lib:BrowserPane Name="PrimaryPane" />
+    </Grid>
+  </Grid>
+</UserControl>

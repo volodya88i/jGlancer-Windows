@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:p="using:JGlancer.App.Preview"
+             xmlns:lib="using:JGlancer.App.Library"
+             xmlns:a="using:JGlancer.App.Actions"
+             x:Class="JGlancer.App.Preview.PreviewPane"
+             Background="{DynamicResource JG.bg.panel}">
+  <!-- The selection preview on the right of the library (macOS PreviewPane, FEATURES §2): the previewed file in the
+       mini player with its name and facts, or the count and size of a multiple selection. Resizable by its left edge. -->
+  <Panel>
+    <!-- Audio: the cover as frosted glass behind the pane (a tiny copy stretched), under a strong base wash. -->
+    <Panel Name="Backdrop" IsVisible="False" IsHitTestVisible="False" ClipToBounds="True">
+      <l:SafeImage Name="BackdropImage" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+      <Border Background="{DynamicResource JG.bg.panel}" Opacity="{x:Static d:JGMetrics.BackdropScrimOpacity}" />
+    </Panel>
+
+    <DockPanel Margin="{x:Static d:JGInsets.Preview}">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.PreviewHeader}">
+        <d:JGSectionHeader Label="{l:T 'Preview'}" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <!-- ⓘ: camera, codec and other details under the facts (the same switch as in Settings → Library). -->
+        <Button Name="DetailsButton" Classes="icon"
+                ToolTip.Tip="{l:T 'Camera, codec and other details'}" AutomationProperties.Name="{l:T 'Camera, codec and other details'}">
+          <d:JGIcon Name="DetailsGlyph" Data="{x:Static d:JGIconData.Info}" />
+        </Button>
+        <Button Name="CloseButton" Classes="icon"
+                ToolTip.Tip="{l:T 'Hide Preview'}" AutomationProperties.Name="{l:T 'Hide Preview'}">
+          <d:JGIcon Data="{x:Static d:JGIconData.X}" />
+        </Button>
+        </StackPanel>
+      </Grid>
+
+      <!-- One file: its name, facts and date under the player. -->
+      <StackPanel Name="Facts" DockPanel.Dock="Bottom" Spacing="{x:Static d:JGSpacing.Xxs}" Margin="{x:Static d:JGInsets.PreviewFacts}">
+        <DockPanel>
+          <lib:FlagStar Name="Star" DockPanel.Dock="Right" VerticalAlignment="Top" Margin="{x:Static d:JGInsets.FlagBesideName}" />
+          <SelectableTextBlock Name="NameText" Classes="body" Foreground="{DynamicResource JG.text.primary}"
+                               TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+        </DockPanel>
+        <TextBlock Name="FactsText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" TextTrimming="CharacterEllipsis" />
+        <TextBlock Name="DateText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" TextTrimming="CharacterEllipsis" />
+        <a:MediaDetailsSection Name="Details" Margin="{x:Static d:JGInsets.PreviewDetails}" />
+      </StackPanel>
+
+      <Panel>
+        <Panel Name="Single">
+          <p:MiniPlayer Name="Player" />
+        </Panel>
+
+        <!-- Several files: the count in display type, then the total size. -->
+        <StackPanel Name="Multiple" Spacing="{x:Static d:JGSpacing.Xs}" IsVisible="False">
+          <TextBlock Name="CountText" Classes="display" Foreground="{DynamicResource JG.text.primary}" />
+          <TextBlock Name="SelectedLabel" Classes="label" Foreground="{DynamicResource JG.text.tertiary}" />
+          <TextBlock Name="BytesText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" />
+        </StackPanel>
+
+        <TextBlock Name="NothingText" Classes="body" Text="{l:T 'No Selection'}" Foreground="{DynamicResource JG.text.tertiary}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False" />
+      </Panel>
+    </DockPanel>
+
+    <!-- The left edge: drag to resize. -->
+    <Border Name="ResizeHandle" HorizontalAlignment="Left" Width="{x:Static d:JGMetrics.ResizeHandleWidth}"
+            Background="Transparent" Cursor="SizeWestEast" />
+  </Panel>
+</UserControl>

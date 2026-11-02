@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:p="using:JGlancer.App.Preview"
+             x:Class="JGlancer.App.Preview.MiniPlayer">
+  <!-- The one preview of a file (macOS MiniPlayer), in the pane and, bigger, in Quick Preview: a photo fitted; a video
+       with its poster, then its picture, a slider, play, time and speed; a song with its cover, title and
+       artist, a waveform scrubber, play, time and speed. Quick Preview adds mute, volume and full screen. -->
+  <Grid RowDefinitions="*,Auto,Auto" RowSpacing="{x:Static d:JGSpacing.Xs}">
+    <!-- Photo, or the video's stage: poster underneath, the live picture over it; a click toggles pause. -->
+    <p:AspectFitPanel Name="Stage" Background="Transparent">
+      <l:SafeImage Name="PictureImage" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="HighQuality" />
+      <Panel Name="SurfaceHost" />
+    </p:AspectFitPanel>
+    <d:JGIcon Name="Placeholder" HorizontalAlignment="Center" VerticalAlignment="Center"
+              Width="{x:Static d:JGMetrics.TileGlyphSize}" Height="{x:Static d:JGMetrics.TileGlyphSize}"
+              Foreground="{DynamicResource JG.text.tertiary}" IsVisible="False" IsHitTestVisible="False" />
+
+    <!-- Audio: cover art, then title and "artist · album". In a small window the cover shrinks to the room left
+         above the text (never larger than its size); nothing reaches the waveform. -->
+    <Grid Name="AudioStage" RowDefinitions="*,Auto" RowSpacing="{x:Static d:JGSpacing.S}" VerticalAlignment="Center" ClipToBounds="True" IsVisible="False">
+      <Viewbox StretchDirection="DownOnly" VerticalAlignment="Bottom">
+      <Border Name="CoverFrame" CornerRadius="{StaticResource JG.radius.medium}" ClipToBounds="True"
+              Background="{DynamicResource JG.bg.raised}" HorizontalAlignment="Center"
+              Width="{x:Static d:JGMetrics.MiniCoverSide}" Height="{x:Static d:JGMetrics.MiniCoverSide}">
+        <Panel>
+          <d:JGIcon Name="CoverGlyph" Data="{x:Static d:JGIconData.AudioLines}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Width="{x:Static d:JGMetrics.TileGlyphSize}" Height="{x:Static d:JGMetrics.TileGlyphSize}"
+                    Foreground="{DynamicResource JG.text.tertiary}" IsVisible="False" />
+          <l:SafeImage Name="CoverImage" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="HighQuality" />
+        </Panel>
+      </Border>
+      </Viewbox>
+      <StackPanel Grid.Row="1" Spacing="{x:Static d:JGSpacing.Xxs}">
+        <TextBlock Name="TitleText" Classes="body" Foreground="{DynamicResource JG.text.primary}"
+                   TextAlignment="Center" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+        <TextBlock Name="SubtitleText" Classes="body" Foreground="{DynamicResource JG.text.secondary}"
+                   TextAlignment="Center" TextTrimming="CharacterEllipsis" />
+      </StackPanel>
+    </Grid>
+
+    <StackPanel Name="FailedMessage" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Spacing="{x:Static d:JGSpacing.S}" IsVisible="False" IsHitTestVisible="False">
+      <d:JGIcon Name="FailedGlyph" HorizontalAlignment="Center"
+                Width="{x:Static d:JGMetrics.TileGlyphSize}" Height="{x:Static d:JGMetrics.TileGlyphSize}"
+                Foreground="{DynamicResource JG.text.tertiary}" />
+      <TextBlock Name="FailedText" Classes="body" Foreground="{DynamicResource JG.text.secondary}" TextAlignment="Center" />
+    </StackPanel>
+
+    <d:JGScrubber Name="Scrubber" Grid.Row="1" Height="{x:Static d:JGMetrics.ControlHeightCompact}"
+                  AutomationProperties.Name="{l:T 'Position'}" />
+
+    <Grid Name="Controls" Grid.Row="2" ColumnDefinitions="Auto,*,Auto">
+      <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+        <Button Name="PlayButton" Classes="viewer">
+          <d:JGIcon Name="PlayGlyph" IsFilled="True" Data="{x:Static d:JGCustomIcons.PlayFilled}" />
+        </Button>
+        <TextBlock Name="TimeText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}"
+                   VerticalAlignment="Center" Margin="{x:Static d:JGInsets.PlayerTime}" />
+      </StackPanel>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+        <Button Name="SpeedButton" Classes="tertiary" ToolTip.Tip="{l:T 'Speed'}" AutomationProperties.Name="{l:T 'Speed'}">
+          <TextBlock Name="SpeedText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" />
+        </Button>
+        <Button Name="MuteButton" Classes="viewer" IsVisible="False">
+          <d:JGIcon Name="MuteGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Volume}" />
+        </Button>
+        <d:JGSlider Name="VolumeSlider" Width="{x:Static d:JGMetrics.VolumeSliderWidth}" Minimum="0" Maximum="100"
+                         SmallChange="10" VerticalAlignment="Center" IsVisible="False"
+                         AutomationProperties.Name="{l:T 'Volume'}" />
+        <Button Name="FullScreenButton" Classes="viewer" IsVisible="False">
+          <d:JGIcon Name="FullScreenGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.FullScreen}" />
+        </Button>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</UserControl>

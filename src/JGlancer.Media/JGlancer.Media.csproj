@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Thumbnails (macOS JGThumbs): service, cache.sqlite, codec. UI-free; generators live in the platform layer. -->
+  <PropertyGroup>
+    <RootNamespace>JGlancer.Media</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JGlancer.Core\JGlancer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="JGlancer.Media.Tests" />
+  </ItemGroup>
+</Project>

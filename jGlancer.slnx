@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/JGlancer.App/JGlancer.App.csproj" />
+    <Project Path="src/JGlancer.Core/JGlancer.Core.csproj" />
+    <Project Path="src/JGlancer.Design/JGlancer.Design.csproj" />
+    <Project Path="src/JGlancer.Media/JGlancer.Media.csproj" />
+    <Project Path="src/JGlancer.Mpv/JGlancer.Mpv.csproj" />
+    <Project Path="src/JGlancer.Platform/JGlancer.Platform.csproj" />
+    <Project Path="src/JGlancer.Setup/JGlancer.Setup.csproj" />
+    <Project Path="src/JGlancer.Stems/JGlancer.Stems.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/JGlancer.Core.Tests/JGlancer.Core.Tests.csproj" />
+    <Project Path="tests/JGlancer.Design.Tests/JGlancer.Design.Tests.csproj" />
+    <Project Path="tests/JGlancer.Media.Tests/JGlancer.Media.Tests.csproj" />
+    <Project Path="tests/JGlancer.Platform.Tests/JGlancer.Platform.Tests.csproj" />
+    <Project Path="tests/JGlancer.Stems.Tests/JGlancer.Stems.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/JGlancer.Tools/JGlancer.Tools.csproj" />
+  </Folder>
+</Solution>

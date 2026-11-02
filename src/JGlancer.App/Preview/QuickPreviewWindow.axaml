@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="using:JGlancer.Design"
+        xmlns:l="using:JGlancer.App.Support"
+        xmlns:p="using:JGlancer.App.Preview"
+        xmlns:lib="using:JGlancer.App.Library"
+        xmlns:chrome="using:Avalonia.Controls.Chrome"
+        x:Class="JGlancer.App.Preview.QuickPreviewWindow"
+        Title="{l:T 'Quick Preview'}"
+        Icon="avares://jGlancer/Assets/jGlancer.ico"
+        Width="{x:Static d:JGMetrics.QuickPreviewWidth}"
+        Height="{x:Static d:JGMetrics.QuickPreviewHeight}"
+        MinWidth="{x:Static d:JGMetrics.PreviewPaneMinWidth}"
+        MinHeight="{x:Static d:JGMetrics.PreviewPaneMinWidth}"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Background="{DynamicResource JG.bg.raised}"
+        Foreground="{DynamicResource JG.text.primary}"
+        FontFamily="{x:Static d:JGFonts.Text}"
+        FontSize="13">
+  <!-- Quick Preview (macOS QuickPreview, FEATURES §3): the file name, then the mini player at full size. No caption
+       buttons: the name row moves the window, the × closes it; the system frame resizes it. -->
+  <Window.Styles>
+    <Style Selector="Panel#Root">
+      <Setter Property="Background" Value="{DynamicResource JG.bg.raised}" />
+    </Style>
+    <Style Selector="Panel#Root.fullScreen">
+      <Setter Property="Background" Value="{DynamicResource JG.bg.media}" />
+    </Style>
+  </Window.Styles>
+  <Panel Name="Root">
+    <Panel Name="Backdrop" IsVisible="False" IsHitTestVisible="False" ClipToBounds="True">
+      <l:SafeImage Name="BackdropImage" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+      <Border Name="BackdropWash" Background="{DynamicResource JG.bg.raised}" Opacity="{x:Static d:JGMetrics.BackdropScrimOpacity}" />
+    </Panel>
+    <DockPanel>
+      <Grid Name="NameRow" DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.QuickPreviewName}">
+        <Border Grid.ColumnSpan="2" Background="Transparent" chrome:WindowDecorationProperties.ElementRole="TitleBar" />
+        <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}" HorizontalAlignment="Center" IsHitTestVisible="False">
+          <TextBlock Name="NameText" Classes="body" Foreground="{DynamicResource JG.text.primary}"
+                     VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                     Height="{x:Static d:JGMetrics.ControlHeightCompact}" LineHeight="{x:Static d:JGMetrics.ControlHeightCompact}" />
+          <lib:FlagStar Name="Star" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+          <Button Name="OpenButton" Classes="icon" chrome:WindowDecorationProperties.ElementRole="User"
+                  ToolTip.Tip="{l:T 'Open in Viewer'}" AutomationProperties.Name="{l:T 'Open in Viewer'}">
+            <d:JGIcon Data="{x:Static d:JGIconData.SquareArrowOutUpRight}" />
+          </Button>
+          <Button Name="InfoButton" Classes="icon" chrome:WindowDecorationProperties.ElementRole="User"
+                  ToolTip.Tip="{l:T 'Get Info'}" AutomationProperties.Name="{l:T 'Get Info'}">
+            <d:JGIcon Data="{x:Static d:JGIconData.Info}" />
+          </Button>
+          <Button Name="CloseButton" Classes="icon" chrome:WindowDecorationProperties.ElementRole="User"
+                  ToolTip.Tip="{l:T 'Close'}" AutomationProperties.Name="{l:T 'Close'}">
+            <d:JGIcon Data="{x:Static d:JGIconData.X}" />
+          </Button>
+        </StackPanel>
+      </Grid>
+      <p:MiniPlayer Name="Player" Margin="{x:Static d:JGInsets.Preview}" />
+    </DockPanel>
+  </Panel>
+</Window>

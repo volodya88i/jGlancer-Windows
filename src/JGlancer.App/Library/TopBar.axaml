@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             x:Class="JGlancer.App.Library.TopBar"
+             Height="{x:Static d:JGMetrics.BarHeight}">
+  <!-- Breadcrumb · kind filters · sort · thumbnail size (DESIGN.md §8). The controls stay hidden until the library
+       has a folder; in a narrow window the size slider steps aside first, then the sort menu. -->
+  <Border BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,0,0,1" Padding="{x:Static d:JGInsets.Bar}">
+    <Grid ColumnDefinitions="*,Auto">
+      <StackPanel Name="Breadcrumb" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}" VerticalAlignment="Center" ClipToBounds="True" />
+      <StackPanel Name="Controls" Grid.Column="1" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.M}" VerticalAlignment="Center">
+        <!-- Search (FEATURES §12a): a magnifier that opens into a field (click or Ctrl+F); Everywhere widens it to the
+             whole library; Esc clears it and gives the keyboard back to the grid. -->
+        <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}" VerticalAlignment="Center">
+          <Button Name="SearchButton" Classes="icon" ToolTip.Tip="{l:T 'Find'}" AutomationProperties.Name="{l:T 'Find'}">
+            <d:JGIcon Data="{x:Static d:JGIconData.Search}" Foreground="{DynamicResource JG.text.secondary}" />
+          </Button>
+          <Border Name="SearchField" IsVisible="False" Background="{DynamicResource JG.bg.raised}" CornerRadius="{StaticResource JG.radius.small}"
+                  Height="{x:Static d:JGMetrics.ControlHeightCompact}" Width="{x:Static d:JGMetrics.SearchFieldWidth}"
+                  Padding="{x:Static d:JGInsets.SearchField}">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{x:Static d:JGSpacing.Xxs}">
+              <d:JGIcon Data="{x:Static d:JGIconData.Search}" Width="{x:Static d:JGMetrics.IconSizeSmall}" Height="{x:Static d:JGMetrics.IconSizeSmall}"
+                        Foreground="{DynamicResource JG.text.tertiary}" VerticalAlignment="Center" />
+              <TextBox Name="SearchText" Grid.Column="1" Classes="search" PlaceholderText="{l:T 'Search'}" AutomationProperties.Name="{l:T 'Search'}" />
+              <Button Name="ClearSearchButton" Grid.Column="2" Classes="icon" Padding="0" MinHeight="0" IsVisible="False"
+                      ToolTip.Tip="{l:T 'Clear Search'}" AutomationProperties.Name="{l:T 'Clear Search'}">
+                <d:JGIcon Data="{x:Static d:JGIconData.X}" Width="{x:Static d:JGMetrics.IconSizeSmall}" Height="{x:Static d:JGMetrics.IconSizeSmall}"
+                          Foreground="{DynamicResource JG.text.tertiary}" />
+              </Button>
+            </Grid>
+          </Border>
+          <ToggleButton Name="EverywhereChip" Theme="{StaticResource JG.chip}" Content="{l:T 'Everywhere'}" IsVisible="False"
+                        ToolTip.Tip="{l:T 'Search the whole library'}" AutomationProperties.Name="{l:T 'Everywhere'}" />
+        </StackPanel>
+        <StackPanel Name="KindChips" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+          <ToggleButton Name="VideoChip" Theme="{StaticResource JG.chip}" Content="{l:T 'Video'}" AutomationProperties.Name="{l:T 'Video'}" />
+          <ToggleButton Name="PhotoChip" Theme="{StaticResource JG.chip}" Content="{l:T 'Photo'}" AutomationProperties.Name="{l:T 'Photo'}" />
+          <ToggleButton Name="AudioChip" Theme="{StaticResource JG.chip}" Content="{l:T 'Audio'}" AutomationProperties.Name="{l:T 'Audio'}" />
+        </StackPanel>
+        <!-- The same filters as icons (Settings → Appearance → Kind Filters, and in a narrow window). -->
+        <Border Name="KindIcons" VerticalAlignment="Center" IsVisible="False">
+          <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+            <ToggleButton Name="VideoIcon" Theme="{StaticResource JG.iconToggle}" ToolTip.Tip="{l:T 'Video'}" AutomationProperties.Name="{l:T 'Video'}">
+              <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.KindVideo}" />
+            </ToggleButton>
+            <ToggleButton Name="PhotoIcon" Theme="{StaticResource JG.iconToggle}" ToolTip.Tip="{l:T 'Photo'}" AutomationProperties.Name="{l:T 'Photo'}">
+              <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.KindPhoto}" />
+            </ToggleButton>
+            <ToggleButton Name="AudioIcon" Theme="{StaticResource JG.iconToggle}" ToolTip.Tip="{l:T 'Audio'}" AutomationProperties.Name="{l:T 'Audio'}">
+              <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.KindAudio}" />
+            </ToggleButton>
+          </StackPanel>
+        </Border>
+        <!-- The star: every file, only flagged ones, or one flag; outline when off, filled in the flag's color when on. -->
+        <Button Name="FlagFilterButton" Classes="icon" ToolTip.Tip="{l:T 'Show Flagged Files'}" AutomationProperties.Name="{l:T 'Show Flagged Files'}">
+          <ContentControl Name="FlagFilterGlyph" />
+        </Button>
+        <Button Name="SortButton" Classes="tertiary" AutomationProperties.Name="{l:T 'Sort By'}">
+          <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+            <TextBlock Name="SortName" Classes="button" Foreground="{DynamicResource JG.text.secondary}" VerticalAlignment="Center" />
+            <d:JGIcon Name="SortArrow" Foreground="{DynamicResource JG.text.secondary}" />
+          </StackPanel>
+        </Button>
+        <d:JGSlider Name="SizeSlider"
+                         Width="{x:Static d:JGLayout.SliderWidth}"
+                         Minimum="{x:Static d:JGMetrics.TileSideMin}"
+                         Maximum="{x:Static d:JGMetrics.TileSideMax}"
+                         SmallChange="{x:Static d:JGMetrics.TileSideStep}"
+                         AutomationProperties.Name="{l:T 'Thumbnail Size'}" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>
