@@ -10,7 +10,7 @@ public sealed record JGAccentPreset(string Name, uint Color);
 /// </summary>
 public static class JGAccent
 {
-    /// <summary>The blue of the app icon.</summary>
+    /// <summary>The default accent, close to the blue of the app icon's wave.</summary>
     public const uint DefaultColor = 0xFF1F3BFF;
 
     /// <summary>The side of a color swatch in Settings.</summary>

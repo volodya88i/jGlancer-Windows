@@ -1,73 +1,49 @@
-# Draws the app icon (jGlancer.svg, W-93) into the .ico files and the title bar's PNG. Below 64 px the wave is drawn
-# thicker, at its true width it would vanish; below 32 px there is none, it only blurs the pupil. Run after changing
-# the icon; the results are committed.
+# Draws the app icon (W-104) into the .ico files and the title bar's PNG: jGlancer.svg from 40 px up, below that
+# jGlancer-small.svg, whose wave is drawn thicker, because the fine lines of the full drawing melt together. The SVGs use
+# blurs and blend modes, so Edge renders them at full size and this script scales them down. Run after changing the icon;
+# the results are committed.
 Add-Type -AssemblyName System.Drawing
 
 $root = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 $sizes = 16, 20, 24, 32, 40, 48, 64, 128, 256
+$smallBelow = 40
 $pngFrom = 256
+$canvas = 1024
+$edge = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+
+function Render-Svg([string]$name) {
+    $work = Join-Path $env:TEMP ('jglancer-icon-' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory $work | Out-Null
+    $page = Join-Path $work 'page.html'
+    $source = ([Uri](Join-Path $PSScriptRoot $name)).AbsoluteUri
+    Set-Content -LiteralPath $page -Encoding utf8 "<!doctype html><html style='background:transparent'><body style='margin:0;background:transparent'><img src='$source' width=$canvas height=$canvas style='display:block'></body></html>"
+    $png = Join-Path $work 'out.png'
+    $process = Start-Process $edge -PassThru -ArgumentList '--headless=new', '--disable-gpu', '--allow-file-access-from-files',
+        '--hide-scrollbars', '--force-device-scale-factor=1', '--default-background-color=00000000', "--window-size=$canvas,$canvas",
+        '--virtual-time-budget=8000', "--user-data-dir=$work\profile", "--screenshot=$png", ([Uri]$page).AbsoluteUri
+    $process.WaitForExit()
+    $bytes = [System.IO.File]::ReadAllBytes($png)
+    Start-Sleep -Milliseconds 500
+    Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
+    $bmp = [System.Drawing.Bitmap]::FromStream((New-Object System.IO.MemoryStream (, $bytes)))
+    if ($bmp.Width -ne $canvas -or $bmp.Height -ne $canvas) { throw "Edge drew $name at $($bmp.Width)x$($bmp.Height)" }
+    return $bmp
+}
+
+$full = Render-Svg 'jGlancer.svg'
+$small = Render-Svg 'jGlancer-small.svg'
 
 function Draw-Icon([int]$size) {
+    $source = if ($size -lt $smallBelow) { $small } else { $full }
     $bmp = New-Object System.Drawing.Bitmap $size, $size, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
     $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-    $g.Clear([System.Drawing.Color]::Transparent)
-    $g.ScaleTransform($size / 100.0, $size / 100.0)
-
-    $blue = New-Object System.Drawing.SolidBrush ([System.Drawing.ColorTranslator]::FromHtml('#1f3bff'))
-    $white = [System.Drawing.Brushes]::White
-
-    $bg = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $bg.AddArc(0, 0, 44, 44, 180, 90)
-    $bg.AddArc(56, 0, 44, 44, 270, 90)
-    $bg.AddArc(56, 56, 44, 44, 0, 90)
-    $bg.AddArc(0, 56, 44, 44, 90, 90)
-    $bg.CloseFigure()
-    $g.FillPath($blue, $bg)
-
-    $eye = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $eye.AddBezier(6, 50, 26, 18, 74, 18, 94, 50)
-    $eye.AddBezier(94, 50, 74, 82, 26, 82, 6, 50)
-    $eye.CloseFigure()
-    $g.FillPath($white, $eye)
-    $g.FillEllipse($blue, 31, 31, 38, 38)
-    if ($size -lt 32) {
-        $g.Dispose()
-        return $bmp
-    }
-
-    $g.TranslateTransform(50, 50)
-    $g.RotateTransform(-15)
-    $g.TranslateTransform(-50, -50)
-
-    $wave = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $wave.AddLine(26, 50, 33, 50)
-    $wave.AddBezier(33, 50, 35, 50, 35.5, 45, 37.5, 45)
-    $wave.AddBezier(37.5, 45, 41, 45, 41.5, 60, 45, 60)
-    $wave.AddBezier(45, 60, 48.5, 60, 51.5, 40, 55, 40)
-    $wave.AddBezier(55, 40, 58.5, 40, 59, 55, 62.5, 55)
-    $wave.AddBezier(62.5, 55, 64.5, 55, 65, 50, 67, 50)
-    $wave.AddLine(67, 50, 74, 50)
-    $width = if ($size -lt 64) { 3.4 } else { 1.8 }
-    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::White), $width
-    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-    $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
-    $g.DrawPath($pen, $wave)
-
-    $left = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $left.AddBezier(30, 46, 31, 48, 32, 49.2, 33.5, 50)
-    $left.AddBezier(33.5, 50, 32, 50.8, 31, 52, 30, 54)
-    $left.CloseFigure()
-    $g.FillPath($white, $left)
-
-    $right = New-Object System.Drawing.Drawing2D.GraphicsPath
-    $right.AddBezier(70, 46, 69, 48, 68, 49.2, 66.5, 50)
-    $right.AddBezier(66.5, 50, 68, 50.8, 69, 52, 70, 54)
-    $right.CloseFigure()
-    $g.FillPath($white, $right)
-
+    $g.CompositingMode = [System.Drawing.Drawing2D.CompositingMode]::SourceCopy
+    $attributes = New-Object System.Drawing.Imaging.ImageAttributes
+    $attributes.SetWrapMode([System.Drawing.Drawing2D.WrapMode]::TileFlipXY)
+    $target = New-Object System.Drawing.Rectangle 0, 0, $size, $size
+    $g.DrawImage($source, $target, 0, 0, $canvas, $canvas, [System.Drawing.GraphicsUnit]::Pixel, $attributes)
     $g.Dispose()
     return $bmp
 }

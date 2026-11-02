@@ -3,6 +3,10 @@
 All notable changes to jGlancer for Windows. Versions are `major.minor.patch`: the minor number grows with new
 features or something removed, the patch number with fixes; the version changes with each published release.
 
+## 0.5.2 — 2026-11-02
+
+- Changed: a new app icon: a glowing sound wave on a dark tile in the colors of the app.
+
 ## 0.5.1 — 2026-11-02
 
 - Changed: in the audio player the top bar is more transparent and hides when the pointer rests, as in the other
