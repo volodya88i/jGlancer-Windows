@@ -6,8 +6,9 @@
              x:Class="JGlancer.App.Viewer.ViewerTopBar">
   <!-- The viewers' top bar on the scrim (macOS ViewerTopBar): back to the library, the file name, its position in the
        folder in mono, then the viewer's own controls and Get Info. -->
-  <Border Background="{DynamicResource JG.overlay.scrim}" BorderBrush="{DynamicResource JG.line.hair}"
-          BorderThickness="0,0,0,1" Height="{x:Static d:JGMetrics.BarHeight}" Padding="{x:Static d:JGInsets.Bar}">
+  <Panel Height="{x:Static d:JGMetrics.BarHeight}">
+  <Border Name="Scrim" Background="{DynamicResource JG.overlay.scrim}" BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,0,0,1" />
+  <Border Padding="{x:Static d:JGInsets.Bar}">
     <Grid Name="BarGrid" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" VerticalAlignment="Center">
       <Button Name="BackButton" Classes="tertiary" AutomationProperties.Name="{l:T 'Library'}">
         <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
@@ -37,4 +38,5 @@
       </Button>
     </Grid>
   </Border>
+  </Panel>
 </UserControl>

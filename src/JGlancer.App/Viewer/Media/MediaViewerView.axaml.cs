@@ -216,6 +216,7 @@ internal sealed partial class MediaViewerView : UserControl
                 }
                 var audio = model.Kind == MediaKind.Audio;
                 AudioStage.IsVisible = audio;
+                TopBar.IsLight = audio;
                 if (audio)
                 {
                     // The audio player: a large waveform and the controls on the stage, no panel behind them.
@@ -240,6 +241,7 @@ internal sealed partial class MediaViewerView : UserControl
         if (Settings.Motion.Enabled)
         {
             Chrome.Transitions = [Fade()];
+            TopBar.Transitions = [Fade()];
             FilmstripPanel.Transitions = [Fade()];
         }
         _filmstrip.Attach();
@@ -1021,7 +1023,10 @@ internal sealed partial class MediaViewerView : UserControl
 
     // MARK: Chrome
 
-    /// <summary>Shows the chrome; while a video plays it hides again after a short idle.</summary>
+    /// <summary>
+    /// Shows the chrome; while a video plays it hides again after a short idle. In the audio player only the top bar
+    /// goes, after the same idle, playing or not; the waveform and the controls stay.
+    /// </summary>
     private void ShowChrome()
     {
         if (!_isChromeVisible)
@@ -1030,8 +1035,10 @@ internal sealed partial class MediaViewerView : UserControl
             Chrome.Opacity = 1;
             Chrome.IsHitTestVisible = true;
         }
+        TopBar.Opacity = 1;
+        TopBar.IsHitTestVisible = true;
         _chromeTimer.Stop();
-        if (_model is { Kind: MediaKind.Video } model && model.Playback.IsPlaying)
+        if (_model is { Kind: MediaKind.Audio } || (_model is { Kind: MediaKind.Video } model && model.Playback.IsPlaying))
         {
             _chromeTimer.Start();
         }
@@ -1040,6 +1047,15 @@ internal sealed partial class MediaViewerView : UserControl
     private void HideChrome()
     {
         _chromeTimer.Stop();
+        if (_model is { Kind: MediaKind.Audio })
+        {
+            if (!TopBar.IsPointerOver)
+            {
+                TopBar.Opacity = 0;
+                TopBar.IsHitTestVisible = false;
+            }
+            return;
+        }
         // HDR: the chrome sits beside the picture, not over it, and stays.
         if (IsHdr || _isPointerOnControls || _filmstrip.KeepsChrome ||_model is not { Kind: MediaKind.Video } model || !model.Playback.IsPlaying)
         {

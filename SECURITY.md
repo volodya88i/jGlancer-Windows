@@ -1,7 +1,7 @@
 # Security
 
 Please report a security problem privately, through
-[GitHub's private reporting](https://github.com/volodya88i/jGlancerWindows/security/advisories/new), not in a public
+[GitHub's private reporting](https://github.com/volodya88i/jGlancer-Windows/security/advisories/new), not in a public
 issue. Include the version and the steps to reproduce it.
 
 ## How updates are protected

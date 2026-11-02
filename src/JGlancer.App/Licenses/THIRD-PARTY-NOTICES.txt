@@ -1,7 +1,7 @@
 jGlancer for Windows — third-party notices
 
 jGlancer itself is free software under the GNU General Public License 3.0 (GPL-3.0.txt), with an additional
-permission for Microsoft DirectML: https://github.com/volodya88i/jGlancerWindows/blob/main/NOTICE.md
+permission for Microsoft DirectML: https://github.com/volodya88i/jGlancer-Windows/blob/main/NOTICE.md
 
 jGlancer includes the software and fonts listed below. Each is the property of its authors and is used under the
 licence named with it. The full texts of the licences that require it are in this folder.

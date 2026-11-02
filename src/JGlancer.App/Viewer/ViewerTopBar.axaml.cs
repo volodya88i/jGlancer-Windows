@@ -40,6 +40,12 @@ internal sealed partial class ViewerTopBar : UserControl
     /// <summary>"‹ Library".</summary>
     public event EventHandler? BackRequested;
 
+    /// <summary>The filmstrip's lighter scrim, for the audio player's stage; no blur.</summary>
+    public bool IsLight
+    {
+        set => Scrim.Opacity = value ? JGMetrics.FilmstripScrimOpacity : 1;
+    }
+
     /// <summary>During <see cref="BackRequested"/>: Alt was held as the button was clicked.</summary>
     public bool IsAltBack { get; private set; }
 

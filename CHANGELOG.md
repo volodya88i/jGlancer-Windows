@@ -3,6 +3,11 @@
 All notable changes to jGlancer for Windows. Versions are `major.minor.patch`: the minor number grows with new
 features or something removed, the patch number with fixes; the version changes with each published release.
 
+## 0.5.1 — 2026-11-02
+
+- Changed: in the audio player the top bar is more transparent and hides when the pointer rests, as in the other
+  viewers; moving the pointer brings it back.
+
 ## 0.5.0 — 2026-11-02
 
 The first public version, free software under the GNU GPL 3.0.

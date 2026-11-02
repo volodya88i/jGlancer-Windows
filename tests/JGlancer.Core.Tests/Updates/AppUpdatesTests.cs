@@ -52,7 +52,7 @@ public sealed class AppUpdatesTests
     public void DownloadsComeFromTheFixedRepository()
     {
         var url = AppUpdates.InstallerUrl("0.5.0").ToString();
-        Assert.Equal("https://github.com/volodya88i/jGlancerWindows/releases/download/v0.5.0/jGlancer-Setup-0.5.0.exe", url);
+        Assert.Equal("https://github.com/volodya88i/jGlancer-Windows/releases/download/v0.5.0/jGlancer-Setup-0.5.0.exe", url);
         Assert.Equal(url + ".sig", AppUpdates.SignatureUrl("0.5.0").ToString());
     }
 

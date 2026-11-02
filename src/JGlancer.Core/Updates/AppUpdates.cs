@@ -19,9 +19,9 @@ public static partial class AppUpdates
 {
     public const string ProfileUrl = "https://github.com/volodya88i";
 
-    public const string RepositoryUrl = ProfileUrl + "/jGlancerWindows";
+    public const string RepositoryUrl = ProfileUrl + "/jGlancer-Windows";
 
-    public const string LatestReleaseUrl = "https://api.github.com/repos/volodya88i/jGlancerWindows/releases/latest";
+    public const string LatestReleaseUrl = "https://api.github.com/repos/volodya88i/jGlancer-Windows/releases/latest";
 
     /// <summary>The public half of the release signing key (SubjectPublicKeyInfo, Base64).</summary>
     public const string PublicKey = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEL64rMagrInxEs1HrIrhJWAGJ8gQ/7zAKYyxEnvN5bpwob+vOwh7aJMrpLJfbW/itDiawa8NdJGW7v2BgnNAUVw==";

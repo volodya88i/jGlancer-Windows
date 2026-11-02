@@ -1,4 +1,4 @@
-# jGlancer for Windows
+# jGlancer (Windows)
 
 A fast, light media browser, viewer and player for photos, video and music. Native Windows app (C# / .NET 10,
 Avalonia, libmpv, SQLite, NativeAOT).
@@ -15,7 +15,7 @@ Avalonia, libmpv, SQLite, NativeAOT).
 
 ## Install
 
-Download `jGlancer-Setup-<version>.exe` from [Releases](https://github.com/volodya88i/jGlancerWindows/releases) and
+Download `jGlancer-Setup-<version>.exe` from [Releases](https://github.com/volodya88i/jGlancer-Windows/releases) and
 run it. Windows 10 or 11, x64. The installer is not code-signed with a paid certificate, so SmartScreen may warn about
 it: choose "More info", then "Run anyway".
 
