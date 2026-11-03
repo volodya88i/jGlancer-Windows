@@ -40,8 +40,8 @@ public static class JGSolidIcons
     /// <summary>Fade the ends: a trapezoid.</summary>
     public const string Fades = "F1 M1.5 19.5 L7.5 6 L16.5 6 L22.5 19.5Z";
 
-    /// <summary>Export the segment: a page with an arrow cut out.</summary>
-    public const string Export = "F1 M7.5 1.5 L16.5 1.5 A3 3 0 0 1 19.5 4.5 L19.5 19.5 A3 3 0 0 1 16.5 22.5 L7.5 22.5 A3 3 0 0 1 4.5 19.5 L4.5 4.5 A3 3 0 0 1 7.5 1.5Z M10.5 12 L7.5 12 L12 18 L16.5 12 L13.5 12 L13.5 6 L10.5 6Z";
+    /// <summary>Export the file or segment: an arrow rising out of a tray.</summary>
+    public const string Export = "F1 M12 1.5 L18 7.5 L13.5 7.5 L13.5 15 L10.5 15 L10.5 7.5 L6 7.5Z M3 12 L6 12 L6 18 L18 18 L18 12 L21 12 L21 18 A3 3 0 0 1 18 21 L6 21 A3 3 0 0 1 3 18Z";
 
     /// <summary>Save the frame: a camera.</summary>
     public const string Frame = "F1 M4.5 6 L19.5 6 A3 3 0 0 1 22.5 9 L22.5 18 A3 3 0 0 1 19.5 21 L4.5 21 A3 3 0 0 1 1.5 18 L1.5 9 A3 3 0 0 1 4.5 6Z M7.5 6 L9 3 L15 3 L16.5 6Z M8.25 13.5 A3.75 3.75 0 1 0 15.75 13.5 A3.75 3.75 0 1 0 8.25 13.5Z";

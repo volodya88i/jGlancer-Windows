@@ -30,6 +30,9 @@ public sealed record PlaybackPreferences
     /// <summary>WAV, AIFF and FLAC segments keep their format (D-74; Settings in W9).</summary>
     public bool SegmentKeepsAudioFormat { get; set; } = true;
 
+    /// <summary>Video segments are encoded again to cut exactly on the brackets (W-106); off: copied from a keyframe.</summary>
+    public bool SegmentExactVideo { get; set; } = true;
+
     public double Rate(MediaKind kind) => kind == MediaKind.Video ? VideoRate : AudioRate;
 
     public void SetRate(double rate, MediaKind kind)

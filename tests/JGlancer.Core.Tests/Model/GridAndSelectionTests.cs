@@ -161,4 +161,19 @@ public sealed class DurationAndViewStateTests
         Assert.Equal((3L, 200.0, true), (older.FolderId!.Value, older.TileSide, older.PreviewVisible));
         Assert.Empty(older.PinnedFolders);
     }
+
+    [Fact]
+    public void NearestIndexCoversTheGuttersAndCaptions()
+    {
+        // 3 columns of 100 with a 10 gutter, inset 10, caption 20: tiles start at x 10, 120, 230 and y 10, 140.
+        var geometry = new GridGeometry(5, 340, 100, 10, 10, 20);
+        Assert.Equal(3, geometry.Columns);
+        Assert.Equal(0, geometry.NearestIndex(50, 50));
+        Assert.Equal(1, geometry.NearestIndex(116, 50));
+        Assert.Equal(0, geometry.NearestIndex(113, 50));
+        Assert.Equal(3, geometry.NearestIndex(50, 136));
+        Assert.Equal(1, geometry.NearestIndex(150, 125));
+        Assert.Null(geometry.NearestIndex(300, 200));
+        Assert.Null(geometry.NearestIndex(50, 400));
+    }
 }

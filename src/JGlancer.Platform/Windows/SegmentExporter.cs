@@ -7,8 +7,9 @@ using JGlancer.Mpv;
 namespace JGlancer.Platform.Windows;
 
 /// <summary>
-/// Saves segments (macOS SegmentExporter, D-73, D-74; W-40). Video: the streams copied from the keyframe at or before
-/// the start into MP4 (Media Foundation, nothing re-encoded). Audio: decoded by mpv with an exact trim, the speed
+/// Saves segments (macOS SegmentExporter, D-73, D-74; W-40, W-106). Video: encoded again on the exact range by Windows'
+/// own H.264 encoder through mpv, or the streams copied from the keyframe at or before the start into MP4 (Media
+/// Foundation, nothing re-encoded). Audio: decoded by mpv with an exact trim, the speed
 /// with or without Keep Pitch, and 30 ms fades; cut to the exact length (mpv's encoder pads its last chunk with
 /// silence); then WAV and AIFF are written here, FLAC and M4A (AAC 256 kbit/s, ALAC for lossless sources) encoded by
 /// Media Foundation. WAV, AIFF and FLAC keep their format and depth.
@@ -22,12 +23,26 @@ public static class SegmentExporter
     public static async Task ExportAsync(SegmentExportRequest request, string target, CancellationToken cancellation)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (!Segments.CanExport(request.Source, request.Kind) || request.Range.Length <= 0)
+        if (!Segments.CanExport(request.Source, request.Kind, request.ExactVideo) || request.Range.Length <= 0)
         {
             throw new NotSupportedException("this file cannot be cut");
         }
         if (request.Kind == MediaKind.Video)
         {
+            if (request.ExactVideo)
+            {
+                if (await MpvEncoder.EncodeAsync(request.Source, target, ExactVideoOptions(request.Range), cancellation).ConfigureAwait(false))
+                {
+                    return;
+                }
+                cancellation.ThrowIfCancellationRequested();
+                // Windows without its media features has no encoder: a copy is still a good segment.
+                if (!Segments.CanCopyVideo(request.Source))
+                {
+                    throw new IOException("the video could not be encoded");
+                }
+                File.Delete(target);
+            }
             await Task.Run(() => MediaFoundation.CopyVideoSegment(request.Source, target, request.Range.Start, request.Range.End), cancellation)
                 .ConfigureAwait(false);
             return;
@@ -101,6 +116,20 @@ public static class SegmentExporter
             }
         }
     }
+
+    /// <summary>Quality 85 keeps the picture indistinguishable from the source; the software encoder is on every Windows with media features.</summary>
+    private static List<(string, string)> ExactVideoOptions(SegmentRange range) =>
+    [
+        ("start", Seconds(range.Start)),
+        ("end", Seconds(range.End)),
+        ("sid", "no"),
+        ("of", "mp4"),
+        ("ofopts", "movflags=+faststart"),
+        ("ovc", "h264_mf"),
+        ("ovcopts", "rate_control=quality,quality=85,hw_encoding=0"),
+        ("oac", "aac"),
+        ("oacopts", "b=256k"),
+    ];
 
     private static async Task ExportAudioAsync(SegmentExportRequest request, string target, CancellationToken cancellation)
     {
@@ -181,7 +210,8 @@ public static class SegmentExporter
             var fade = Seconds(Segments.FadeSeconds);
             filters += $",afade=t=in:st={start}:d={fade},afade=t=out:st={Seconds(request.Range.End - Segments.FadeSeconds)}:d={fade}";
         }
-        return $"lavfi=[{filters}]";
+        var stretch = PlaybackSpeed.StretchFilter(request.Rate, request.PreservesPitch);
+        return stretch.Length == 0 ? $"lavfi=[{filters}]" : $"lavfi=[{filters}],{stretch}";
     }
 
     /// <summary>Bits per sample of the source: from a PCM codec's name, else 24 for formats decoded to 32-bit, else 16.</summary>

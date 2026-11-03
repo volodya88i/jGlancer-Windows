@@ -58,6 +58,7 @@ internal sealed partial class MediaViewerView : UserControl
         PlayButton.Click += (_, _) => Perform(MediaCommand.TogglePlay);
         NextButton.Click += (_, _) => Perform(MediaCommand.Next);
         SpeedButton.Click += (_, _) => ShowSpeedMenu();
+        MusicButton.Click += (_, _) => ShowMusicPanel();
         MuteButton.Click += (_, _) => _model?.Playback.ToggleMute();
         LoopButton.Click += (_, _) => _model?.Playback.ToggleLoop();
         PlayNextButton.Click += (_, _) => _model?.Playback.TogglePlaysNext();
@@ -108,6 +109,13 @@ internal sealed partial class MediaViewerView : UserControl
         AddHandler(PointerWheelChangedEvent, OnVideoWheel, Avalonia.Interactivity.RoutingStrategies.Bubble);
         PointerReleased += (_, e) =>
         {
+            var clicked = _clickStart is { } start && Vector.Distance(start, e.GetPosition(this)) < JGMetrics.DragThreshold;
+            _clickStart = null;
+            if (clicked && _model is { } clickedModel)
+            {
+                // A click on the picture, not a drag (swipe, pan): play or pause.
+                clickedModel.Perform(MediaCommand.TogglePlay);
+            }
             if (EndPan(e))
             {
                 return;
@@ -181,6 +189,7 @@ internal sealed partial class MediaViewerView : UserControl
                 _model.Playback.Changed -= OnPlaybackChanged;
                 _model.Playback.TimeChanged -= OnTimeChanged;
                 _model.SegmentChanged -= OnSegmentChanged;
+                _model.AnalysisChanged -= OnAnalysisChanged;
             }
             // mpv lets go of the HDR window before its player or surface changes.
             LeaveHdr();
@@ -195,6 +204,9 @@ internal sealed partial class MediaViewerView : UserControl
                 model.Playback.Changed += OnPlaybackChanged;
                 model.Playback.TimeChanged += OnTimeChanged;
                 model.SegmentChanged += OnSegmentChanged;
+                model.AnalysisChanged += OnAnalysisChanged;
+                _musicPanel = new MusicPanel(model);
+                MusicButton.IsVisible = model.Kind == MediaKind.Audio;
                 if (model.Kind == MediaKind.Video)
                 {
                     _video = new MpvVideoView(model.Playback.Player);
@@ -248,6 +260,7 @@ internal sealed partial class MediaViewerView : UserControl
         ShowChrome();
         Dispatcher.UIThread.Post(() => Focus(), DispatcherPriority.Input);
         Settings.SettingsStore.Current.Changed += OnSettingsChanged;
+        SongTags.Read += OnSongTagsRead;
         UpdatePagerAnimation();
         Scrubber.WheelZoomsAlone = Settings.SettingsStore.Current.Settings.TimelineWheelZoom;
     }
@@ -257,9 +270,13 @@ internal sealed partial class MediaViewerView : UserControl
     {
         UpdatePagerAnimation();
         Backdrop.IsVisible = (BackdropImage.Source ?? BackdropBelow.Source) is not null && change.New.CoverBackdrop;
-        if (change.Old.Waveform != change.New.Waveform)
+        if (change.Old.Waveform != change.New.Waveform || change.Old.VideoWaveform != change.New.VideoWaveform)
         {
             ApplyWaveformStyle();
+            if (IsVideo && _peaks is null && _model?.Current is { } shown && WantsWaveform)
+            {
+                _ = LoadVideoWaveformAsync(shown);
+            }
         }
         Scrubber.WheelZoomsAlone = change.New.TimelineWheelZoom;
     }
@@ -267,6 +284,7 @@ internal sealed partial class MediaViewerView : UserControl
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         Settings.SettingsStore.Current.Changed -= OnSettingsChanged;
+        SongTags.Read -= OnSongTagsRead;
         LeaveHdr();
         DropRendered();
         _chromeTimer.Stop();
@@ -299,6 +317,17 @@ internal sealed partial class MediaViewerView : UserControl
             _artworkFor = item.Path;
             _ = LoadArtworkAsync(model, item);
         }
+        else if (model.Kind == MediaKind.Video && model.Current is { } clip && clip.Path != _artworkFor)
+        {
+            _artworkFor = clip.Path;
+            _peaks = null;
+            _samples = null;
+            ApplyWaveformStyle();
+            if (WantsWaveform)
+            {
+                _ = LoadVideoWaveformAsync(clip);
+            }
+        }
         ShowChrome();
         UpdateControls();
     }
@@ -313,7 +342,12 @@ internal sealed partial class MediaViewerView : UserControl
             ApplyHdr();
         }
         UpdateTracks();
-        ShowChrome();
+        // A playing video whose chrome hid stays clean: a loop starting again is no reason to show it. Paused, the
+        // audio player, or chrome already showing (its idle timer starts again): shown.
+        if (_isChromeVisible || !IsVideo || _model?.Playback.IsPlaying != true)
+        {
+            ShowChrome();
+        }
     }
 
     private void OnTimeChanged(object? sender, double seconds)
@@ -367,6 +401,8 @@ internal sealed partial class MediaViewerView : UserControl
         Avalonia.Automation.AutomationProperties.SetName(PlayButton, playLabel);
         NextButton.IsEnabled = playback.Queue.HasNext;
         SpeedText.Text = SpeedMenu.Label(playback.Rate);
+        OnAnalysisChanged(this, EventArgs.Empty);
+        UpdateExportButton(model);
         var muted = playback.IsMuted || playback.Volume <= 0;
         MuteGlyph.Data = muted ? JGSolidIcons.VolumeOff : JGSolidIcons.Volume;
         var muteLabel = $"{L.T(playback.IsMuted ? "Unmute" : "Mute")} (M)";
@@ -383,6 +419,23 @@ internal sealed partial class MediaViewerView : UserControl
         ToolTip.SetTip(FullScreenButton, fullScreenLabel);
         Avalonia.Automation.AutomationProperties.SetName(FullScreenButton, fullScreenLabel);
     }
+
+    private MusicPanel? _musicPanel;
+
+    private void OnAnalysisChanged(object? sender, EventArgs e)
+    {
+        if (_model is { Kind: MediaKind.Audio } model)
+        {
+            MusicText.Text = MusicPanel.ButtonLabel(model);
+            _musicPanel?.Update();
+        }
+    }
+
+    /// <summary>Opens the key and tempo panel.</summary>
+    public void ShowMusicPanel() => _musicPanel?.Show(MusicButton);
+
+    /// <summary><c>--music-panel</c>: the panel's rows over the player instead of in a popup, which a snapshot would miss.</summary>
+    internal void ShowMusicPanelInWindow() => _musicPanel?.ShowIn(AudioStage);
 
     private void ShowSpeedMenu()
     {
@@ -422,6 +475,23 @@ internal sealed partial class MediaViewerView : UserControl
             return;
         }
         SetCover(cover, known: true);
+        await LoadWaveformAsync(item, cancel);
+    }
+
+    /// <summary>The waveform of a video's sound, for Settings → Appearance → Decor → Video timeline: Waveform.</summary>
+    private async Task LoadVideoWaveformAsync(PlaybackItem item)
+    {
+        _artwork?.Cancel();
+        var cancel = new CancellationTokenSource();
+        _artwork = cancel;
+        await LoadWaveformAsync(item, cancel);
+    }
+
+    private bool WantsWaveform => (_model?.Kind == MediaKind.Video ? Settings.SettingsStore.Current.Settings.VideoWaveform
+        : Settings.SettingsStore.Current.Settings.Waveform) != Core.Settings.WaveformStyle.Timeline;
+
+    private async Task LoadWaveformAsync(PlaybackItem item, CancellationTokenSource cancel)
+    {
         _samples = null;
         var samples = await JGlancer.Mpv.MpvAudioDecoder.SamplesAsync(item.Path, cancel.Token);
         if (!cancel.IsCancellationRequested && samples is not null)
@@ -439,11 +509,11 @@ internal sealed partial class MediaViewerView : UserControl
     /// <summary>Settings → Appearance → Decor: the waveform, half as high, or the plain timeline of video (W-71).</summary>
     private void ApplyWaveformStyle()
     {
-        if (_model?.Kind != MediaKind.Audio)
+        if (_model is not { } model)
         {
             return;
         }
-        var style = Settings.SettingsStore.Current.Settings.Waveform;
+        var style = model.Kind == MediaKind.Video ? Settings.SettingsStore.Current.Settings.VideoWaveform : Settings.SettingsStore.Current.Settings.Waveform;
         Scrubber.Height = style == Core.Settings.WaveformStyle.Timeline ? JGMetrics.ControlHeightCompact : JGMetrics.WaveformHeight / 2;
         Scrubber.Waveform = style == Core.Settings.WaveformStyle.Timeline ? null : _peaks ?? JGScrubber.Flat;
         if (style == Core.Settings.WaveformStyle.Timeline)
@@ -584,31 +654,25 @@ internal sealed partial class MediaViewerView : UserControl
     private static (string Title, string Subtitle) StageText(string? title, string? artist, string? album, string? name) =>
         (title ?? Path.GetFileNameWithoutExtension(name ?? ""), string.Join(" · ", new[] { artist, album }.OfType<string>()));
 
-    private readonly Dictionary<string, Platform.Windows.AudioTags.Tags?> _tags = [];
+    /// <summary>The tags Windows knows for a song (<see cref="SongTags"/>); null until read, then the stage refreshes.</summary>
+    private static Platform.Windows.AudioTags.Tags? Tags(PlaybackItem item) => SongTags.Of(item.Path);
 
-    /// <summary>
-    /// The tags Windows knows for a song, read once off the UI thread; null until then (the stage refreshes when they
-    /// arrive). Songs come in a queue of a folder, so the cache stays small.
-    /// </summary>
-    private Platform.Windows.AudioTags.Tags? Tags(PlaybackItem item)
+    private void OnSongTagsRead(string path)
     {
-        if (_tags.TryGetValue(item.Path, out var tags))
+        if (_model is not { Kind: MediaKind.Audio } model)
         {
-            return tags;
+            return;
         }
-        _tags[item.Path] = null;
-        _ = Task.Run(() => Platform.Windows.AudioTags.Read(item.Path)).ContinueWith(read =>
+        if (model.Current?.Path == path)
         {
-            _tags[item.Path] = read.Result;
             UpdateControls();
-            if (NeighborStage.IsVisible)
-            {
-                // The neighbor shown while swiping: its text again, now with the tags.
-                _neighborIndex = -1;
-                ShowSwipe();
-            }
-        }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext());
-        return null;
+        }
+        if (NeighborStage.IsVisible)
+        {
+            // The neighbor shown while swiping: its text again, now with the tags.
+            _neighborIndex = -1;
+            ShowSwipe();
+        }
     }
 
     private async Task LoadNeighborCoverAsync(MediaViewerModel model, PlaybackItem item)
@@ -692,8 +756,13 @@ internal sealed partial class MediaViewerView : UserControl
     }
 
     /// <summary>A drag across the stage turns to the next or previous song once it is long enough (macOS instant swipe).</summary>
+    /// <summary>Where a press on a video's picture began: released close by, it was a click (play or pause).</summary>
+    private Point? _clickStart;
+
     private void OnStagePressed(object? sender, PointerPressedEventArgs e)
     {
+        _clickStart = IsVideo && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && e.ClickCount == 1
+            && e.Source is Visual pressed && IsOverPicture(pressed) ? e.GetPosition(this) : null;
         if (_model is not null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && !e.Handled && e.ClickCount == 1
             && e.Source is Visual source && IsOverPicture(source) && !BeginPan(e))
         {
@@ -739,7 +808,8 @@ internal sealed partial class MediaViewerView : UserControl
             _ = Rendered();
         });
         _renderDelay.Stop();
-        if (_model?.ExportRequest is not null)
+        // Only a segment: the whole file is rendered when it is asked for.
+        if (_model is { Segment: not null, ExportRequest: not null })
         {
             _renderDelay.Start();
         }
@@ -759,8 +829,15 @@ internal sealed partial class MediaViewerView : UserControl
         SegmentLabel.Text = segment is { } shown ? Segments.Label(shown) : "";
         FadesButton.IsVisible = segment is not null && model.Kind == MediaKind.Audio;
         FadesButton.Classes.Set("on", model.Playback.Preferences.SegmentFades);
-        ExportButton.IsVisible = segment is not null;
-        ExportButton.IsEnabled = model.CanExportSegment;
+        UpdateExportButton(model);
+    }
+
+    private void UpdateExportButton(MediaViewerModel model)
+    {
+        ExportButton.IsEnabled = model.ExportRequest is not null;
+        var label = L.T(model.Segment is null ? "Drag to export the whole file, click to save it" : "Drag to export the segment, click to save it");
+        ToolTip.SetTip(ExportButton, label);
+        Avalonia.Automation.AutomationProperties.SetName(ExportButton, label);
     }
 
     /// <summary>The segment rendered to our temporary folder (started now if it is not already), or null.</summary>
@@ -834,7 +911,15 @@ internal sealed partial class MediaViewerView : UserControl
             return;
         }
         _exportPress = null;
-        var file = await Rendered().WaitAsync(TimeSpan.FromMinutes(1)).ConfigureAwait(true);
+        string? file;
+        try
+        {
+            file = await Rendered().WaitAsync(TimeSpan.FromMinutes(1)).ConfigureAwait(true);
+        }
+        catch (TimeoutException)
+        {
+            return;
+        }
         if (file is null || TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage
             || await storage.TryGetFileFromPathAsync(new Uri(file)) is not { } item)
         {
@@ -897,8 +982,8 @@ internal sealed partial class MediaViewerView : UserControl
     /// <summary>Zoomed into audio: finer peaks of the shown part and as much again on each side (D-73), from the kept samples.</summary>
     private void ShowDetail(JGTimeRange shown)
     {
-        if (_samples is not { } samples || _model is not { Kind: MediaKind.Audio } model || model.Playback.Duration is not { } duration
-            || Settings.SettingsStore.Current.Settings.Waveform == Core.Settings.WaveformStyle.Timeline
+        if (_samples is not { } samples || _model is not { } model || model.Playback.Duration is not { } duration
+            || !WantsWaveform
             || shown.Length >= duration * 0.5)
         {
             Scrubber.Detail = null;
@@ -999,9 +1084,11 @@ internal sealed partial class MediaViewerView : UserControl
     {
         ShowChrome();
         // A double-click on the picture toggles full screen (not on the controls).
-        if (e.ClickCount == 2 && _model?.Kind == MediaKind.Video && e.Source is Visual source
+        if (e.ClickCount == 2 && _model is { Kind: MediaKind.Video } doubleClicked && e.Source is Visual source
             && !ControlsPanel.IsVisualAncestorOf(source) && !TopBar.IsVisualAncestorOf(source) && !FilmstripArea.IsVisualAncestorOf(source))
         {
+            // Its first click paused or played the video: the second puts that back, as players do.
+            doubleClicked.Perform(MediaCommand.TogglePlay);
             FullScreenRequested?.Invoke(this, EventArgs.Empty);
             e.Handled = true;
         }

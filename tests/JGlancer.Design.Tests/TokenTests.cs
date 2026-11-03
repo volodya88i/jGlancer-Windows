@@ -55,7 +55,7 @@ public sealed class TokenTests
     public void TokensKeepTheirMacOSValues()
     {
         Assert.Equal(0xFF121113u, JGColor.BgBase.Dark);
-        Assert.Equal(JGAccent.DefaultColor, JGColor.Accent.Light); // The icon's blue, not macOS' violet (W-93) …
+        Assert.Equal(JGAccent.DefaultColor, JGColor.Accent.Light); // Lavender (W-110).
         Assert.Equal(JGAccent.DefaultColor, JGColor.Accent.Dark); // … exact in every theme (W-98).
         Assert.Equal(JGAccent.DefaultColor, JGColor.Accent.BlackValue(false));
         Assert.Equal(0xB8121113u, JGColor.OverlayScrim.Dark); // 72 % alpha

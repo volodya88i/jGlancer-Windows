@@ -24,7 +24,7 @@ internal sealed class StemProgressView : Border
     {
         HorizontalAlignment = HorizontalAlignment.Center;
         VerticalAlignment = VerticalAlignment.Bottom;
-        Margin = new Thickness(JGSpacing.M, 0, JGSpacing.M, JGSpacing.L + JGMetrics.StatusBarHeight);
+        Margin = new Thickness(JGSpacing.M, 0, JGSpacing.M, JGSpacing.L + JGMetrics.FooterHeight);
         MinWidth = JGMetrics.DialogWidth;
         MaxWidth = JGMetrics.ReadableTextWidth;
         CornerRadius = new CornerRadius(JGMetrics.RadiusLarge);
@@ -46,6 +46,7 @@ internal sealed class StemProgressView : Border
         Avalonia.Controls.Grid.SetColumn(stop, 1);
         grid.Children.Add(stop);
         Child = new StackPanel { Spacing = JGSpacing.Xs, Margin = new Thickness(JGSpacing.M, JGSpacing.S), Children = { grid, _bar } };
+        Support.WindowGlass.Frost(this, JGColor.BgRaised);
         IsVisible = false;
         AutomationProperties.SetLiveSetting(this, AutomationLiveSetting.Polite);
     }

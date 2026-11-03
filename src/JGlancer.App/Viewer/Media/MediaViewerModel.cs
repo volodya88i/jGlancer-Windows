@@ -1,6 +1,7 @@
 using JGlancer.App.Library;
 using JGlancer.App.Services;
 using JGlancer.App.Support;
+using JGlancer.Core.Audio;
 using JGlancer.Core.Model;
 using JGlancer.Core.Playback;
 using JGlancer.Media.Thumbnails;
@@ -60,6 +61,7 @@ internal sealed class MediaViewerModel : IFilmstripSource, IDisposable
                 _shownItem = Playback.Queue.Current;
                 // Another file: the segment belonged to the last one.
                 EndSegmentMode();
+                ShowKnownAnalysis();
                 Changed?.Invoke(this, EventArgs.Empty);
             }
         };
@@ -134,11 +136,70 @@ internal sealed class MediaViewerModel : IFilmstripSource, IDisposable
 
     public bool IsSelectingSegment => Segment is not null;
 
-    /// <summary>Whether the current file can be cut (video: MP4, MOV, M4V).</summary>
-    public bool CanExportSegment => Current is { } item && Segments.CanExport(item.Path, Kind);
+    /// <summary>Whether the export button can save now: a whole video has to be one that can be copied (MP4, MOV, M4V).</summary>
+    public bool CanExportSegment => Current is { } item && Segments.CanExport(item.Path, Kind, Segment is not null && Playback.Preferences.SegmentExactVideo);
 
     /// <summary>Raised when the segment, the mode or its export settings changed.</summary>
     public event EventHandler? SegmentChanged;
+
+    /// <summary>The current song's tempo and key, or their search, changed.</summary>
+    public event EventHandler? AnalysisChanged;
+
+    /// <summary>The current song's tempo and key, when known.</summary>
+    public AudioAnalysis? Analysis { get; private set; }
+
+    public bool IsAnalyzing { get; private set; }
+
+    private CancellationTokenSource? _analysis;
+
+    private void ShowKnownAnalysis()
+    {
+        _analysis?.Cancel();
+        _analysis = null;
+        Analysis = null;
+        IsAnalyzing = false;
+        AnalysisChanged?.Invoke(this, EventArgs.Empty);
+        if (Kind == MediaKind.Audio && Current is { } item)
+        {
+            var stop = new CancellationTokenSource();
+            _analysis = stop;
+            _ = FinishAnalysisAsync(AudioAnalyzer.KnownAsync(item.Path), stop);
+        }
+    }
+
+    /// <summary>Finds the current song's tempo and key.</summary>
+    public void Analyze()
+    {
+        if (Kind != MediaKind.Audio || Current is not { } item)
+        {
+            return;
+        }
+        _analysis?.Cancel();
+        var stop = new CancellationTokenSource();
+        _analysis = stop;
+        IsAnalyzing = true;
+        AnalysisChanged?.Invoke(this, EventArgs.Empty);
+        _ = FinishAnalysisAsync(AudioAnalyzer.AnalyzeAsync(item.Path, stop.Token), stop);
+    }
+
+    private async Task FinishAnalysisAsync(Task<AudioAnalysis?> work, CancellationTokenSource stop)
+    {
+        AudioAnalysis? found;
+        try
+        {
+            found = await work;
+        }
+        catch (Exception error) when (error is IOException or OperationCanceledException or UnauthorizedAccessException or Microsoft.Data.Sqlite.SqliteException)
+        {
+            found = null;
+        }
+        if (ReferenceEquals(_analysis, stop) && !stop.IsCancellationRequested)
+        {
+            Analysis = found;
+            IsAnalyzing = false;
+            AnalysisChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
 
     public void ToggleSegmentMode()
     {
@@ -199,14 +260,28 @@ internal sealed class MediaViewerModel : IFilmstripSource, IDisposable
         SegmentChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>What the export button saves: the segment, with the speed, Keep Pitch and fades for audio.</summary>
-    public SegmentExportRequest? ExportRequest => Segment is { } segment && Current is { } item && CanExportSegment
-        ? new SegmentExportRequest(item.Path, Kind, segment,
-            Kind == MediaKind.Audio ? Playback.Rate : PlaybackSpeed.Normal,
-            Playback.PreservesPitch,
-            Kind == MediaKind.Audio && Playback.Preferences.SegmentFades,
-            Playback.Preferences.SegmentKeepsAudioFormat)
-        : null;
+    /// <summary>
+    /// What the export button saves: the segment, or without one the whole file; with the speed and Keep Pitch for audio,
+    /// and for a segment the fades. A whole video is only copied: encoding it again would gain nothing.
+    /// </summary>
+    public SegmentExportRequest? ExportRequest
+    {
+        get
+        {
+            var whole = Segment is null;
+            if (Current is not { } item || !CanExportSegment || (whole && Playback.Duration is not > 0))
+            {
+                return null;
+            }
+            return new SegmentExportRequest(item.Path, Kind, Segment ?? new SegmentRange(0, Playback.Duration!.Value),
+                Kind == MediaKind.Audio ? Playback.Rate : PlaybackSpeed.Normal,
+                Playback.PreservesPitch,
+                !whole && Kind == MediaKind.Audio && Playback.Preferences.SegmentFades,
+                Playback.Preferences.SegmentKeepsAudioFormat,
+                !whole && Playback.Preferences.SegmentExactVideo,
+                whole);
+        }
+    }
 
     /// <summary>Play / pause; stopped at the segment's end, Play starts again from its start.</summary>
     private void TogglePlayInSegment()

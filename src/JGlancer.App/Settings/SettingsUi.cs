@@ -50,6 +50,17 @@ internal static class SettingsUi
         return row;
     }
 
+    /// <summary>A setting's name on the left and its control on the right, as the toggles' rows.</summary>
+    public static Control Labeled(string title, Control control)
+    {
+        var row = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), MinHeight = JGMetrics.ControlHeight };
+        row.Children.Add(Text(title, wraps: true));
+        control.VerticalAlignment = VerticalAlignment.Center;
+        Grid.SetColumn(control, 1);
+        row.Children.Add(control);
+        return row;
+    }
+
     /// <summary>A segmented choice (macOS .segmented picker): the options side by side in one track.</summary>
     public static Control Segmented<T>(string name, IReadOnlyList<(string Label, T Value)> options, T current, Action<T> set)
     {

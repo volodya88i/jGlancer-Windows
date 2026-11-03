@@ -8,12 +8,13 @@
   <!-- PINNED folders (W-76), FOLDERS (roots and their trees), the Trash at the bottom (DESIGN.md §8, macOS SidebarView). -->
   <DockPanel>
     <Border DockPanel.Dock="Bottom"
+            Height="{x:Static d:JGMetrics.FooterHeight}"
             BorderBrush="{DynamicResource JG.line.hair}"
             BorderThickness="0,1,0,0"
             Padding="{x:Static d:JGInsets.SidebarRow}">
       <!-- The Recycle Bin: a click shows it in Explorer; files dropped here go there (undoable). -->
       <Button Name="TrashButton" Theme="{StaticResource JG.sidebarRow}"
-              Margin="{x:Static d:JGInsets.SidebarFooter}"
+              VerticalAlignment="Center"
               DragDrop.AllowDrop="True"
               AutomationProperties.Name="{l:T 'Trash'}">
         <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}">
@@ -24,10 +25,12 @@
     </Border>
     <!-- Pinned folders: any depth, in the order pinned; rows built in code. Hidden while nothing is pinned. -->
     <StackPanel Name="PinnedSection" DockPanel.Dock="Top" IsVisible="False">
-      <d:JGSectionHeader Label="{l:T 'Pinned'}" Margin="{x:Static d:JGInsets.SidebarHeader}" />
+      <Border Margin="{x:Static d:JGInsets.SidebarHeader}" Height="{x:Static d:JGMetrics.BarHeight}">
+        <d:JGSectionHeader Label="{l:T 'Pinned'}" VerticalAlignment="Center" />
+      </Border>
       <StackPanel Name="PinnedRows" Margin="{x:Static d:JGInsets.SidebarRow}" />
     </StackPanel>
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}">
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}" Height="{x:Static d:JGMetrics.BarHeight}">
       <d:JGSectionHeader Label="{l:T 'Folders'}" VerticalAlignment="Center" />
       <Button Name="AddButton"
               Grid.Column="1"
@@ -91,7 +94,7 @@
       </ItemsControl>
 
       <!-- ALBUMS (macOS SidebarAlbums): + makes one; rows are built in code (cover, name, count, rename in place). -->
-      <Grid Name="AlbumsHeader" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}">
+      <Grid Name="AlbumsHeader" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}" Height="{x:Static d:JGMetrics.BarHeight}">
         <d:JGSectionHeader Label="{l:T 'Albums'}" VerticalAlignment="Center" />
         <Button Name="NewAlbumButton"
                 Grid.Column="1"

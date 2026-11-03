@@ -146,20 +146,18 @@
               <Button Name="NextButton" Classes="viewer" ToolTip.Tip="{l:T 'Next'}" AutomationProperties.Name="{l:T 'Next'}">
                 <d:JGIcon IsFilled="True" Data="{x:Static d:JGCustomIcons.NextFilled}" />
               </Button>
-              <TextBlock Name="TimeText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}"
+              <TextBlock Name="TimeText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}"
                          VerticalAlignment="Center" Margin="{x:Static d:JGInsets.PlayerTime}" />
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
               <!-- Segment selection (D-73, D-74): its range, the fades toggle (audio), the export button, the mode. -->
-              <TextBlock Name="SegmentLabel" Classes="mono" Foreground="{DynamicResource JG.accent.text}" VerticalAlignment="Center"
+              <TextBlock Name="SegmentLabel" Classes="mono besideIcons" Foreground="{DynamicResource JG.accent.text}" VerticalAlignment="Center"
                          Margin="{x:Static d:JGInsets.PlayerTime}" IsVisible="False" />
               <Button Name="FadesButton" Classes="viewer" IsVisible="False"
                       ToolTip.Tip="{l:T 'Fade the Ends'}" AutomationProperties.Name="{l:T 'Fade the Ends'}">
                 <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Fades}" />
               </Button>
-              <Button Name="ExportButton" Classes="viewer" IsVisible="False"
-                      ToolTip.Tip="{l:T 'Drag to export the segment, click to save it'}"
-                      AutomationProperties.Name="{l:T 'Drag to export the segment, click to save it'}">
+              <Button Name="ExportButton" Classes="viewer">
                 <d:JGIcon Name="ExportGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Export}" />
               </Button>
               <!-- Video: the current frame as a PNG next to the video (P), or on the clipboard (Shift+P, right click). -->
@@ -182,8 +180,11 @@
               <Button Name="SegmentButton" Classes="viewer" AutomationProperties.Name="{l:T 'Select a Segment'}">
                 <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Segment}" />
               </Button>
+              <Button Name="MusicButton" Classes="tertiary" IsVisible="False" ToolTip.Tip="{l:T 'Key and Tempo'}" AutomationProperties.Name="{l:T 'Key and Tempo'}">
+                <TextBlock Name="MusicText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" />
+              </Button>
               <Button Name="SpeedButton" Classes="tertiary" ToolTip.Tip="{l:T 'Speed'}" AutomationProperties.Name="{l:T 'Speed'}">
-                <TextBlock Name="SpeedText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" />
+                <TextBlock Name="SpeedText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" />
               </Button>
               <Button Name="MuteButton" Classes="viewer">
                 <d:JGIcon Name="MuteGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Volume}" />

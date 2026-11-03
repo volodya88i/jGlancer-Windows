@@ -25,6 +25,22 @@ internal sealed partial class BrowserPane : UserControl
         DropZone.AddHandler(DragDrop.DropEvent, OnDrop);
         TileGrid.DragRequested += OnGridDragRequested;
         AttachAlbumReorder();
+        // Settings → Appearance → Decor can hide the status bar; it shows only with folders.
+        Settings.SettingsStore.Current.Changed += (_, _) => UpdateStatusLine();
+        DataContextChanged += (_, _) =>
+        {
+            if (Model is { } model)
+            {
+                model.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName == nameof(LibraryModel.HasRoots))
+                    {
+                        UpdateStatusLine();
+                    }
+                };
+            }
+            UpdateStatusLine();
+        };
         // Any press or the keyboard in the pane makes it the active one (split view).
         AddHandler(PointerPressedEvent, (_, _) => Activated?.Invoke(this, EventArgs.Empty), RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(GotFocusEvent, (_, _) => Activated?.Invoke(this, EventArgs.Empty), RoutingStrategies.Bubble, handledEventsToo: true);
@@ -134,4 +150,7 @@ internal sealed partial class BrowserPane : UserControl
             await model.AddFoldersAsync(folders);
         }
     }
+
+    private void UpdateStatusLine() =>
+        StatusLine.IsVisible = Model is { HasRoots: true } && Settings.SettingsStore.Current.Settings.ShowStatusBar;
 }

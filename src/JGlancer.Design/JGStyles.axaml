@@ -231,7 +231,7 @@
                      Placement="BottomEdgeAlignedLeft"
                      VerticalOffset="2"
                      OverlayInputPassThroughElement="{Binding $parent[Menu]}">
-                <Border Theme="{StaticResource JG.menuPopup}" Margin="0,0,12,12">
+                <Border Theme="{StaticResource JG.menuPopup}" Classes="popupSurface" Margin="0,0,12,12">
                   <ScrollViewer>
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -317,7 +317,7 @@
                      IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
                      Placement="RightEdgeAlignedTop"
                      HorizontalOffset="4">
-                <Border Theme="{StaticResource JG.menuPopup}" Margin="0,0,12,12">
+                <Border Theme="{StaticResource JG.menuPopup}" Classes="popupSurface" Margin="0,0,12,12">
                   <ScrollViewer>
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -338,18 +338,46 @@
           <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="^:selected /template/ Border#PART_LayoutRoot">
-          <Setter Property="Background" Value="{DynamicResource JG.accent.dim}" />
+          <Setter Property="Background" Value="{DynamicResource JG.accent.wash}" />
         </Style>
         <Style Selector="^:disabled">
           <Setter Property="Opacity" Value="{x:Static d:JGMetrics.PlaceholderOpacity}" />
         </Style>
       </ControlTheme>
 
+      <!-- Tooltips are small menus: the same glass (W-111), wrapped body text. -->
+      <ControlTheme x:Key="{x:Type ToolTip}" TargetType="ToolTip">
+        <Setter Property="Foreground" Value="{DynamicResource JG.text.primary}" />
+        <Setter Property="FontFamily" Value="{x:Static d:JGFonts.Text}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="MaxWidth" Value="{x:Static d:JGMetrics.ToolTipMaxWidth}" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Theme="{StaticResource JG.menuPopup}" Classes="popupSurface" Margin="0,0,12,12" MinWidth="0"
+                    Padding="{x:Static d:JGInsets.ToolTip}">
+              <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}" TextWrapping="Wrap" />
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+
+      <!-- Panels that open from a button (key and tempo) look like the menus. -->
+      <ControlTheme x:Key="{x:Type FlyoutPresenter}" TargetType="FlyoutPresenter">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Theme="{StaticResource JG.menuPopup}" Classes="popupSurface" Margin="0,0,12,12">
+              <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+
       <!-- Drop-down menus of buttons (sort) and context menus share the menu popup look. -->
       <ControlTheme x:Key="{x:Type MenuFlyoutPresenter}" TargetType="MenuFlyoutPresenter">
         <Setter Property="Template">
           <ControlTemplate>
-            <Border Theme="{StaticResource JG.menuPopup}">
+            <Border Theme="{StaticResource JG.menuPopup}" Classes="popupSurface">
               <ScrollViewer>
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -364,7 +392,7 @@
       <ControlTheme x:Key="{x:Type ContextMenu}" TargetType="ContextMenu">
         <Setter Property="Template">
           <ControlTemplate>
-            <Border Theme="{StaticResource JG.menuPopup}">
+            <Border Theme="{StaticResource JG.menuPopup}" Classes="popupSurface">
               <ScrollViewer>
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -455,15 +483,27 @@
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
           <ControlTemplate>
-            <ContentPresenter Name="PART_ContentPresenter"
-                              Background="{TemplateBinding Background}"
-                              CornerRadius="{TemplateBinding CornerRadius}"
-                              Padding="{TemplateBinding Padding}"
-                              Content="{TemplateBinding Content}"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Foreground="{TemplateBinding Foreground}"
-                              HorizontalContentAlignment="Stretch"
-                              VerticalContentAlignment="Center" />
+            <Panel>
+              <ContentPresenter Name="PART_ContentPresenter"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Padding="{TemplateBinding Padding}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Center" />
+              <!-- A drop target's ring and wash, over the row so its text does not move; fades in and out. -->
+              <Border Name="PART_DropMark" CornerRadius="{TemplateBinding CornerRadius}" BorderThickness="2"
+                      BorderBrush="{DynamicResource JG.accent}" Background="{DynamicResource JG.accent.wash}"
+                      Opacity="0" IsHitTestVisible="False">
+                <Border.Transitions>
+                  <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                  </Transitions>
+                </Border.Transitions>
+              </Border>
+            </Panel>
           </ControlTemplate>
         </Setter>
         <Style Selector="^:pointerover">
@@ -473,9 +513,8 @@
           <Setter Property="Background" Value="{DynamicResource JG.bg.raised}" />
           <Setter Property="Foreground" Value="{DynamicResource JG.text.primary}" />
         </Style>
-        <Style Selector="^.dropTarget /template/ ContentPresenter#PART_ContentPresenter">
-          <Setter Property="BorderBrush" Value="{DynamicResource JG.accent}" />
-          <Setter Property="BorderThickness" Value="2" />
+        <Style Selector="^.dropTarget /template/ Border#PART_DropMark">
+          <Setter Property="Opacity" Value="1" />
         </Style>
       </ControlTheme>
 
@@ -511,6 +550,14 @@
     <Setter Property="BorderBrush" Value="{DynamicResource JG.accent}" />
     <Setter Property="BorderThickness" Value="{x:Static d:JGInsets.Outline}" />
   </Style>
+  <!-- A field that cannot be used now: the same field, faded (Fluent's gray block did not belong here). -->
+  <Style Selector="TextBox:disabled /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource JG.bg.base}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource JG.line.strong}" />
+  </Style>
+  <Style Selector="TextBox:disabled">
+    <Setter Property="Opacity" Value="{x:Static d:JGMetrics.PlaceholderOpacity}" />
+  </Style>
   <Style Selector="TextBox:focus /template/ TextBlock#PART_PlaceholderText, TextBox /template/ TextBlock#PART_PlaceholderText">
     <Setter Property="Foreground" Value="{DynamicResource JG.text.tertiary}" />
   </Style>
@@ -526,6 +573,11 @@
   <Style Selector="TextBox.search:pointerover /template/ Border#PART_BorderElement, TextBox.search:focus /template/ Border#PART_BorderElement">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <!-- Mono text in the players' control rows, lined up with the icons beside it. -->
+  <Style Selector="TextBlock.besideIcons">
+    <Setter Property="Padding" Value="{x:Static d:JGInsets.MonoBesideIcons}" />
   </Style>
 
   <Style Selector="TextBlock.section">

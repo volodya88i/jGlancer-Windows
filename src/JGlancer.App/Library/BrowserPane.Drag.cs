@@ -37,7 +37,8 @@ internal sealed partial class BrowserPane
         var point = e.GetPosition(TileGrid);
         var y = point.Y + TileGrid.Offset.Y;
         var bar = Design.JGMetrics.SelectionEdgeWidth;
-        if (geometry.IndexAt(point.X, y) is not { } index || index >= model.Refs.Count)
+        // Between two tiles (gutter, caption) counts as between them, not as the end of the album.
+        if (geometry.NearestIndex(point.X, y) is not { } index || index >= model.Refs.Count)
         {
             var last = geometry.Frame(model.Refs.Count - 1);
             return (null, new Core.Model.GridRect(last.Right + geometry.Gutter / 2 - bar / 2, last.Y, bar, geometry.TileSide));

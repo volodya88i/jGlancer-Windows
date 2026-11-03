@@ -41,14 +41,14 @@ public static class JGInsets
     /// <summary>The app icon in the title bar.</summary>
     public static Thickness TitleBarIcon { get; } = new(JGSpacing.S, 0, JGSpacing.Xs, 0);
 
-    /// <summary>A sidebar section header row: label on the left, a compact button on the right.</summary>
-    public static Thickness SidebarHeader { get; } = new(JGSpacing.M, JGSpacing.S, JGSpacing.Xs, 0);
+    /// <summary>
+    /// A sidebar section header row: label on the left, a compact button on the right. Rows are <see cref="JGMetrics.BarHeight"/>
+    /// high, so the first header shares its centre line with the top bar and the preview pane's header (W-110).
+    /// </summary>
+    public static Thickness SidebarHeader { get; } = new(JGSpacing.M, 0, JGSpacing.Xs, 0);
 
     /// <summary>Rows inside the sidebar (folders, Trash).</summary>
     public static Thickness SidebarRow { get; } = new(JGSpacing.Xs, 0);
-
-    /// <summary>The Trash row at the bottom of the sidebar (macOS: padding xs around it).</summary>
-    public static Thickness SidebarFooter { get; } = new(0, JGSpacing.Xxs);
 
     /// <summary>Bars (top bar, status bar): horizontal padding.</summary>
     public static Thickness Bar { get; } = new(JGSpacing.M, 0);
@@ -59,14 +59,17 @@ public static class JGInsets
     /// <summary>The actions row of an empty state sits a little lower than the text.</summary>
     public static Thickness EmptyStateActions { get; } = new(0, JGSpacing.Xs, 0, 0);
 
-    /// <summary>Inside the preview pane and Quick Preview.</summary>
+    /// <summary>Inside Quick Preview.</summary>
     public static Thickness Preview { get; } = new(JGSpacing.M);
+
+    /// <summary>Inside the preview pane: no top, its header row is <see cref="JGMetrics.BarHeight"/> high like the top bar's.</summary>
+    public static Thickness PreviewPane { get; } = new(JGSpacing.M, 0, JGSpacing.M, JGSpacing.M);
 
     /// <summary>Inside the Get Info window (macOS: l around, m more on top).</summary>
     public static Thickness Info { get; } = new(JGSpacing.L, JGSpacing.L + JGSpacing.M, JGSpacing.L, JGSpacing.L);
 
     /// <summary>The pane's "PREVIEW" row above the player.</summary>
-    public static Thickness PreviewHeader { get; } = new(0, 0, 0, JGSpacing.M);
+    public static Thickness PreviewHeader { get; } = new(0, 0, 0, JGSpacing.Xs);
 
     /// <summary>The file's name and facts under the pane's player.</summary>
     public static Thickness PreviewFacts { get; } = new(0, JGSpacing.M, 0, 0);
@@ -82,4 +85,13 @@ public static class JGInsets
 
     /// <summary>A drop-down button: its label and its icon.</summary>
     public static Thickness Button { get; } = new(JGSpacing.S, 0);
+
+    /// <summary>
+    /// Mono text beside icons in the players' control rows: JetBrains Mono sits a pixel high in its line box, so its letters'
+    /// centre falls a pixel above the icons' (measured); one pixel down lines them up.
+    /// </summary>
+    public static Thickness MonoBesideIcons { get; } = new(0, 1, 0, 0);
+
+    /// <summary>Inside a tooltip.</summary>
+    public static Thickness ToolTip { get; } = new(JGSpacing.Xs, JGSpacing.Xxs + 1);
 }

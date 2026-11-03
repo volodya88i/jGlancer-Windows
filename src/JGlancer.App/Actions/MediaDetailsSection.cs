@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
+using JGlancer.Core.Localization;
 using JGlancer.Core.Model;
 using JGlancer.Design;
 using JGlancer.Platform.Windows;
@@ -50,6 +51,32 @@ internal sealed class MediaDetailsSection : ContentControl
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>Tempo and key found earlier, as rows.</summary>
+    private static async Task<IEnumerable<(string, string)>?> KnownAnalysisAsync(string path)
+    {
+        try
+        {
+            if (await Viewer.Media.AudioAnalyzer.KnownAsync(path) is not { } found)
+            {
+                return null;
+            }
+            var rows = new List<(string, string)>();
+            if (found.BpmLabel is { } bpm)
+            {
+                rows.Add((L.T("BPM"), bpm));
+            }
+            if (found.Key is { } key)
+            {
+                rows.Add((L.T("Key"), key.Label));
+            }
+            return rows;
+        }
+        catch (Exception error) when (error is IOException or Microsoft.Data.Sqlite.SqliteException)
+        {
+            return null;
+        }
+    }
+
     private async Task LoadAsync(string path, MediaKind kind, CancellationToken cancellation)
     {
         MediaDetails details;
@@ -66,6 +93,14 @@ internal sealed class MediaDetailsSection : ContentControl
             return;
         }
         var rows = MediaDetailsRows.Rows(details);
+        if (kind == MediaKind.Audio && await KnownAnalysisAsync(path) is { } known)
+        {
+            if (cancellation.IsCancellationRequested)
+            {
+                return;
+            }
+            rows = [.. rows, .. known];
+        }
         Content = rows.Count == 0 ? null : Grid(rows);
         IsVisible = rows.Count > 0;
     }

@@ -12,7 +12,7 @@
     <DockPanel>
       <!-- Nothing to sort, filter or count before the first folder: the first-run screen stands alone. -->
       <lib:TopBar Name="Header" DockPanel.Dock="Top" IsVisible="{Binding HasRoots}" />
-      <lib:StatusBar DockPanel.Dock="Bottom" IsVisible="{Binding HasRoots}" />
+      <lib:StatusBar Name="StatusLine" DockPanel.Dock="Bottom" />
 
       <!-- Folders dropped from Explorer join the library (files open in the viewer from W3). -->
       <Panel Name="DropZone" DragDrop.AllowDrop="True">

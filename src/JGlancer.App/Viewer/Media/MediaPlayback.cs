@@ -100,6 +100,20 @@ internal sealed class MediaPlayback : IDisposable
         Player.SetSpeed(Rate);
         Player.SetVolume(Preferences.Volume);
         Player.SetPitchCorrection(Preferences.PreservesPitch);
+        ApplyStretchFilter();
+    }
+
+    private string _stretchFilter = "";
+
+    /// <summary>The filter for the current speed and Keep Pitch; set only when it changes, as setting it restarts the audio chain.</summary>
+    private void ApplyStretchFilter()
+    {
+        var filter = PlaybackSpeed.StretchFilter(Rate, PreservesPitch);
+        if (filter != _stretchFilter)
+        {
+            _stretchFilter = filter;
+            Player.SetAudioFilters(filter);
+        }
     }
 
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JsonFile, PlaybackPreferences> Shared = [];
@@ -138,6 +152,7 @@ internal sealed class MediaPlayback : IDisposable
 
     public double Rate { get; private set; }
 
+
     /// <summary>The speed the time moves at now: the rate while playing a loaded file, else 0 (smooth playheads).</summary>
     public double MovingRate => IsPlaying && Status == PlaybackStatus.Ready ? Rate : 0;
 
@@ -145,7 +160,7 @@ internal sealed class MediaPlayback : IDisposable
 
     public bool IsMuted { get; private set; }
 
-    public bool PreservesPitch => Preferences.PreservesPitch;
+    public bool PreservesPitch => !IsTargeted && Preferences.PreservesPitch;
 
     /// <summary>Repeats the current item.</summary>
     public bool Loops { get; private set; }
@@ -285,6 +300,7 @@ internal sealed class MediaPlayback : IDisposable
         Status = PlaybackStatus.Loading;
         Duration = item.Duration;
         StopTime = null;
+        LeaveTarget();
         (Title, Artist, Album) = (null, null, null);
         VideoSize = default;
         SetTime(start);
@@ -389,10 +405,51 @@ internal sealed class MediaPlayback : IDisposable
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Plays the current song at <paramref name="rate"/> without Keep Pitch, to reach a pitch or a tempo (W-108). It is for
+    /// this song only: the saved speed and Keep Pitch come back with the next file.
+    /// </summary>
+    public void SetTargetRate(double rate)
+    {
+        IsTargeted = true;
+        Rate = rate;
+        Player.SetSpeed(Rate);
+        Player.SetPitchCorrection(false);
+        ApplyStretchFilter();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Back to the saved speed and Keep Pitch.</summary>
+    public void ClearTarget()
+    {
+        LeaveTarget();
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void LeaveTarget()
+    {
+        if (IsTargeted)
+        {
+            IsTargeted = false;
+            Rate = Preferences.Rate(Kind);
+            Player.SetSpeed(Rate);
+            Player.SetPitchCorrection(Preferences.PreservesPitch);
+            ApplyStretchFilter();
+        }
+    }
+
+    /// <summary>A pitch or tempo was asked for this song.</summary>
+    public bool IsTargeted { get; private set; }
+
+    /// <summary>How many semitones the current song sounds from its own pitch.</summary>
+    public double HeardSemitones => PreservesPitch ? 0 : PlaybackTarget.Semitones(Rate);
+
     public void SetRate(double rate)
     {
+        LeaveTarget();
         Rate = PlaybackSpeed.Clamped(rate);
         Player.SetSpeed(Rate);
+        ApplyStretchFilter();
         Preferences.SetRate(Rate, Kind);
         Save();
     }
@@ -429,8 +486,10 @@ internal sealed class MediaPlayback : IDisposable
 
     public void SetPreservesPitch(bool preserves)
     {
+        LeaveTarget();
         Preferences.PreservesPitch = preserves;
         Player.SetPitchCorrection(preserves);
+        ApplyStretchFilter();
         Save();
     }
 

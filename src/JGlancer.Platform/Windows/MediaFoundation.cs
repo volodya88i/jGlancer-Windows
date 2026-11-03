@@ -94,6 +94,7 @@ public static unsafe partial class MediaFoundation
             SetUInt32(attributes, DisableThrottling, 1);
             Check(MFCreateSinkWriterFromURL(target, 0, attributes, &writer));
             var outputs = new Dictionary<uint, uint>();
+            uint? video = null;
             for (uint stream = 0; ; stream++)
             {
                 nint type;
@@ -116,6 +117,10 @@ public static unsafe partial class MediaFoundation
                         // The same type in and out: the sink writer copies, nothing is encoded.
                         Check(((delegate* unmanaged[Stdcall]<nint, uint, nint, nint, int>)Slot(writer, 4))(writer, output, type, 0));
                         outputs[stream] = output;
+                        if (major == Video)
+                        {
+                            video ??= stream;
+                        }
                     }
                 }
                 finally
@@ -127,13 +132,19 @@ public static unsafe partial class MediaFoundation
             {
                 throw new InvalidOperationException("no audio or video stream to copy");
             }
-            var position = new PropVariant64 { Type = 20, Value = (long)(start * TicksPerSecond) };
-            var timeFormat = Guid.Empty;
-            Check(((delegate* unmanaged[Stdcall]<nint, Guid*, PropVariant64*, int>)Slot(reader, 8))(reader, &timeFormat, &position));
+            // The video can only start at a keyframe, and the audio lands elsewhere after a seek. Everything is timed from
+            // that keyframe; seeking to it again brings the audio to it as well.
+            var origin = (long)(start * TicksPerSecond);
+            SeekReader(reader, origin);
+            if (video is { } first && FirstSampleTime(reader, first) is { } keyframe)
+            {
+                origin = keyframe;
+                SeekReader(reader, origin);
+            }
             Check(((delegate* unmanaged[Stdcall]<nint, int>)Slot(writer, 5))(writer));
             var endTicks = (long)(end * TicksPerSecond);
             var done = new HashSet<uint>();
-            long? origin = null;
+            long? lastFrame = null;
             while (done.Count < outputs.Count)
             {
                 uint actual, flags;
@@ -151,14 +162,26 @@ public static unsafe partial class MediaFoundation
                     {
                         continue;
                     }
-                    if (timestamp >= endTicks)
+                    // Frames arrive in decoding order: those shown before a frame past the end may follow it and depend
+                    // on it, so that frame is kept and the video stops at the next one shown after it.
+                    var pastEnd = actual == video
+                        ? lastFrame is { } last && timestamp > last
+                        : timestamp >= endTicks;
+                    if (pastEnd)
                     {
                         done.Add(actual);
                         Check(((delegate* unmanaged[Stdcall]<nint, uint, int, int>)Slot(reader, 4))(reader, actual, 0));
                         continue;
                     }
-                    origin ??= timestamp;
-                    Check(((delegate* unmanaged[Stdcall]<nint, long, int>)Slot(sample, 36))(sample, Math.Max(0, timestamp - origin.Value)));
+                    if (timestamp < origin)
+                    {
+                        continue;
+                    }
+                    if (actual == video && timestamp >= endTicks)
+                    {
+                        lastFrame = timestamp;
+                    }
+                    Check(((delegate* unmanaged[Stdcall]<nint, long, int>)Slot(sample, 36))(sample, timestamp - origin));
                     Check(((delegate* unmanaged[Stdcall]<nint, uint, nint, int>)Slot(writer, 6))(writer, output, sample));
                 }
                 finally
@@ -173,6 +196,36 @@ public static unsafe partial class MediaFoundation
             Release(writer);
             Release(reader);
             Release(attributes);
+        }
+    }
+
+    private static void SeekReader(nint reader, long ticks)
+    {
+        var position = new PropVariant64 { Type = 20, Value = ticks };
+        var timeFormat = Guid.Empty;
+        Check(((delegate* unmanaged[Stdcall]<nint, Guid*, PropVariant64*, int>)Slot(reader, 8))(reader, &timeFormat, &position));
+    }
+
+    /// <summary>The time of the next sample of <paramref name="stream"/>; other streams' samples on the way are dropped.</summary>
+    private static long? FirstSampleTime(nint reader, uint stream)
+    {
+        while (true)
+        {
+            uint actual, flags;
+            long timestamp;
+            nint sample;
+            Check(((delegate* unmanaged[Stdcall]<nint, uint, uint, uint*, uint*, long*, nint*, int>)Slot(reader, 9))(
+                reader, AnyStream, 0, &actual, &flags, &timestamp, &sample));
+            var hadSample = sample != 0;
+            Release(sample);
+            if (actual == stream && hadSample)
+            {
+                return timestamp;
+            }
+            if (actual == stream && (flags & EndOfStream) != 0)
+            {
+                return null;
+            }
         }
     }
 

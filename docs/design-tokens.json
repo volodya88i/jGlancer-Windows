@@ -65,20 +65,20 @@
       "name" : "text.tertiary"
     },
     {
-      "black" : "#1F3BFF",
-      "dark" : "#1F3BFF",
-      "light" : "#1F3BFF",
+      "black" : "#A396F4",
+      "dark" : "#A396F4",
+      "light" : "#A396F4",
       "name" : "accent"
     },
     {
-      "black" : "#4D63FF",
-      "dark" : "#6175FF",
-      "light" : "#1F3BFF",
+      "black" : "#A396F4",
+      "dark" : "#A396F4",
+      "light" : "#6A55ED",
       "name" : "accent.text"
     },
     {
-      "dark" : "#1F2551",
-      "light" : "#DBDFFA",
+      "dark" : "#261F51",
+      "light" : "#E0DBFA",
       "name" : "accent.dim"
     },
     {

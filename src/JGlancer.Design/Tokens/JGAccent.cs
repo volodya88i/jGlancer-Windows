@@ -10,8 +10,8 @@ public sealed record JGAccentPreset(string Name, uint Color);
 /// </summary>
 public static class JGAccent
 {
-    /// <summary>The default accent, close to the blue of the app icon's glow.</summary>
-    public const uint DefaultColor = 0xFF1F3BFF;
+    /// <summary>The default accent: lavender (W-110).</summary>
+    public const uint DefaultColor = 0xFFA396F4;
 
     /// <summary>The side of a color swatch in Settings.</summary>
     public const double SwatchSize = 20;
@@ -25,8 +25,8 @@ public static class JGAccent
     /// <summary>The colors offered in Settings, the default first.</summary>
     public static IReadOnlyList<JGAccentPreset> Presets { get; } =
     [
-        new("Blue", DefaultColor),
-        new("Lavender", 0xFFA396F4),
+        new("Lavender", DefaultColor),
+        new("Blue", 0xFF1F3BFF),
         new("Purple", 0xFF7A2CFF),
         new("Pink", 0xFFFF2E93),
         new("Red", 0xFFE60012),

@@ -142,7 +142,7 @@ internal sealed partial class SettingsWindow : Window
         SettingsSection.Appearance => L.T("Appearance"),
         SettingsSection.Library => L.T("Library"),
         SettingsSection.Playback => L.T("Playback"),
-        SettingsSection.EditWith => L.T("Edit With"),
+        SettingsSection.EditWith => L.T("Edit With|settings"),
         SettingsSection.Windows => L.T("Windows"),
         _ => L.T("Shortcuts"),
     };
@@ -231,6 +231,7 @@ internal sealed partial class SettingsWindow : Window
             look,
             AccentColorGroup(),
             SettingsUi.Group(L.T("Effects"),
+                SettingsUi.Toggle(L.T("Frosted glass in menus and panels"), S.FrostedGlass, on => Set(s => s with { FrostedGlass = on })),
                 SettingsUi.Toggle(L.T("Blurred cover behind audio"), S.CoverBackdrop, on => Set(s => s with { CoverBackdrop = on })),
                 SettingsUi.Toggle(L.T("Blend the backdrop into the next song's"), S.BackdropCrossfade, on => Set(s => s with { BackdropCrossfade = on })),
                 SettingsUi.Toggle(L.T("Show the next file while swiping"), S.SwipeAnimation, on => Set(s => s with { SwipeAnimation = on })),
@@ -247,9 +248,12 @@ internal sealed partial class SettingsWindow : Window
                     S.Theme, theme => Set(s => s with { Theme = theme }))),
             SettingsUi.Group(L.T("Decor"),
                 SettingsUi.Toggle(L.T("Crosshair marks on selected files"), S.CrosshairMarks, on => Set(s => s with { CrosshairMarks = on })),
-                SettingsUi.Segmented(L.T("Audio waveform"),
+                SettingsUi.Labeled(L.T("Audio player"), SettingsUi.Segmented(L.T("Audio player"),
                     [(L.T("Waveform|audio"), WaveformStyle.Narrow), (L.T("Timeline|waveform"), WaveformStyle.Timeline)],
                     S.Waveform, style => Set(s => s with { Waveform = style }))),
+                SettingsUi.Labeled(L.T("Video player"), SettingsUi.Segmented(L.T("Video player"),
+                    [(L.T("Waveform|audio"), WaveformStyle.Narrow), (L.T("Timeline|waveform"), WaveformStyle.Timeline)],
+                    S.VideoWaveform, style => Set(s => s with { VideoWaveform = style })))),
         ];
     }
 
@@ -384,6 +388,11 @@ internal sealed partial class SettingsWindow : Window
                     MediaPlayback.SavePreferences(file);
                 })),
             SettingsUi.Group(L.T("Segments"),
+                SettingsUi.Toggle(L.T("Cut video exactly at the brackets (encodes it again)"), preferences.SegmentExactVideo, on =>
+                {
+                    preferences.SegmentExactVideo = on;
+                    MediaPlayback.SavePreferences(file);
+                }),
                 SettingsUi.Toggle(L.T("Keep WAV, AIFF, FLAC and MP3 segments in their format (otherwise M4A)"), preferences.SegmentKeepsAudioFormat, on =>
                 {
                     preferences.SegmentKeepsAudioFormat = on;

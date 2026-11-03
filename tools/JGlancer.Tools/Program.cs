@@ -54,6 +54,28 @@ switch (command)
     case "synth" when OperatingSystem.IsWindows():
         Bench.Synthesize(int.Parse(args[1], CultureInfo.InvariantCulture), args.Contains("--media"), Path.Combine(root, "TestMedia", "fixtures"));
         break;
+    case "segment" when OperatingSystem.IsWindows():
+        // A segment as the app saves it: segment <in> <start> <end> <out> [exact].
+        JGlancer.Platform.Windows.SegmentExporter.ExportAsync(new JGlancer.Core.Playback.SegmentExportRequest(
+                args[1], JGlancer.Core.Model.MediaKind.Video,
+                new JGlancer.Core.Playback.SegmentRange(double.Parse(args[2], CultureInfo.InvariantCulture), double.Parse(args[3], CultureInfo.InvariantCulture)),
+                ExactVideo: args.Contains("exact")),
+            args[4], CancellationToken.None).GetAwaiter().GetResult();
+        break;
+    case "keylab":
+        return JGlancer.Tools.KeyLab.Run(args.Skip(1));
+    case "analyze":
+        // Tempo and key of songs, as the player finds them: analyze <files> (reads them only, plays nothing).
+        foreach (var song in args.Skip(1))
+        {
+            var samples = JGlancer.Mpv.MpvAudioDecoder.SamplesAsync(song, CancellationToken.None).GetAwaiter().GetResult() ?? [];
+            var rate = JGlancer.Mpv.MpvAudioDecoder.SamplesPerSecond;
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            var bpm = JGlancer.Core.Audio.TempoDetector.Detect(samples, rate);
+            var key = JGlancer.Core.Audio.KeyDetector.Detect(samples, rate);
+            Console.WriteLine($"{Path.GetFileName(song)}: {bpm:0.0} BPM, {key?.Label}, {samples.Length / (double)rate:0}s of audio in {clock.ElapsedMilliseconds} ms");
+        }
+        break;
     case "mpvencode":
         return MpvEncode.Run(args[1], args[2], args.Skip(3));
     case "openwith" when OperatingSystem.IsWindows():

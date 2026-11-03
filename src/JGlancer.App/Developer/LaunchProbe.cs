@@ -59,6 +59,8 @@ internal static class LaunchProbe
                     }
                     if (options.CapturesScreen)
                     {
+                        // On top of everything, so the screen capture holds nothing but the app.
+                        main.Topmost = true;
                         main.Activate();
                         if (options.ContextMenu)
                         {
@@ -75,6 +77,15 @@ internal static class LaunchProbe
                             await main.PerformAsync(Core.Actions.ActionId.GetInfo);
                         }
                         await Task.Delay(500);
+                        // Windows it opened (Get Info, dialogs) go above the topmost main window too.
+                        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { } lifetime)
+                        {
+                            foreach (var opened in lifetime.Windows.Where(w => w != main))
+                            {
+                                opened.Topmost = true;
+                            }
+                            await Task.Delay(200);
+                        }
                     }
                     if (options.MiniPlayer)
                     {

@@ -165,7 +165,7 @@ internal sealed partial class DuplicatesWindow : Window
         var name = new TextBlock { Text = copy.Name, Classes = { "body" }, TextTrimming = TextTrimming.CharacterEllipsis };
         name[!TextBlock.ForegroundProperty] = this.GetResourceObservable(JGColor.TextPrimary.ResourceKey).ToBinding();
         var folder = new TextBlock { Text = Path.GetDirectoryName(copy.Path), Classes = { "body" }, TextTrimming = TextTrimming.PrefixCharacterEllipsis };
-        folder[!TextBlock.ForegroundProperty] = this.GetResourceObservable(JGColor.TextSecondary.ResourceKey).ToBinding();
+        folder[!TextBlock.ForegroundProperty] = this.GetResourceObservable(JGColor.TextTertiary.ResourceKey).ToBinding();
         var local = copy.ModifiedAt.ToLocalTime();
         var date = new TextBlock
         {

@@ -72,6 +72,13 @@ internal sealed partial class MiniPlayer : UserControl
             }
         };
         Stage.PointerPressed += OnStagePressed;
+        Viewer.Media.SongTags.Read += path =>
+        {
+            if (_model?.Asset?.Path == path)
+            {
+                Update();
+            }
+        };
         // The waveform's look follows Settings at once.
         Settings.SettingsStore.Current.Changed += (_, change) =>
         {
@@ -234,10 +241,13 @@ internal sealed partial class MiniPlayer : UserControl
         {
             CoverImage.Source = _model.Cover;
             CoverGlyph.IsVisible = _model.IsCoverKnown && _model.Cover is null;
-            TitleText.Text = _playback?.Title ?? Path.GetFileNameWithoutExtension(asset.Name);
-            var subtitle = string.Join(" · ", new[] { _playback?.Artist, _playback?.Album }.OfType<string>());
-            SubtitleText.Text = subtitle;
-            SubtitleText.IsVisible = subtitle.Length > 0;
+            // The tags Windows read (shared with the player) until the player has its own: the title and artist show at
+            // once, and the subtitle keeps its line even when empty, so the cover never jumps.
+            var known = Viewer.Media.SongTags.Of(asset.Path);
+            TitleText.Text = _playback?.Title ?? known?.Title ?? Path.GetFileNameWithoutExtension(asset.Name);
+            var subtitle = string.Join(" · ", new[] { _playback?.Artist ?? known?.Artist, _playback?.Album ?? known?.Album }.OfType<string>());
+            SubtitleText.Text = subtitle.Length > 0 ? subtitle : "\u00A0";
+            SubtitleText.IsVisible = true;
         }
         else
         {

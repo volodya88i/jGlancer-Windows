@@ -101,5 +101,16 @@ internal static class LibrarySchema
             INSERT INTO asset_search(asset_search) VALUES ('rebuild');
             CREATE INDEX asset_flag ON asset(flag) WHERE flag != 0;
             """),
+        // Tempo and key found in songs (W-107), by path: files outside the library count too.
+        ("v4-audio-analysis", """
+            CREATE TABLE audio_analysis (
+              path TEXT PRIMARY KEY,
+              size INTEGER NOT NULL,
+              mtime INTEGER NOT NULL,
+              bpm REAL,
+              key_tonic INTEGER,
+              key_minor INTEGER NOT NULL DEFAULT 0
+            );
+            """),
     ];
 }

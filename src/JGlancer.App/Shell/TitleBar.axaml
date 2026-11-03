@@ -58,6 +58,7 @@
           <MenuItem Name="SplitStackedItem" Header="{l:T 'Stacked'}" ToggleType="Radio" GroupName="split" />
         </MenuItem>
         <MenuItem Name="ShowNamesItem" Header="{l:T 'Show Names'}" ToggleType="CheckBox" />
+        <MenuItem Name="StatusBarItem" Header="{l:T 'Show Status Bar'}" ToggleType="CheckBox" />
         <MenuItem Name="SubfoldersItem" Header="{l:T 'Include Subfolders'}" ToggleType="CheckBox" />
       </MenuItem>
       <MenuItem Header="{l:T 'Window|menu'}">

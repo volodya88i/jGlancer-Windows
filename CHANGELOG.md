@@ -3,6 +3,31 @@
 All notable changes to jGlancer for Windows. Versions are `major.minor.patch`: the minor number grows with new
 features or something removed, the patch number with fixes; the version changes with each published release.
 
+## 0.5.4 — 2026-11-03
+
+- New: frosted glass as the app's material: menus, drop-downs, tooltips, the key and tempo panel, toasts, progress
+  panels and the viewers' bars show what is behind them blurred. Settings → Appearance → Effects turns it off.
+- New: the audio player's Key · BPM button finds a song's tempo and key and remembers them; they also show in Get Info.
+  Its panel speeds the song up or slows it down, as on a tape, to a target pitch (up to 12 semitones either way) or a
+  target tempo, typed or stepped, for the current song. Speed → Target Pitch offers the same pitches.
+- New: the export button is always there, with a clearer icon: without a segment it saves the whole file, audio at its
+  current speed.
+- New: video segments are cut exactly at the brackets by encoding them again, in near-source quality, and every video
+  format can be cut. Settings → Playback → Segments turns it off: the original quality, from the nearest earlier keyframe.
+- New: a click on a video plays or pauses it; a double-click still goes full screen.
+- New: the video timeline can show the waveform of its sound (Settings → Appearance → Decor → Video player).
+- New: View → Show Status Bar.
+- Changed: the default accent is lavender again.
+- Changed: headers, footers and the players' control rows line up across the window; the duration badge sits at the
+  bottom right of a tile.
+- Changed: a song's title and artist show at once in the preview pane and Quick Preview, without the cover jumping.
+- Changed: speeding up with Keep Pitch keeps beats steadier.
+- Changed: a looping video whose controls hid keeps them hidden.
+- Fixed: a saved video segment could lose frames after its first keyframe, so its picture smeared until the next one.
+- Fixed: the flag stars in the context menu had lost their colors.
+- Fixed: dropping files between two tiles of an album put them at its end.
+- Fixed: dragging files onto a sidebar folder made the row's text jump.
+
 ## 0.5.3 — 2026-11-02
 
 - Changed: a new app icon: a white picture frame with mountains and a sun on dark glass, with blue and red light at the corners.

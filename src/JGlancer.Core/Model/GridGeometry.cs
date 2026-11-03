@@ -117,6 +117,30 @@ public sealed record GridGeometry
         return null;
     }
 
+    /// <summary>
+    /// The tile nearest to a point (content coordinates), also from the gutters and captions between tiles; null below
+    /// or after the last tile.
+    /// </summary>
+    public int? NearestIndex(double x, double y)
+    {
+        if (ItemCount == 0)
+        {
+            return null;
+        }
+        var row = (int)Math.Floor((y - Inset + Gutter / 2) / (CellHeight + Gutter));
+        if (row < 0)
+        {
+            row = 0;
+        }
+        if (row >= RowCount)
+        {
+            return null;
+        }
+        var column = Math.Clamp((int)Math.Floor((x - Inset + Gutter / 2) / (TileSide + Gutter)), 0, Columns - 1);
+        var index = row * Columns + column;
+        return index < ItemCount ? index : null;
+    }
+
     /// <summary>Rows that fit in a viewport of <paramref name="height"/>, at least one.</summary>
     public int RowsPerPage(double height) => Math.Max(1, (int)(height / (CellHeight + Gutter)));
 

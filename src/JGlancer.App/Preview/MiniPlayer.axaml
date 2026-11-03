@@ -56,12 +56,12 @@
         <Button Name="PlayButton" Classes="viewer">
           <d:JGIcon Name="PlayGlyph" IsFilled="True" Data="{x:Static d:JGCustomIcons.PlayFilled}" />
         </Button>
-        <TextBlock Name="TimeText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}"
+        <TextBlock Name="TimeText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}"
                    VerticalAlignment="Center" Margin="{x:Static d:JGInsets.PlayerTime}" />
       </StackPanel>
       <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
         <Button Name="SpeedButton" Classes="tertiary" ToolTip.Tip="{l:T 'Speed'}" AutomationProperties.Name="{l:T 'Speed'}">
-          <TextBlock Name="SpeedText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" />
+          <TextBlock Name="SpeedText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" />
         </Button>
         <Button Name="MuteButton" Classes="viewer" IsVisible="False">
           <d:JGIcon Name="MuteGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Volume}" />

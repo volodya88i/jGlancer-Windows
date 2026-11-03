@@ -37,13 +37,13 @@ public static partial class JGColor
     public static readonly JGColorToken TextTertiary = new("text.tertiary", dark: 0xFF8F887E, light: 0xFF685F57, darkIncreasedContrast: 0xFFAAA399, lightIncreasedContrast: 0xFF57504A);
 
     /// <summary><c>accent</c></summary>
-    public static readonly JGColorToken Accent = new("accent", dark: 0xFF1F3BFF, light: 0xFF1F3BFF, black: 0xFF1F3BFF);
+    public static readonly JGColorToken Accent = new("accent", dark: 0xFFA396F4, light: 0xFFA396F4, black: 0xFFA396F4);
 
     /// <summary><c>accent.text</c></summary>
-    public static readonly JGColorToken AccentText = new("accent.text", dark: 0xFF6175FF, light: 0xFF1F3BFF, black: 0xFF4D63FF);
+    public static readonly JGColorToken AccentText = new("accent.text", dark: 0xFFA396F4, light: 0xFF6A55ED, black: 0xFFA396F4);
 
     /// <summary><c>accent.dim</c></summary>
-    public static readonly JGColorToken AccentDim = new("accent.dim", dark: 0xFF1F2551, light: 0xFFDBDFFA);
+    public static readonly JGColorToken AccentDim = new("accent.dim", dark: 0xFF261F51, light: 0xFFE0DBFA);
 
     /// <summary><c>danger</c></summary>
     public static readonly JGColorToken Danger = new("danger", dark: 0xFFFF6B6B, light: 0xFFC23737);

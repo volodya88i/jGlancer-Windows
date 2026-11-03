@@ -24,7 +24,7 @@ internal sealed class ScanProgressView : Border
     {
         HorizontalAlignment = HorizontalAlignment.Center;
         VerticalAlignment = VerticalAlignment.Bottom;
-        Margin = new Thickness(JGSpacing.M, 0, JGSpacing.M, JGSpacing.L + JGMetrics.StatusBarHeight);
+        Margin = new Thickness(JGSpacing.M, 0, JGSpacing.M, JGSpacing.L + JGMetrics.FooterHeight);
         MinWidth = JGMetrics.DialogWidth;
         MaxWidth = JGMetrics.ReadableTextWidth;
         CornerRadius = new CornerRadius(JGMetrics.RadiusLarge);
@@ -34,6 +34,7 @@ internal sealed class ScanProgressView : Border
         this[!BackgroundProperty] = this.GetResourceObservable(JGColor.BgRaised.ResourceKey).ToBinding();
         this[!BorderBrushProperty] = this.GetResourceObservable(JGColor.LineStrong.ResourceKey).ToBinding();
         Child = _rows;
+        Support.WindowGlass.Frost(this, JGColor.BgRaised);
         IsVisible = false;
         AutomationProperties.SetLiveSetting(this, AutomationLiveSetting.Polite);
     }

@@ -46,11 +46,11 @@
           <d:JGIcon IsFilled="True" Data="{x:Static d:JGCustomIcons.NextFilled}" />
         </Button>
       </StackPanel>
-      <TextBlock Name="TimeText" Grid.Column="3" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" VerticalAlignment="Center" />
+      <TextBlock Name="TimeText" Grid.Column="3" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" VerticalAlignment="Center" />
       <d:JGScrubber Name="Scrubber" Grid.Column="4" Height="{x:Static d:JGMetrics.ControlHeightCompact}" VerticalAlignment="Center"
                     AutomationProperties.Name="{l:T 'Position'}" />
       <Button Name="SpeedButton" Grid.Column="5" Classes="tertiary" ToolTip.Tip="{l:T 'Speed'}" AutomationProperties.Name="{l:T 'Speed'}">
-        <TextBlock Name="SpeedText" Classes="mono" Foreground="{DynamicResource JG.text.secondary}" />
+        <TextBlock Name="SpeedText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" />
       </Button>
       <Button Name="MuteButton" Grid.Column="6" Classes="viewer">
         <d:JGIcon Name="MuteGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Volume}" />

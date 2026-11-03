@@ -15,6 +15,8 @@ public readonly record struct SegmentRange(double Start, double End)
 /// <param name="Rate">Audio only: the playback speed applied to the saved file.</param>
 /// <param name="Fades">Audio only: 30 ms fades at both ends (no click where the cut falls mid-wave).</param>
 /// <param name="KeepsAudioFormat">WAV, AIFF and FLAC stay in their format; off (or any other source): M4A.</param>
+/// <param name="IsWholeFile">The range is all of the file: the saved name carries no range.</param>
+/// <param name="ExactVideo">Video only: encoded again to start and end exactly on the range; off: copied from the keyframe at or before its start.</param>
 public sealed record SegmentExportRequest(
     string Source,
     MediaKind Kind,
@@ -22,7 +24,9 @@ public sealed record SegmentExportRequest(
     double Rate = PlaybackSpeed.Normal,
     bool PreservesPitch = true,
     bool Fades = false,
-    bool KeepsAudioFormat = true);
+    bool KeepsAudioFormat = true,
+    bool ExactVideo = false,
+    bool IsWholeFile = false);
 
 /// <summary>Rules of segment selection and export that do not depend on the platform (macOS SegmentExporter).</summary>
 public static class Segments
@@ -47,15 +51,18 @@ public static class Segments
     }
 
     /// <summary>
-    /// Whether a file can be cut: audio always (it is decoded and encoded again); video when its streams can be copied
-    /// without re-encoding into MP4 (MP4, MOV, M4V — not Matroska, WebM, AVI…).
+    /// Whether a file can be cut: audio always (it is decoded and encoded again); video always when encoded again
+    /// (<paramref name="exactVideo"/>), else when its streams can be copied into MP4 (MP4, MOV, M4V — not Matroska, WebM, AVI…).
     /// </summary>
-    public static bool CanExport(string path, MediaKind kind) => kind switch
+    public static bool CanExport(string path, MediaKind kind, bool exactVideo = false) => kind switch
     {
         MediaKind.Audio => true,
-        MediaKind.Video => CopyableVideo.Contains(Extension(path)),
+        MediaKind.Video => exactVideo || CanCopyVideo(path),
         _ => false,
     };
+
+    /// <summary>Whether a video's streams can be copied into MP4 without encoding them again.</summary>
+    public static bool CanCopyVideo(string path) => CopyableVideo.Contains(Extension(path));
 
     /// <summary>
     /// The saved file's extension: video becomes MP4 (Windows writes no QuickTime files; MP4 plays everywhere);
@@ -84,7 +91,11 @@ public static class Segments
     public static string SuggestedName(SegmentExportRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var name = $"{Path.GetFileNameWithoutExtension(request.Source)} ({Stamp(request.Range.Start)}–{Stamp(request.Range.End)})";
+        var name = Path.GetFileNameWithoutExtension(request.Source);
+        if (!request.IsWholeFile)
+        {
+            name += $" ({Stamp(request.Range.Start)}–{Stamp(request.Range.End)})";
+        }
         if (request.Kind == MediaKind.Audio && Math.Abs(request.Rate - PlaybackSpeed.Normal) > 0.001)
         {
             name += " " + request.Rate.ToString("0.##", CultureInfo.InvariantCulture) + "x";

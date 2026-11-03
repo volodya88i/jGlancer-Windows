@@ -92,6 +92,16 @@ internal static class DeveloperHooks
                     await Until(() => selecting.Playback.Status == Viewer.Media.PlaybackStatus.Ready && selecting.Playback.Duration > 0);
                     selecting.ToggleSegmentMode();
                 }
+                if (window.MediaViewer is { } music && options.MusicPanel)
+                {
+                    music.ShowMusicPanelInWindow();
+                    // A song of a few minutes takes longer to read than one wait.
+                    for (var wait = 0; wait < 4 && music.Model is { IsAnalyzing: true }; wait++)
+                    {
+                        await Until(() => music.Model is { IsAnalyzing: false });
+                    }
+                    music.Model?.Playback.SetTargetRate(Core.Playback.PlaybackTarget.RateForSemitones(2));
+                }
                 if (options.ShowFilmstrip)
                 {
                     window.Viewer?.PinFilmstrip();

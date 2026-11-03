@@ -130,6 +130,13 @@ public static class PlaybackSpeed
 
     public const double Maximum = 4;
 
+    /// <summary>
+    /// mpv's audio filter for this speed: faster with Keep Pitch uses a shorter window than mpv's own, which moves beats by
+    /// up to 15 ms (measured; W-109). Slower has no setting better everywhere, so mpv's own stays. Empty for mpv's own choice.
+    /// </summary>
+    public static string StretchFilter(double rate, bool preservesPitch) =>
+        preservesPitch && rate > Normal ? "scaletempo2=window-size=15:search-interval=20" : "";
+
     /// <summary>Rates offered in the speed menu, ascending.</summary>
     public static IReadOnlyList<double> Presets { get; } = [0.5, 0.75, 1, 1.25, 1.5, 2];
 

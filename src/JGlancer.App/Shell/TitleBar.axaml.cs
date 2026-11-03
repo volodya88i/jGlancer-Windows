@@ -25,6 +25,7 @@ internal sealed partial class TitleBar : UserControl
         ExitItem.Click += (_, _) => _window?.Close();
         AddFolderItem.Click += (_, _) => AddFolderRequested?.Invoke(this, EventArgs.Empty);
         ShowNamesItem.Click += (_, _) => Model?.SetShowNames(!Model.State.ShowNames);
+        StatusBarItem.Click += (_, _) => Settings.SettingsStore.Current.Update(s => s with { ShowStatusBar = !s.ShowStatusBar });
         SubfoldersItem.Click += (_, _) => Model?.SetIncludeSubfolders(!Model.State.IncludeSubfolders);
         ShowPreviewItem.Click += (_, _) => Primary?.SetPreviewVisible(!Primary.State.PreviewVisible);
         SplitOffItem.Click += (_, _) => SplitRequested?.Invoke(this, Core.Model.SplitMode.Off);
@@ -51,6 +52,7 @@ internal sealed partial class TitleBar : UserControl
         ViewMenu.SubmenuOpened += (_, _) =>
         {
             QuickPreviewItem.IsChecked = IsQuickPreviewOpen?.Invoke() == true;
+            StatusBarItem.IsChecked = Settings.SettingsStore.Current.Settings.ShowStatusBar;
             var split = CurrentSplit?.Invoke() ?? Core.Model.SplitMode.Off;
             SplitOffItem.IsChecked = split == Core.Model.SplitMode.Off;
             SplitSideItem.IsChecked = split == Core.Model.SplitMode.SideBySide;
@@ -204,6 +206,7 @@ internal sealed partial class TitleBar : UserControl
     private void UpdateChecks()
     {
         ShowNamesItem.IsChecked = _model?.State.ShowNames == true;
+        StatusBarItem.IsChecked = Settings.SettingsStore.Current.Settings.ShowStatusBar;
         SubfoldersItem.IsChecked = _model?.State.IncludeSubfolders == true;
         ShowPreviewItem.IsChecked = Primary?.State.PreviewVisible == true;
         ShowNamesItem.IsEnabled = SubfoldersItem.IsEnabled = ShowPreviewItem.IsEnabled = QuickPreviewItem.IsEnabled = _model is not null;

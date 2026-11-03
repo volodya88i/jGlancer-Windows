@@ -6,7 +6,7 @@ namespace JGlancer.Core.Tests.Store;
 
 public sealed class MigrationAndRootTests
 {
-    private static readonly string[] AllMigrations = ["v1-library", "v2-albums", "v3-search"];
+    private static readonly string[] AllMigrations = ["v1-library", "v2-albums", "v3-search", "v4-audio-analysis"];
 
     [Fact]
     public async Task MigrationsCreateTheSchemaOnceAndReopenCleanly()

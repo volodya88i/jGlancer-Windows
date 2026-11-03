@@ -46,22 +46,21 @@ internal static class FlagStyle
         {
             return new JGIcon { Data = JGIconData.X, Width = size, Height = size, Foreground = owner.Brush(JGColor.TextSecondary) };
         }
-        var brush = owner.Brush(Token(flag));
-        return new Viewbox
+        // Bound, not looked up now: a menu item is built before it is in a window, and a lookup there found nothing
+        // (the stars showed gray).
+        var key = Token(flag).ResourceKey;
+        var star = new Avalonia.Controls.Shapes.Path
         {
-            Width = size,
-            Height = size,
-            Child = new Avalonia.Controls.Shapes.Path
-            {
-                Data = Star,
-                Fill = brush,
-                Stroke = brush,
-                StrokeThickness = 2,
-                StrokeJoin = PenLineJoin.Round,
-                Width = 24,
-                Height = 24,
-            },
+            Data = Star,
+            StrokeThickness = 2,
+            StrokeJoin = PenLineJoin.Round,
+            Width = 24,
+            Height = 24,
         };
+        star[!Avalonia.Controls.Shapes.Shape.FillProperty] = star.GetResourceObservable(key).ToBinding();
+        star[!Avalonia.Controls.Shapes.Shape.StrokeProperty] = star.GetResourceObservable(key).ToBinding();
+        _ = owner;
+        return new Viewbox { Width = size, Height = size, Child = star };
     }
 
     /// <summary>Draws the star of <paramref name="flag"/> filling <paramref name="box"/> (the grid's badges).</summary>

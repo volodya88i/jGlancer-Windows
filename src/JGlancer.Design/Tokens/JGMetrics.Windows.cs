@@ -121,4 +121,37 @@ public static partial class JGMetrics
 
     /// <summary>Width of confirmation dialogs.</summary>
     public const double DialogWidth = 420;
+
+    /// <summary>The audio player's key and tempo panel (W-107).</summary>
+    public const double MusicPanelWidth = 340;
+
+    /// <summary>The fields for a typed target pitch and tempo.</summary>
+    public const double MusicShiftFieldWidth = 56;
+
+    /// <summary>
+    /// The bottom rows of the library window, the sidebar's Trash and the status bar, one height so their top lines meet
+    /// (W-110; the status bar was 24 and the Trash row 37).
+    /// </summary>
+    public const double FooterHeight = 36;
+
+    /// <summary>How much of the popup color tints frosted menus and panels (W-111): enough to read text over any backdrop.</summary>
+    public const double PopupGlassTintOpacity = 0.8;
+
+    /// <summary>How much of their own color tints frosted panels inside a window (toasts, progress).</summary>
+    public const double WindowGlassTintOpacity = 0.62;
+
+    /// <summary>The blur of frosted menus and panels, in effective pixels (standard deviation).</summary>
+    public const double PopupGlassBlur = 32;
+
+    /// <summary>The blur of frosted panels inside a window, in effective pixels (standard deviation).</summary>
+    public const double WindowGlassBlur = 18;
+
+    /// <summary>The chosen row of a menu over glass: the accent, this much of it, so the glass stays visible (W-111).</summary>
+    public const double AccentWashOpacity = 0.28;
+
+    /// <summary>Tooltips wrap at this width.</summary>
+    public const double ToolTipMaxWidth = 320;
+
+    /// <summary>The key and tempo panel's − and + buttons; Reset below them is as wide as both ("Сбросить" fits).</summary>
+    public const double MusicStepWidth = 40;
 }

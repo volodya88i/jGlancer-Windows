@@ -107,6 +107,9 @@ internal sealed record DeveloperOptions
     public JGlancer.Core.Model.MediaKind OpenKind { get; init; } = JGlancer.Core.Model.MediaKind.Photo;
     public int ViewerStep { get; init; }
     public bool ShowFilmstrip { get; init; }
+
+    /// <summary><c>--music-panel</c>: with <c>--open-first --open-kind audio</c>, analyzes the song and shows the key and tempo panel in the window, so a snapshot holds it.</summary>
+    public bool MusicPanel { get; init; }
     public Avalonia.Size? WindowSize { get; init; }
     public bool NoWindowsThumbnailCache { get; init; }
     public bool Segment { get; init; }
@@ -178,6 +181,7 @@ internal sealed record DeveloperOptions
             OpenKind = Value("--open-kind") switch { "video" => JGlancer.Core.Model.MediaKind.Video, "audio" => JGlancer.Core.Model.MediaKind.Audio, _ => JGlancer.Core.Model.MediaKind.Photo },
             ViewerStep = (int)(Number("--viewer-step") ?? 0),
             ShowFilmstrip = args.Contains("--show-filmstrip", StringComparer.OrdinalIgnoreCase),
+            MusicPanel = args.Contains("--music-panel", StringComparer.OrdinalIgnoreCase),
             NoWindowsThumbnailCache = args.Contains("--no-windows-thumbcache", StringComparer.OrdinalIgnoreCase),
             Segment = args.Contains("--segment", StringComparer.OrdinalIgnoreCase),
             SelectKind = Value("--select-kind") switch { "photo" => JGlancer.Core.Model.MediaKind.Photo, "video" => JGlancer.Core.Model.MediaKind.Video, "audio" => JGlancer.Core.Model.MediaKind.Audio, _ => null },

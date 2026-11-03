@@ -22,6 +22,10 @@ public static class JGTheme
     /// <summary>The Black theme (W-97): black surfaces; inherits every resource it does not override from Dark.</summary>
     public static ThemeVariant BlackTheme { get; } = new("Black", ThemeVariant.Dark);
 
+    /// <summary>Whether one of the Increase Contrast variants is showing (Windows' contrast themes map to them).</summary>
+    public static bool IsContrastTheme => Application.Current?.ActualThemeVariant is { } variant
+        && (variant == DarkIncreasedContrast || variant == LightIncreasedContrast || variant == BlackIncreasedContrast);
+
     /// <summary>Black with Increase Contrast.</summary>
     public static ThemeVariant BlackIncreasedContrast { get; } = new("BlackIncreasedContrast", ThemeVariant.Dark);
 
@@ -116,6 +120,7 @@ public static class JGTheme
         // Check boxes and radio buttons (Duplicates, Setup): the accent box with a tick that reads on it, in every theme
         // (Fluent's light theme otherwise reached past the accent keys above to Windows' own color).
         var accentBrush = new ImmutableSolidColorBrush(accent);
+        dictionary["JG.accent.wash"] = new ImmutableSolidColorBrush(accent, JGMetrics.AccentWashOpacity);
         var tick = new ImmutableSolidColorBrush(Color.FromUInt32(JGAccent.On(argb)));
         foreach (var state in new[] { "", "PointerOver", "Pressed" })
         {

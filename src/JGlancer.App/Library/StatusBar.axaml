@@ -5,7 +5,7 @@
              xmlns:lib="using:JGlancer.App.Library"
              x:Class="JGlancer.App.Library.StatusBar"
              x:DataType="lib:LibraryModel"
-             Height="{x:Static d:JGMetrics.StatusBarHeight}">
+             Height="{x:Static d:JGMetrics.FooterHeight}">
   <!-- Counts and sizes in mono, background activity, the latest problem (macOS StatusBarView). -->
   <Border BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,1,0,0" Padding="{x:Static d:JGInsets.Bar}">
     <Grid ColumnDefinitions="*,Auto,Auto" VerticalAlignment="Center">

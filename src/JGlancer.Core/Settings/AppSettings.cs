@@ -119,11 +119,20 @@ public sealed record AppSettings
     /// <summary>The audio scrubber's look: the waveform, a narrow one, or the plain timeline (W-71).</summary>
     public WaveformStyle Waveform { get; set; } = WaveformStyle.Narrow;
 
+    /// <summary>The video scrubber's look: the plain timeline, or the waveform of its sound as in the audio player.</summary>
+    public WaveformStyle VideoWaveform { get; set; } = WaveformStyle.Timeline;
+
     /// <summary>Fades and slides off even when Windows' animation effects are on.</summary>
     public bool ReduceMotion { get; set; }
 
     /// <summary>A heavily blurred cover art behind audio files (defaults = the Performance preset).</summary>
     public bool CoverBackdrop { get; set; }
+
+    /// <summary>The library's bottom line with the selection's count and size.</summary>
+    public bool ShowStatusBar { get; set; } = true;
+
+    /// <summary>Menus, panels and toasts as frosted glass (W-111); on unless turned off, in both presets.</summary>
+    public bool FrostedGlass { get; set; } = true;
 
     /// <summary>The audio player's blurred backdrop flows from one song's into the next one's.</summary>
     public bool BackdropCrossfade { get; set; } = true;

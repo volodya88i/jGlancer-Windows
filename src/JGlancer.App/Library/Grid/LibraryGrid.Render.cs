@@ -279,10 +279,13 @@ internal sealed partial class LibraryGrid
                 JGTypeScale.Mono.Size, colors.Primary);
             _badges[text] = formatted;
         }
+        // Bottom right, as players and Explorer show it: the top corners hold the flag and often a picture's subject.
         var inset = JGMetrics.BadgeInset;
-        var badge = new Rect(imageRect.X + inset, imageRect.Y + inset, formatted.Width + 2 * inset, formatted.Height);
+        var height = formatted.Height + JGSpacing.Xxs;
+        var badge = new Rect(imageRect.Right - inset - formatted.Width - 2 * inset, imageRect.Bottom - inset - height,
+            formatted.Width + 2 * inset, height);
         context.DrawRectangle(colors.Scrim, null, badge, JGMetrics.BadgeRadius, JGMetrics.BadgeRadius);
-        context.DrawText(formatted, new Point(badge.X + inset, badge.Y));
+        context.DrawText(formatted, new Point(badge.X + inset, badge.Y + (height - formatted.Height) / 2));
     }
 
     /// <summary>

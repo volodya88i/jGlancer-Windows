@@ -19,7 +19,15 @@ internal sealed partial class SidebarView : UserControl
         Rows.KeyDown += OnRowsKeyDown;
         DragDrop.SetAllowDrop(Rows, true);
         Rows.AddHandler(DragDrop.DragOverEvent, OnDragOver);
-        Rows.AddHandler(DragDrop.DragLeaveEvent, (_, _) => Highlight(null));
+        // Leaving one row for the next raises a leave too: only leaving the list clears the mark (it flickered).
+        Rows.AddHandler(DragDrop.DragLeaveEvent, (_, e) =>
+        {
+            var point = e.GetPosition(Rows);
+            if (point.X < 0 || point.Y < 0 || point.X >= Rows.Bounds.Width || point.Y >= Rows.Bounds.Height)
+            {
+                Highlight(null);
+            }
+        });
         Rows.AddHandler(DragDrop.DropEvent, OnDrop);
         Rows.AddHandler(PointerPressedEvent, OnRowPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         Rows.AddHandler(PointerMovedEvent, OnRowMoved, RoutingStrategies.Tunnel, handledEventsToo: true);

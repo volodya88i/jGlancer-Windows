@@ -25,7 +25,7 @@ internal sealed class ToastView : Border
     {
         HorizontalAlignment = HorizontalAlignment.Center;
         VerticalAlignment = VerticalAlignment.Bottom;
-        Margin = new Thickness(JGSpacing.M, 0, JGSpacing.M, JGSpacing.L + JGMetrics.StatusBarHeight);
+        Margin = new Thickness(JGSpacing.M, 0, JGSpacing.M, JGSpacing.L + JGMetrics.FooterHeight);
         MaxWidth = JGMetrics.ReadableTextWidth;
         CornerRadius = new CornerRadius(JGMetrics.RadiusLarge);
         BorderThickness = new Thickness(JGMetrics.OutlineWidth);
@@ -41,6 +41,7 @@ internal sealed class ToastView : Border
         row.Children.Add(_undo);
         row.Children.Add(_stop);
         Child = new Panel { Children = { row, _bar } };
+        Support.WindowGlass.Frost(this, JGColor.BgRaised);
         _undo.Click += async (_, _) =>
         {
             if (_model is { } model)

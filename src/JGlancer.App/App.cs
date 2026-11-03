@@ -136,6 +136,7 @@ internal sealed partial class App : Application
             base.OnFrameworkInitializationCompleted();
             return;
         }
+        Support.PopupGlass.Install();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             _desktop = desktop;

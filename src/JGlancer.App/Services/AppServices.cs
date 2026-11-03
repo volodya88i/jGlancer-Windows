@@ -41,6 +41,7 @@ internal sealed class AppServices : IDisposable
     {
         Paths = paths;
         Store = store;
+        Viewer.Media.AudioAnalyzer.Store = store;
         Recovery = recovery;
         Cache = cache;
         Thumbnails = new ThumbnailService(cache, new WindowsThumbnailGenerator());

@@ -23,6 +23,7 @@ public sealed class SegmentsTests
         Assert.True(Segments.CanExport(@"C:\a\clip.mp4", MediaKind.Video));
         Assert.False(Segments.CanExport(@"C:\a\clip.mkv", MediaKind.Video));
         Assert.False(Segments.CanExport(@"C:\a\clip.webm", MediaKind.Video));
+        Assert.True(Segments.CanExport(@"C:\a\clip.webm", MediaKind.Video, exactVideo: true));
         Assert.True(Segments.CanExport(@"C:\a\song.ogg", MediaKind.Audio));
         Assert.False(Segments.CanExport(@"C:\a\photo.jpg", MediaKind.Photo));
     }
@@ -33,6 +34,7 @@ public sealed class SegmentsTests
         var song = new SegmentExportRequest(@"C:\m\Song.flac", MediaKind.Audio, new SegmentRange(62, 75.44));
         Assert.Equal("Song (1m02.0s–1m15.4s).flac", Segments.SuggestedName(song));
         Assert.Equal("Song (1m02.0s–1m15.4s) 1.25x.m4a", Segments.SuggestedName(song with { Rate = 1.25, KeepsAudioFormat = false }));
+        Assert.Equal("Song 1.25x.flac", Segments.SuggestedName(song with { Rate = 1.25, IsWholeFile = true }));
         Assert.Equal("mp3", Segments.FileExtension(song with { Source = @"C:\m\Song.mp3" }));
         Assert.Equal("m4a", Segments.FileExtension(song with { Source = @"C:\m\Song.mp3", KeepsAudioFormat = false }));
         Assert.Equal("m4a", Segments.FileExtension(song with { Source = @"C:\m\Song.ogg" }));

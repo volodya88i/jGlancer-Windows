@@ -309,6 +309,9 @@ public sealed unsafe class MpvPlayer : IDisposable
     /// <summary>Keeps the pitch at speeds other than 1× (on), or plays like tape (off).</summary>
     public void SetPitchCorrection(bool on) => SetFlag("audio-pitch-correction", on);
 
+    /// <summary>mpv's audio filters (<c>af</c>), or none for an empty string.</summary>
+    public void SetAudioFilters(string filters) => MpvNative.SetPropertyString(_handle, "af", filters);
+
     public double? Position => GetDouble("time-pos");
 
     public double? Duration => GetDouble("duration");
