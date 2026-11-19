@@ -175,6 +175,8 @@ internal sealed partial class SettingsWindow
         ShortcutCommand.NewAlbum => L.T("New Album"),
         ShortcutCommand.TogglePreview => L.T("Show Preview"),
         ShortcutCommand.ShowNames => L.T("Show Names"),
+        ShortcutCommand.AsGrid => L.T("as Grid"),
+        ShortcutCommand.AsList => L.T("as List"),
         ShortcutCommand.SplitView => L.T("Split View"),
         ShortcutCommand.SplitSideBySide => L.T("Side by Side"),
         ShortcutCommand.SplitStacked => L.T("Stacked"),

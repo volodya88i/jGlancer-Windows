@@ -15,7 +15,7 @@
     </Panel>
   <Border BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,1,0,0"
           Padding="{x:Static d:JGInsets.Bar}">
-    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="{x:Static d:JGSpacing.S}" VerticalAlignment="Center">
+    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="{x:Static d:JGSpacing.S}" VerticalAlignment="Center">
       <Border CornerRadius="{StaticResource JG.radius.small}" ClipToBounds="True" Background="{DynamicResource JG.bg.base}"
               Width="{x:Static d:JGMetrics.NowPlayingCoverSide}" Height="{x:Static d:JGMetrics.NowPlayingCoverSide}">
         <Panel>
@@ -50,14 +50,26 @@
       <d:JGScrubber Name="Scrubber" Grid.Column="4" Height="{x:Static d:JGMetrics.ControlHeightCompact}" VerticalAlignment="Center"
                     AutomationProperties.Name="{l:T 'Position'}" />
       <Button Name="SpeedButton" Grid.Column="5" Classes="tertiary" ToolTip.Tip="{l:T 'Speed'}" AutomationProperties.Name="{l:T 'Speed'}">
-        <TextBlock Name="SpeedText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" />
+        <Panel>
+          <TextBlock Classes="mono besideIcons" Text="1.25×" Opacity="0" />
+          <TextBlock Name="SpeedText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" HorizontalAlignment="Center" />
+        </Panel>
       </Button>
       <Button Name="MuteButton" Grid.Column="6" Classes="viewer">
         <d:JGIcon Name="MuteGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Volume}" />
       </Button>
       <d:JGSlider Name="VolumeSlider" Grid.Column="7" Width="{x:Static d:JGMetrics.VolumeSliderWidth}" Minimum="0" Maximum="100"
                        SmallChange="10" VerticalAlignment="Center" AutomationProperties.Name="{l:T 'Volume'}" />
-      <Button Name="CloseButton" Grid.Column="8" Classes="icon"
+      <!-- Loop and Play Next, as in the big player; this player's own, never saved (MAC-028). -->
+      <StackPanel Grid.Column="8" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}" VerticalAlignment="Center">
+        <Button Name="LoopButton" Classes="viewer" ToolTip.Tip="{l:T 'Loop'}" AutomationProperties.Name="{l:T 'Loop'}">
+          <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Loop}" />
+        </Button>
+        <Button Name="PlayNextButton" Classes="viewer" ToolTip.Tip="{l:T 'Play Next'}" AutomationProperties.Name="{l:T 'Play Next'}">
+          <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.PlayNext}" />
+        </Button>
+      </StackPanel>
+      <Button Name="CloseButton" Grid.Column="9" Classes="icon"
               ToolTip.Tip="{l:T 'Close Mini Player'}" AutomationProperties.Name="{l:T 'Close Mini Player'}">
         <d:JGIcon Data="{x:Static d:JGIconData.X}" />
       </Button>

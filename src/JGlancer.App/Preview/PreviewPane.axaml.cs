@@ -94,7 +94,15 @@ internal sealed partial class PreviewPane : UserControl
         var details = Settings.SettingsStore.Current.Settings.PreviewDetails;
         Details.Show(details && asset is not null ? asset.Path : null, asset?.Kind ?? MediaKind.Photo);
         DetailsGlyph.Foreground = this.Brush(details ? JGColor.AccentText : JGColor.TextSecondary);
-        SetBackdrop(asset?.Kind == MediaKind.Audio ? model.Cover : null);
+        // From song to song the blurred cover stays until the next one is known; a photo or a video clears it (MAC-028).
+        if (asset?.Kind != MediaKind.Audio)
+        {
+            SetBackdrop(null);
+        }
+        else if (model.IsCoverKnown)
+        {
+            SetBackdrop(model.Cover);
+        }
     }
 
     /// <summary>A tiny copy of the cover stretched over the pane blurs like frosted glass (as the audio viewer).</summary>

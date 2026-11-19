@@ -12,7 +12,7 @@ using JGlancer.Design;
 namespace JGlancer.App.Viewer.Media;
 
 /// <summary>
-/// The audio player's key and tempo button and its panel (W-107, W-108): the tempo, the key, and the pitch and tempo the
+/// The audio player's key and tempo button and its panel (W-107, W-108), as large as its rows (MAC-020): the tempo, the key, and the pitch and tempo the
 /// song is sped up or slowed down to. A panel, not a menu: it stays open while values change, and its controls stay in
 /// place and keep the focus. Its rows never change: while a song is analyzed its BPM and key show moving bars, when
 /// nothing was found a dash, so the panel keeps its size. Every row is one control high, labels and values in the same
@@ -26,7 +26,6 @@ internal sealed class MusicPanel
         ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"),
         RowDefinitions = new RowDefinitions("Auto,Auto,Auto,Auto"),
         ColumnSpacing = JGSpacing.S,
-        Width = JGMetrics.MusicPanelWidth,
         Margin = new Thickness(JGSpacing.Xs),
     };
     private readonly TextBlock _bpm = Value();
@@ -71,7 +70,7 @@ internal sealed class MusicPanel
         _flyout = new Flyout { Content = _rows, Placement = PlacementMode.TopEdgeAlignedRight };
     }
 
-    /// <summary>What the button says: <c>B min · 144 · +2</c>, as the song sounds now.</summary>
+    /// <summary>What the button says: <c>B min · 144</c>, as the song sounds now; a shift alone only without a key (MAC-020).</summary>
     public static string ButtonLabel(MediaViewerModel model)
     {
         if (model.IsAnalyzing)
@@ -86,7 +85,7 @@ internal sealed class MusicPanel
         }
         // The key names the distance itself when it is not whole.
         var key = KeyAsHeard(found.Key, heard);
-        var parts = new[] { key, HeardBpm(model) is { } bpm ? Whole(bpm) : null, PlaybackTarget.IsWhole(heard) || key is null ? pitch : null };
+        var parts = new[] { key, HeardBpm(model) is { } bpm ? Whole(bpm) : null, key is null ? pitch : null };
         return string.Join(" · ", parts.Where(part => part is not null));
     }
 

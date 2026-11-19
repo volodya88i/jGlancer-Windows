@@ -221,7 +221,7 @@ internal sealed partial class LibraryGrid
         _model.Selection.Marquee(ids);
         InvalidateVisual();
         // Auto-scroll while the pointer is past the top or bottom edge (a timer only during the drag).
-        var outside = _lastPointer.Y < AutoScrollMargin || _lastPointer.Y > Bounds.Height - AutoScrollMargin;
+        var outside = _lastPointer.Y < _insets.Top + AutoScrollMargin || _lastPointer.Y > Bounds.Height - _insets.Bottom - AutoScrollMargin;
         if (outside)
         {
             _autoScroll ??= new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Input, (_, _) => AutoScroll());
@@ -240,7 +240,7 @@ internal sealed partial class LibraryGrid
             _autoScroll?.Stop();
             return;
         }
-        var direction = _lastPointer.Y < AutoScrollMargin ? -1 : _lastPointer.Y > Bounds.Height - AutoScrollMargin ? 1 : 0;
+        var direction = _lastPointer.Y < _insets.Top + AutoScrollMargin ? -1 : _lastPointer.Y > Bounds.Height - _insets.Bottom - AutoScrollMargin ? 1 : 0;
         if (direction == 0)
         {
             _autoScroll?.Stop();
@@ -325,7 +325,7 @@ internal sealed partial class LibraryGrid
         }
         var current = _model.Selection.Focus is { } focus ? _model.Order.IndexOf(focus) : null;
         var target = current is { } index
-            ? _geometry.Move(index, move, _geometry.RowsPerPage(Bounds.Height))
+            ? _geometry.Move(index, move, _geometry.RowsPerPage(Bounds.Height - _insets.Top - _insets.Bottom))
             : move == GridMove.End ? _geometry.ItemCount - 1 : 0;
         var id = Refs[target].Id;
         if (extending)

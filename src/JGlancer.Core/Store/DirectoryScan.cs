@@ -11,7 +11,8 @@ public sealed record ScannedFile(
     long Size,
     DateTimeOffset ModifiedAt,
     DateTimeOffset? CreatedAt,
-    ulong? FileId);
+    ulong? FileId,
+    bool IsCloudOnly = false);
 
 /// <summary>A complete, shallow listing of one directory inside a root, ready to reconcile with the database.</summary>
 /// <param name="RelativePath">Path relative to the root, <c>/</c>-separated, empty for the root itself.</param>

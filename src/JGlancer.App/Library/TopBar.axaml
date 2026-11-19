@@ -6,7 +6,8 @@
              Height="{x:Static d:JGMetrics.BarHeight}">
   <!-- Breadcrumb · kind filters · sort · thumbnail size (DESIGN.md §8). The controls stay hidden until the library
        has a folder; in a narrow window the size slider steps aside first, then the sort menu. -->
-  <Border BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,0,0,1" Padding="{x:Static d:JGInsets.Bar}">
+  <!-- Frosted glass over the files scrolling under it (macOS MAC-023), plain bg.base with glass off. -->
+  <Border Name="Surface" BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,0,0,1" Padding="{x:Static d:JGInsets.Bar}">
     <Grid ColumnDefinitions="*,Auto">
       <StackPanel Name="Breadcrumb" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}" VerticalAlignment="Center" ClipToBounds="True" />
       <StackPanel Name="Controls" Grid.Column="1" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.M}" VerticalAlignment="Center">
@@ -62,6 +63,15 @@
             <d:JGIcon Name="SortArrow" Foreground="{DynamicResource JG.text.secondary}" />
           </StackPanel>
         </Button>
+        <!-- Grid or list (MAC-041): joined icon toggles, the chosen one inverted. -->
+        <StackPanel Name="ViewModes" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}" VerticalAlignment="Center">
+          <ToggleButton Name="GridModeButton" Theme="{StaticResource JG.iconToggle}" ToolTip.Tip="{l:T 'as Grid'}" AutomationProperties.Name="{l:T 'as Grid'}">
+            <d:JGIcon IsFilled="True" Data="{x:Static d:JGCustomIcons.ViewGrid}" />
+          </ToggleButton>
+          <ToggleButton Name="ListModeButton" Theme="{StaticResource JG.iconToggle}" ToolTip.Tip="{l:T 'as List'}" AutomationProperties.Name="{l:T 'as List'}">
+            <d:JGIcon IsFilled="True" Data="{x:Static d:JGCustomIcons.ViewList}" />
+          </ToggleButton>
+        </StackPanel>
         <d:JGSlider Name="SizeSlider"
                          Width="{x:Static d:JGLayout.SliderWidth}"
                          Minimum="{x:Static d:JGMetrics.TileSideMin}"

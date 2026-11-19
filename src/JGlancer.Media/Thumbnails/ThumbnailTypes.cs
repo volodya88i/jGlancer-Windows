@@ -53,10 +53,19 @@ public sealed record ThumbnailRequest(
 
     public ThumbnailKey Key => new(AssetId, UnixMilliseconds.From(ModifiedAt), StoredBucket);
 
+    /// <summary>
+    /// The file is kept only in the cloud: its content is never read for a thumbnail (that would download it); one
+    /// already stored, or Windows' own cached one, still shows (MAC-040).
+    /// </summary>
+    public bool IsCloudOnly { get; init; }
+
     public static ThumbnailRequest For(Asset asset, ThumbnailBucket bucket)
     {
         ArgumentNullException.ThrowIfNull(asset);
-        return new ThumbnailRequest(asset.Id, asset.Path, asset.Kind, asset.TypeIdentifier, asset.ModifiedAt, asset.Duration, bucket);
+        return new ThumbnailRequest(asset.Id, asset.Path, asset.Kind, asset.TypeIdentifier, asset.ModifiedAt, asset.Duration, bucket)
+        {
+            IsCloudOnly = asset.IsCloudOnly,
+        };
     }
 }
 

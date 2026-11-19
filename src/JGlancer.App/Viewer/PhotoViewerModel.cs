@@ -78,6 +78,9 @@ internal sealed class PhotoViewerModel : IFilmstripSource, IDisposable
     /// <summary>True when the current photo could not be decoded.</summary>
     public bool Failed { get; private set; }
 
+    /// <summary>The photo shown is kept only in the cloud and its decode, which downloads it, is still running.</summary>
+    public bool IsDownloading => Current is { IsCloudOnly: true } && CurrentId is { } id && !_decoded.ContainsKey(id) && !Failed;
+
     /// <summary>Milliseconds from the last navigation to its picture being shown (benchmarks, macOS viewer.next).</summary>
     public double? LastNavigationMilliseconds { get; private set; }
 
@@ -177,7 +180,9 @@ internal sealed class PhotoViewerModel : IFilmstripSource, IDisposable
         for (var order = 0; order < window.Count; order++)
         {
             var id = window[order];
-            if (!_decoded.ContainsKey(id) && !_decodes.ContainsKey(id) && _rows.ContainsKey(id))
+            // A neighbor kept only in the cloud is not decoded ahead: that would download it (MAC-040).
+            if (!_decoded.ContainsKey(id) && !_decodes.ContainsKey(id) && _rows.TryGetValue(id, out var row)
+                && (id == CurrentId || !row.IsCloudOnly))
             {
                 Decode(id);
             }
@@ -218,8 +223,11 @@ internal sealed class PhotoViewerModel : IFilmstripSource, IDisposable
         {
             if (_services.Bitmaps.TryGet(ThumbnailRequest.For(asset, bucket).Key, out var bitmap) && bitmap is not null)
             {
-                var size = bitmap.PixelSize;
-                return new ViewerPicture(bitmap, size.Width, size.Height, IsFullResolution: false, IsPlaceholder: true);
+                // The photo's own size from the library, so a photo smaller than the window opens at its size instead of
+                // first filling it and then shrinking (macOS MAC-022); the thumbnail's for files outside the library.
+                var (width, height) = asset is { Width: > 0, Height: > 0 } ? (asset.Width.Value, asset.Height.Value)
+                    : (bitmap.PixelSize.Width, bitmap.PixelSize.Height);
+                return new ViewerPicture(bitmap, width, height, IsFullResolution: false, IsPlaceholder: true);
             }
         }
         return null;

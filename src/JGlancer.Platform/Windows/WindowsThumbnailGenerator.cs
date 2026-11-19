@@ -26,9 +26,19 @@ public sealed unsafe partial class WindowsThumbnailGenerator : IThumbnailGenerat
         ArgumentNullException.ThrowIfNull(request);
         try
         {
+            if (request.IsCloudOnly)
+            {
+                // Only what is on this PC already: reading the file would download it (MAC-040).
+                return UsesWindowsCache ? Shell(request.Path, maxPixelSize, cacheOnly: true) : null;
+            }
             // What Explorer already made costs a cache read, not a decode: 4–8 ms against 135 ms for a HEIC or a full
-            // decode of a large PNG (W-37). Only a miss decodes.
-            if (UsesWindowsCache && Shell(request.Path, maxPixelSize, cacheOnly: true) is { } cached)
+            // decode of a large PNG (W-37). Only a miss decodes. Explorer ignores a photo's color profile, so a photo
+            // with a wide-gamut one (Display P3, Adobe RGB) is decoded here, in sRGB (MAC-036).
+            // The cache holds the sizes Explorer showed, down to 48-pixel icons: a smaller one than asked for would look
+            // blurred on the tile, so it is made again here instead.
+            var wide = request.Kind == MediaKind.Photo && WicPhotoDecoder.HasWideProfile(request.Path);
+            if (UsesWindowsCache && !wide && Shell(request.Path, maxPixelSize, cacheOnly: true) is { } cached
+                && CoversRequest(cached.Width, cached.Height, maxPixelSize))
             {
                 return cached;
             }
@@ -43,6 +53,12 @@ public sealed unsafe partial class WindowsThumbnailGenerator : IThumbnailGenerat
             return null;
         }
     }
+
+    /// <summary>
+    /// Whether a cached thumbnail is as large as the request on its longest side (a little short of it counts: Explorer
+    /// rounds); smaller ones are never taken from Windows' cache.
+    /// </summary>
+    internal static bool CoversRequest(int width, int height, int maxPixelSize) => Math.Max(width, height) >= maxPixelSize * 0.9;
 
     /// <summary>A photo through WIC (the viewer's decoder), or null when WIC has no codec for it or the file is broken.</summary>
     internal static ThumbnailImage? Photo(string path, int maxPixelSize) => WicPhotoDecoder.DecodeFile(path, maxPixelSize, maxPixelSize)?.Image;

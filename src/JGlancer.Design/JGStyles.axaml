@@ -427,9 +427,10 @@
         <Style Selector="^:pointerover">
           <Setter Property="Foreground" Value="{DynamicResource JG.text.primary}" />
         </Style>
+        <!-- On: inverted, like the primary button (macOS MAC-025). -->
         <Style Selector="^:checked">
-          <Setter Property="Background" Value="{DynamicResource JG.bg.raised}" />
-          <Setter Property="Foreground" Value="{DynamicResource JG.text.primary}" />
+          <Setter Property="Background" Value="{DynamicResource JG.text.primary}" />
+          <Setter Property="Foreground" Value="{DynamicResource JG.bg.base}" />
         </Style>
         <Style Selector="^:pressed">
           <Setter Property="Opacity" Value="{x:Static d:JGMetrics.PressedOpacity}" />
@@ -459,9 +460,10 @@
         <Style Selector="^:pointerover">
           <Setter Property="Foreground" Value="{DynamicResource JG.text.primary}" />
         </Style>
+        <!-- On: inverted, like the primary button (macOS MAC-025). -->
         <Style Selector="^:checked">
-          <Setter Property="Background" Value="{DynamicResource JG.bg.raised}" />
-          <Setter Property="Foreground" Value="{DynamicResource JG.text.primary}" />
+          <Setter Property="Background" Value="{DynamicResource JG.text.primary}" />
+          <Setter Property="Foreground" Value="{DynamicResource JG.bg.base}" />
         </Style>
         <Style Selector="^:pressed">
           <Setter Property="Opacity" Value="{x:Static d:JGMetrics.PressedOpacity}" />

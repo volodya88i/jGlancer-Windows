@@ -25,7 +25,7 @@ internal unsafe partial interface IPropertyStore
     int GetValue(PropertyKey* key, PropVariant* value);
 }
 
-/// <summary>wincodec.h IWICImagingFactory, up to CreateBitmapFlipRotator.</summary>
+/// <summary>wincodec.h IWICImagingFactory, up to CreateColorTransformer.</summary>
 [GeneratedComInterface]
 [Guid("ec5ec8a9-c395-4314-9c77-54d7a935ff70")]
 [SupportedOSPlatform("windows")]
@@ -71,6 +71,9 @@ internal unsafe partial interface IWICImagingFactory
 
     [PreserveSig]
     int CreateColorContext(nint* context);
+
+    [PreserveSig]
+    int CreateColorTransformer(nint* transformer);
 }
 
 /// <summary>wincodec.h IWICColorContext: an embedded ICC profile or an EXIF color space.</summary>
@@ -107,6 +110,16 @@ internal unsafe partial interface IWICFormatConverter : IWICBitmapSource
 {
     [PreserveSig]
     int Initialize(IWICBitmapSource source, Guid* format, int dither, nint palette, double alphaThreshold, int paletteType);
+}
+
+/// <summary>wincodec.h IWICColorTransform: pixels from one color context to another.</summary>
+[GeneratedComInterface]
+[Guid("B66F034F-D0E2-40ab-B436-6DE39E321A94")]
+[SupportedOSPlatform("windows")]
+internal unsafe partial interface IWICColorTransform : IWICBitmapSource
+{
+    [PreserveSig]
+    int Initialize(IWICBitmapSource source, IWICColorContext sourceContext, IWICColorContext destinationContext, Guid* format);
 }
 
 /// <summary>wincodec.h IWICBitmapScaler.</summary>

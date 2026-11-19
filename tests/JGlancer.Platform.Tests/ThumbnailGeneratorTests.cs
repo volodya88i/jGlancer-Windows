@@ -23,6 +23,15 @@ public sealed class ThumbnailGeneratorTests
         return image.Pixels[i + 2] > 200 && image.Pixels[i + 1] < 60 && image.Pixels[i] < 60;
     }
 
+    [Theory]
+    [InlineData(48, 48, 640, false)]
+    [InlineData(256, 256, 640, false)]
+    [InlineData(360, 640, 640, true)]
+    [InlineData(640, 327, 640, true)]
+    [InlineData(300, 200, 320, true)]
+    public void OnlyCachedThumbnailsAsLargeAsTheRequestAreTaken(int width, int height, int size, bool taken) =>
+        Assert.Equal(taken, WindowsThumbnailGenerator.CoversRequest(width, height, size));
+
     [Fact]
     public void PhotosAreDownsampledWithOrientationAndNeverUpscaled()
     {

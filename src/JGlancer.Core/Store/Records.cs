@@ -10,7 +10,7 @@ internal sealed class AssetRow
         asset.id, asset.folder_id, asset.name, asset.name_key, asset.kind, asset.uti, asset.size, asset.mtime,
         asset.birth_time, asset.inode, asset.quick_hash, asset.width, asset.height, asset.orientation, asset.duration,
         asset.fps, asset.codec, asset.captured_at, asset.flag, asset.state, asset.missing_since, asset.meta_state,
-        asset.indexed_at
+        asset.indexed_at, asset.cloud_only
         """;
 
     public long Id { get; set; }
@@ -36,6 +36,7 @@ internal sealed class AssetRow
     public long? MissingSince { get; set; }
     public int MetaState { get; set; }
     public long IndexedAt { get; set; }
+    public bool CloudOnly { get; set; }
 
     public static AssetRow Read(SqliteDataReader r) => new()
     {
@@ -62,6 +63,7 @@ internal sealed class AssetRow
         MissingSince = r.NullableLong("missing_since"),
         MetaState = r.GetInt32(r.GetOrdinal("meta_state")),
         IndexedAt = r.GetInt64(r.GetOrdinal("indexed_at")),
+        CloudOnly = r.GetInt64(r.GetOrdinal("cloud_only")) != 0,
     };
 
     public Asset ToModel(string directory) => new(
@@ -69,7 +71,7 @@ internal sealed class AssetRow
         UnixMilliseconds.ToDate(Mtime), BirthTime is { } birth ? UnixMilliseconds.ToDate(birth) : null,
         Width, Height, Orientation, Duration, Fps, Codec,
         CapturedAt is { } captured ? UnixMilliseconds.ToDate(captured) : null,
-        (AssetState)State, (MetadataState)MetaState, (AssetFlag)Flag);
+        (AssetState)State, (MetadataState)MetaState, (AssetFlag)Flag) { IsCloudOnly = CloudOnly };
 
     /// <summary>Clears everything stage 2 derives from file content.</summary>
     public void ResetMetadata()
@@ -89,9 +91,9 @@ internal sealed class AssetRow
     {
         Id = Sql.Long(connection, """
             INSERT INTO asset (folder_id, name, name_key, kind, uti, size, mtime, birth_time, inode, quick_hash, width,
-              height, orientation, duration, fps, codec, captured_at, flag, state, missing_since, meta_state, indexed_at)
+              height, orientation, duration, fps, codec, captured_at, flag, state, missing_since, meta_state, indexed_at, cloud_only)
             VALUES (@folder, @name, @key, @kind, @uti, @size, @mtime, @birth, @inode, @hash, @width, @height,
-              @orientation, @duration, @fps, @codec, @captured, @flag, @state, @missing, @meta, @indexed)
+              @orientation, @duration, @fps, @codec, @captured, @flag, @state, @missing, @meta, @indexed, @cloud)
             RETURNING id
             """, Parameters()) ?? 0;
     }
@@ -102,7 +104,8 @@ internal sealed class AssetRow
             UPDATE asset SET folder_id = @folder, name = @name, name_key = @key, kind = @kind, uti = @uti, size = @size,
               mtime = @mtime, birth_time = @birth, inode = @inode, quick_hash = @hash, width = @width, height = @height,
               orientation = @orientation, duration = @duration, fps = @fps, codec = @codec, captured_at = @captured,
-              flag = @flag, state = @state, missing_since = @missing, meta_state = @meta, indexed_at = @indexed
+              flag = @flag, state = @state, missing_since = @missing, meta_state = @meta, indexed_at = @indexed,
+              cloud_only = @cloud
             WHERE id = @id
             """, [.. Parameters(), ("@id", Id)]);
     }
@@ -113,7 +116,7 @@ internal sealed class AssetRow
         ("@mtime", Mtime), ("@birth", BirthTime), ("@inode", Inode), ("@hash", QuickHash), ("@width", Width),
         ("@height", Height), ("@orientation", Orientation), ("@duration", Duration), ("@fps", Fps), ("@codec", Codec),
         ("@captured", CapturedAt), ("@flag", Flag), ("@state", State), ("@missing", MissingSince), ("@meta", MetaState),
-        ("@indexed", IndexedAt),
+        ("@indexed", IndexedAt), ("@cloud", CloudOnly ? 1 : 0),
     ];
 }
 

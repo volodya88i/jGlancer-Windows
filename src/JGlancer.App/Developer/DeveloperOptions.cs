@@ -38,6 +38,9 @@ internal sealed record DeveloperOptions
     public string? Language { get; init; }
     public int? OpenMenu { get; init; }
     public double? TileSide { get; init; }
+
+    /// <summary>`--list-view`: the library shows its files as a list (MAC-041).</summary>
+    public bool ListView { get; init; }
     public bool SelectFirst { get; init; }
 
     public bool Onboarding { get; init; }
@@ -156,6 +159,7 @@ internal sealed record DeveloperOptions
             Language = Value("--lang"),
             OpenMenu = (int?)Number("--open-menu"),
             TileSide = Number("--tile-side"),
+            ListView = args.Contains("--list-view", StringComparer.OrdinalIgnoreCase),
             SelectFirst = args.Contains("--select-first", StringComparer.OrdinalIgnoreCase),
             Onboarding = args.Contains("--onboarding", StringComparer.OrdinalIgnoreCase),
             FlagCheck = Value("--flag-check"),

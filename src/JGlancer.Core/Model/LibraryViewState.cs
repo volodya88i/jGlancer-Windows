@@ -53,6 +53,15 @@ public sealed record LibraryViewState
     public double SidebarWidth { get; set; } = 220;
     public double PreviewWidth { get; set; } = 360;
 
+    /// <summary>Thumbnails in a grid or files in a list (macOS D-125, MAC-041).</summary>
+    public LibraryViewMode ViewMode { get; set; } = LibraryViewMode.Grid;
+
+    /// <summary>The list's row height, set by the size ruler while the list shows.</summary>
+    public double ListRowHeight { get; set; } = ListLayout.DefaultRowHeight;
+
+    /// <summary>The list's columns after Name, in order, with their widths.</summary>
+    public IReadOnlyList<ListColumnWidth> ListColumns { get; set; } = ListLayout.DefaultColumns;
+
     /// <summary>Where Quick Preview was last (screen pixels for the position, effective pixels for the size).</summary>
     public WindowFrame? QuickPreviewFrame { get; set; }
 
@@ -91,6 +100,24 @@ public enum SplitMode
     /// <summary>Two panes one above the other, a horizontal divider between them.</summary>
     Stacked,
 }
+
+/// <summary>How the library shows its files.</summary>
+public enum LibraryViewMode
+{
+    Grid,
+    List,
+}
+
+/// <summary>A column of the list view after Name.</summary>
+public enum ListColumn
+{
+    DateModified,
+    Size,
+    Kind,
+}
+
+/// <summary>A list column and its width in effective pixels.</summary>
+public sealed record ListColumnWidth(ListColumn Column, double Width);
 
 /// <summary>A window's remembered place: position in screen pixels, size in effective pixels.</summary>
 public sealed record WindowFrame(int X, int Y, double Width, double Height);

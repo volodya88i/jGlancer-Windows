@@ -189,6 +189,9 @@ internal sealed class FileOperationsModel : IDisposable
     /// <summary>Stops a running batch between two files (what is done stays done, and undoable).</summary>
     public void Stop() => _running?.Cancel();
 
+    private const double ProgressInterval = 0.05;
+    private readonly System.Diagnostics.Stopwatch _progressClock = System.Diagnostics.Stopwatch.StartNew();
+
     public void DismissToast()
     {
         _dismiss.Stop();
@@ -305,8 +308,11 @@ internal sealed class FileOperationsModel : IDisposable
 
     private void ShowProgress(UndoKind kind, FileProgress progress)
     {
-        if (IsRunning && progress.Total >= ProgressThreshold)
+        // The same toast follows the batch, at most 20 times a second (macOS MAC-035).
+        if (IsRunning && progress.Total >= ProgressThreshold
+            && (progress.Done >= progress.Total || _progressClock.Elapsed.TotalSeconds >= ProgressInterval))
         {
+            _progressClock.Restart();
             Toast = new Toast(ProgressMessage(kind, progress.Done, progress.Total), Progress: (double)progress.Done / Math.Max(progress.Total, 1));
             ToastChanged?.Invoke(this, EventArgs.Empty);
         }

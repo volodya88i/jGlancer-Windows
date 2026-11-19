@@ -63,7 +63,10 @@ public sealed partial class LibraryStore
             }
             var sameContent = row.Size == file.Size && row.Mtime == UnixMilliseconds.From(file.ModifiedAt);
             var wasMissing = row.State == (int)AssetState.Missing;
-            if (sameContent && !wasMissing)
+            // Downloaded or sent back to the cloud: an update, so the grid refetches it and stage 2 reads a file that
+            // came down (MAC-040).
+            var sameCloud = row.CloudOnly == file.IsCloudOnly;
+            if (sameContent && !wasMissing && sameCloud)
             {
                 var fileId = ToStored(file.FileId);
                 if (row.Inode != fileId)
@@ -107,7 +110,8 @@ public sealed partial class LibraryStore
         {
             var filePath = LibraryPaths.Combine(folderPath, file.Name);
             var facts = new IdentityMatcher.NewFile(file.Size, UnixMilliseconds.From(file.ModifiedAt), file.FileId);
-            var matchId = IdentityMatcher.Match(facts, candidates, claimed, probe, () => probe.QuickHash(filePath));
+            // A file kept only in the cloud is never read: hashing it would download it.
+            var matchId = IdentityMatcher.Match(facts, candidates, claimed, probe, () => file.IsCloudOnly ? null : probe.QuickHash(filePath));
             var matched = matchId is { } id
                 ? Sql.Rows(connection, $"SELECT {AssetRow.Columns} FROM asset WHERE id = @id", AssetRow.Read, ("@id", id)).FirstOrDefault()
                 : null;
@@ -162,6 +166,7 @@ public sealed partial class LibraryStore
         row.State = (int)AssetState.Present;
         row.MissingSince = null;
         row.IndexedAt = now;
+        row.CloudOnly = file.IsCloudOnly;
     }
 
     /// <summary>Existing assets that could be one of <paramref name="files"/>: same file id, or a tombstone of the same size.</summary>

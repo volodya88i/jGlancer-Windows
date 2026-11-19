@@ -12,7 +12,7 @@ public sealed partial class LibraryStore
         var rows = Sql.Rows(connection, """
             SELECT asset.id, asset.size, hex(asset.quick_hash)
             FROM asset JOIN folder ON folder.id = asset.folder_id
-            WHERE asset.state = 0 AND asset.quick_hash IS NOT NULL AND asset.size > 0
+            WHERE asset.state = 0 AND asset.cloud_only = 0 AND asset.quick_hash IS NOT NULL AND asset.size > 0
               AND (asset.size, asset.quick_hash) IN (
                 SELECT size, quick_hash FROM asset
                 WHERE state = 0 AND quick_hash IS NOT NULL AND size > 0

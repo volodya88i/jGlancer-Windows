@@ -87,10 +87,10 @@ internal sealed class ToastView : Border
     {
         if (_model?.Toast is not { } toast)
         {
-            IsVisible = false;
+            FadeOut();
             return;
         }
-        IsVisible = true;
+        FadeIn();
         _message.Text = toast.Message;
         AutomationProperties.SetName(this, toast.Message);
         _undo.IsVisible = toast.CanUndo;
@@ -100,4 +100,56 @@ internal sealed class ToastView : Border
         _bar.IsVisible = toast.Progress is not null;
         _bar.Width = Bounds.Width * (toast.Progress ?? 0);
     }
+
+    // The toast fades in and out in FadeDuration, ease-out; at once without motion (macOS MAC-035).
+    private void FadeIn()
+    {
+        _hiding = false;
+        if (IsVisible && Opacity >= 1)
+        {
+            return;
+        }
+        UseTransitions();
+        if (!IsVisible)
+        {
+            Opacity = 0;
+            IsVisible = true;
+        }
+        Opacity = 1;
+    }
+
+    private void FadeOut()
+    {
+        if (!IsVisible || _hiding)
+        {
+            return;
+        }
+        if (!Settings.Motion.Enabled)
+        {
+            IsVisible = false;
+            return;
+        }
+        _hiding = true;
+        UseTransitions();
+        Opacity = 0;
+        Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+        {
+            if (_hiding)
+            {
+                _hiding = false;
+                IsVisible = false;
+            }
+        }, TimeSpan.FromSeconds(JGMetrics.FadeDuration));
+    }
+
+    private void UseTransitions() => Transitions = Settings.Motion.Enabled
+        ? [new Avalonia.Animation.DoubleTransition
+        {
+            Property = OpacityProperty,
+            Duration = TimeSpan.FromSeconds(JGMetrics.FadeDuration),
+            Easing = new Avalonia.Animation.Easings.CubicEaseOut(),
+        }]
+        : null;
+
+    private bool _hiding;
 }

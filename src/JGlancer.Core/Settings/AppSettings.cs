@@ -134,6 +134,12 @@ public sealed record AppSettings
     /// <summary>Menus, panels and toasts as frosted glass (W-111); on unless turned off, in both presets.</summary>
     public bool FrostedGlass { get; set; } = true;
 
+    /// <summary>
+    /// While a photo is open the window turns clear and the viewer shows the desktop and other windows blurred (macOS
+    /// MAC-023; Windows' acrylic, which needs its transparency effects); off by default.
+    /// </summary>
+    public bool SeeThroughPhotoViewer { get; set; }
+
     /// <summary>The audio player's blurred backdrop flows from one song's into the next one's.</summary>
     public bool BackdropCrossfade { get; set; } = true;
 

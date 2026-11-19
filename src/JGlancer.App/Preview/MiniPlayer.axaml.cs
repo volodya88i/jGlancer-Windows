@@ -25,6 +25,14 @@ internal sealed partial class MiniPlayer : UserControl
     private bool _updatingVolume;
     private long _shownSecond = -1;
 
+    /// <summary>
+    /// How wide the controls row needs to be to show all of it without squeezing or overlapping (left and right groups
+    /// with a gap between them; 0 when hidden): Quick Preview never gets narrower (macOS MAC-021).
+    /// </summary>
+    public double ControlsRowWidth => Controls.IsVisible && Controls.Children.Count >= 2
+        ? Controls.Children[0].DesiredSize.Width + Controls.Children[^1].DesiredSize.Width + JGSpacing.Xs
+        : 0;
+
     public MiniPlayer()
     {
         InitializeComponent();
@@ -157,11 +165,85 @@ internal sealed partial class MiniPlayer : UserControl
     {
         base.OnAttachedToVisualTree(e);
         UpdateSurface();
+        // Quick Preview hides rather than closes: its animation stops while it is away.
+        if (TopLevel.GetTopLevel(this) is { } top)
+        {
+            _window = top;
+            top.PropertyChanged += OnWindowChanged;
+        }
     }
 
     private void OnSurfaceMoved(object? sender, EventArgs e) => UpdateSurface();
 
     private void OnModelChanged(object? sender, EventArgs e) => Update();
+
+    private Support.AnimationPlayer? _animation;
+    private string? _animatedPath;
+    private Avalonia.Media.Imaging.Bitmap? _animationFrame;
+
+    /// <summary>
+    /// An animated GIF or PNG plays here once its picture is shown (MAC-039); still for a folded sequence, without
+    /// motion, or when the previews are not on screen (a viewer over them: the model then shows nothing).
+    /// </summary>
+    private void UpdateAnimation()
+    {
+        var asset = _model?.Asset;
+        var plays = asset is { Kind: MediaKind.Photo, IsCloudOnly: false } && _model!.Picture is not null && _model.Frames is null
+            && Support.AnimationPlayer.MayAnimate(asset.Path) && Settings.Motion.Enabled && TopLevel.GetTopLevel(this) is { IsVisible: true };
+        if (!plays)
+        {
+            StopAnimation();
+            return;
+        }
+        if (_animatedPath == asset!.Path)
+        {
+            return;
+        }
+        StopAnimation();
+        var path = asset.Path;
+        _animatedPath = path;
+        _animation = Support.AnimationPlayer.Start(path, frame =>
+        {
+            if (_animatedPath == path)
+            {
+                _animationFrame = frame;
+                PictureImage.Source = frame;
+            }
+        });
+    }
+
+    private void StopAnimation()
+    {
+        if (_animationFrame is not null && ReferenceEquals(PictureImage.Source, _animationFrame))
+        {
+            PictureImage.Source = _model?.Picture;
+        }
+        _animationFrame = null;
+        _animation?.Dispose();
+        _animation = null;
+        _animatedPath = null;
+    }
+
+    protected override void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        if (_window is not null)
+        {
+            _window.PropertyChanged -= OnWindowChanged;
+            _window = null;
+        }
+        StopAnimation();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private TopLevel? _window;
+
+    private void OnWindowChanged(object? sender, Avalonia.AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == IsVisibleProperty)
+        {
+            UpdateAnimation();
+        }
+    }
 
     /// <summary>A sequence's frame: only the picture, the playhead, play / pause and the count change.</summary>
     private void OnFrameChanged(object? sender, EventArgs e)
@@ -210,6 +292,7 @@ internal sealed partial class MiniPlayer : UserControl
     {
         UpdateSurface();
         WatchPlayback(_model?.OwnsPlayback == true ? _model.Playback : null);
+        UpdateAnimation();
         if (_model?.Asset is not { } asset)
         {
             // Let go of the pictures too: the model disposes them right after.
@@ -225,7 +308,7 @@ internal sealed partial class MiniPlayer : UserControl
         var audio = kind == MediaKind.Audio;
         var picture = _model.Picture;
 
-        PictureImage.Source = audio ? null : picture;
+        PictureImage.Source = audio ? null : _animationFrame ?? picture;
         Stage.IsVisible = !audio && !failed;
         Stage.Aspect = Aspect(asset, picture);
         Placeholder.IsVisible = !audio && !failed && picture is null && _model.Surface?.Parent != SurfaceHost;
@@ -255,10 +338,17 @@ internal sealed partial class MiniPlayer : UserControl
             CoverImage.Source = null;
         }
 
-        FailedMessage.IsVisible = failed;
-        FailedGlyph.Data = video ? JGIconData.Film : JGIconData.AudioLines;
+        // Kept only in the cloud: a note and its glyph in place of the picture and the player (MAC-040).
+        var cloud = asset.IsCloudOnly;
+        FailedText.Text = cloud ? L.T("In the cloud. Open it to download.") : L.T("Can't play this file.");
+        FailedMessage.IsVisible = failed || cloud;
+        FailedGlyph.Data = cloud ? JGCustomIcons.CloudDownload : video ? JGIconData.Film : JGIconData.AudioLines;
+        if (cloud)
+        {
+            Stage.IsVisible = AudioStage.IsVisible = Placeholder.IsVisible = false;
+        }
 
-        var media = video || audio;
+        var media = (video || audio) && !cloud;
         Scrubber.IsVisible = media;
         // Settings → Appearance → Decor: the waveform or the plain timeline (W-100).
         var style = Settings.SettingsStore.Current.Settings.Waveform;

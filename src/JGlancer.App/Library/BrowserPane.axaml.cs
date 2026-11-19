@@ -24,7 +24,18 @@ internal sealed partial class BrowserPane : UserControl
         DropZone.AddHandler(DragDrop.DragLeaveEvent, (_, _) => DropHighlight.IsVisible = false);
         DropZone.AddHandler(DragDrop.DropEvent, OnDrop);
         TileGrid.DragRequested += OnGridDragRequested;
+        FileList.DragRequested += OnGridDragRequested;
         AttachAlbumReorder();
+        GridScroller.TemplateApplied += (_, e) =>
+        {
+            _scrollBar = e.NameScope.Find<Avalonia.Controls.Primitives.ScrollBar>("PART_VerticalScrollBar");
+            UpdateStatusLine();
+        };
+        ListScroller.TemplateApplied += (_, e) =>
+        {
+            _listScrollBar = e.NameScope.Find<Avalonia.Controls.Primitives.ScrollBar>("PART_VerticalScrollBar");
+            UpdateStatusLine();
+        };
         // Settings → Appearance → Decor can hide the status bar; it shows only with folders.
         Settings.SettingsStore.Current.Changed += (_, _) => UpdateStatusLine();
         DataContextChanged += (_, _) =>
@@ -38,6 +49,7 @@ internal sealed partial class BrowserPane : UserControl
                         UpdateStatusLine();
                     }
                 };
+                model.StateChanged += (_, _) => UpdateViewMode();
             }
             UpdateStatusLine();
         };
@@ -56,6 +68,39 @@ internal sealed partial class BrowserPane : UserControl
 
     /// <summary>The grid (benchmarks and snapshots drive it).</summary>
     public Grid.LibraryGrid Grid => TileGrid;
+
+    /// <summary>The list (View ▸ as List).</summary>
+    public List.LibraryList List => FileList;
+
+    /// <summary>The view showing the files now: the grid or the list.</summary>
+    public Control FilesView => Model?.ShowsList == true ? FileList : TileGrid;
+
+    /// <summary>Moves the selection as an arrow key does, in the grid or the list (Quick Preview's arrows).</summary>
+    public void MoveSelection(Core.Model.GridMove move)
+    {
+        if (Model?.ShowsList == true)
+        {
+            FileList.MoveSelection(move);
+        }
+        else
+        {
+            TileGrid.MoveSelection(move);
+        }
+    }
+
+    /// <summary>Grid or list as the state says; the keyboard follows to the one shown.</summary>
+    private void UpdateViewMode()
+    {
+        var list = Model?.ShowsList == true;
+        var roots = Model?.HasRoots == true;
+        var changed = ListScroller.IsVisible != (roots && list) || GridScroller.IsVisible != (roots && !list);
+        GridScroller.IsVisible = roots && !list;
+        ListScroller.IsVisible = roots && list;
+        if (changed && (TileGrid.IsFocused || FileList.IsFocused))
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => FilesView.Focus(), Avalonia.Threading.DispatcherPriority.Input);
+        }
+    }
 
     /// <summary>The split view's active pane: an accent edge around it.</summary>
     public bool IsActive
@@ -76,11 +121,13 @@ internal sealed partial class BrowserPane : UserControl
         base.OnDataContextChanged(e);
         Header.Model = Model;
         TileGrid.Model = Model;
+        FileList.Model = Model;
+        UpdateViewMode();
         Header.ReturnFocusRequested -= OnHeaderReturnsFocus;
         Header.ReturnFocusRequested += OnHeaderReturnsFocus;
     }
 
-    private void OnHeaderReturnsFocus(object? sender, EventArgs e) => TileGrid.Focus();
+    private void OnHeaderReturnsFocus(object? sender, EventArgs e) => FilesView.Focus();
 
     /// <summary>Selects <paramref name="assetId"/> if the grid shows it, scrolls to it and gives the grid the keyboard
     /// (back from the viewer, macOS reveal).</summary>
@@ -89,9 +136,16 @@ internal sealed partial class BrowserPane : UserControl
         if (Model is { } model && model.Order.IndexOf(assetId) is { } index)
         {
             model.Selection.Select(assetId);
-            TileGrid.ScrollToVisible(index);
+            if (model.ShowsList)
+            {
+                FileList.ScrollToAsset(assetId);
+            }
+            else
+            {
+                TileGrid.ScrollToVisible(index);
+            }
         }
-        Avalonia.Threading.Dispatcher.UIThread.Post(() => TileGrid.Focus(), Avalonia.Threading.DispatcherPriority.Input);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => FilesView.Focus(), Avalonia.Threading.DispatcherPriority.Input);
     }
 
     /// <summary>Media files dropped from Explorer (not the app's own tiles dragged out): they open (W-89).</summary>
@@ -151,6 +205,26 @@ internal sealed partial class BrowserPane : UserControl
         }
     }
 
-    private void UpdateStatusLine() =>
+    private void UpdateStatusLine()
+    {
         StatusLine.IsVisible = Model is { HasRoots: true } && Settings.SettingsStore.Current.Settings.ShowStatusBar;
+        // The bars lie over the files: the first and last rows can scroll clear of them, and the scroll bar starts
+        // under the top bar.
+        TileGrid.Insets = (Model is { HasRoots: true } ? Design.JGMetrics.BarHeight : 0,
+            StatusLine.IsVisible ? Design.JGMetrics.StatusBubbleClearance : 0);
+        FileList.Insets = TileGrid.Insets;
+        if (_scrollBar is { } bar)
+        {
+            bar.Margin = new Avalonia.Thickness(0, TileGrid.Insets.Top, 0, 0);
+        }
+        if (_listScrollBar is { } listBar)
+        {
+            // Under the list's header too.
+            listBar.Margin = new Avalonia.Thickness(0, TileGrid.Insets.Top + Design.JGMetrics.ControlHeightCompact, 0, 0);
+        }
+        UpdateViewMode();
+    }
+
+    private Avalonia.Controls.Primitives.ScrollBar? _scrollBar;
+    private Avalonia.Controls.Primitives.ScrollBar? _listScrollBar;
 }

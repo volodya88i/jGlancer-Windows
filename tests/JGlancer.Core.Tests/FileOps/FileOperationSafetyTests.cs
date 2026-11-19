@@ -219,6 +219,20 @@ public sealed class FileOperationSafetyTests : IDisposable
     }
 
     [Fact]
+    public async Task AFailedReplaceBringsTheReplacedFileBack()
+    {
+        _directory.Write("dst/a.jpg", "old a");
+        using var runner = new FileOperationRunner(_disk);
+        // Move 1 sends the old file to the Recycle Bin; move 2, the item itself, fails.
+        _disk.FailMoveNumber = 2;
+        var result = await runner.PerformAsync(new FileOperation.Move(Files("a.jpg"), _destination), ConflictPolicy.Replace);
+        Assert.Equal(Files("a.jpg"), result.Failures);
+        Assert.Equal("old a", TestFileSystem.Contents(Path.Combine(_destination, "a.jpg")));
+        Assert.Equal("content of a.jpg", TestFileSystem.Contents(Path.Combine(_source, "a.jpg")));
+        Assert.Empty(Names(_disk.RecycleBin));
+    }
+
+    [Fact]
     public async Task TheRecycleBinRoundTripAndAnOccupiedPlace()
     {
         using var runner = new FileOperationRunner(_disk);

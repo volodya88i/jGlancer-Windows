@@ -94,4 +94,10 @@ public static class JGInsets
 
     /// <summary>Inside a tooltip.</summary>
     public static Thickness ToolTip { get; } = new(JGSpacing.Xs, JGSpacing.Xxs + 1);
+
+    /// <summary>The status bubble from the pane's bottom edge (macOS MAC-025).</summary>
+    public static Thickness StatusBubble { get; } = new(0, 0, 0, JGSpacing.Xs);
+
+    /// <summary>Inside the status bubble, left and right of its text.</summary>
+    public static Thickness StatusBubbleContent { get; } = new(JGSpacing.M, 0);
 }

@@ -32,7 +32,7 @@ public sealed class DirectoryLister(IDirectoryReader reader)
                 continue;
             }
             files.Add(new ScannedFile(entry.Name, classification.Kind, classification.TypeIdentifier, entry.Size,
-                entry.ModifiedAt, entry.CreatedAt, entry.FileId));
+                entry.ModifiedAt, entry.CreatedAt, entry.FileId, entry.IsCloudOnly));
         }
         return new DirectoryScan(rootId, relativePath, files, subdirectories, now ?? DateTimeOffset.UtcNow);
     }

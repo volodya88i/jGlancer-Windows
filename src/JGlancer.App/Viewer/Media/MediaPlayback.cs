@@ -509,9 +509,33 @@ internal sealed class MediaPlayback : IDisposable
     public void TogglePlaysNext()
     {
         AutoAdvance = !AutoAdvance;
-        Preferences.SetPlaysNext(AutoAdvance, Kind);
-        Save();
+        if (!KeepsOwnChoices)
+        {
+            Preferences.SetPlaysNext(AutoAdvance, Kind);
+            Save();
+            return;
+        }
+        Changed?.Invoke(this, EventArgs.Empty);
     }
+
+    /// <summary>
+    /// The window's mini player: "play next" starts on and its Loop and Play Next are its own, never saved (macOS
+    /// MAC-028).
+    /// </summary>
+    public bool KeepsOwnChoices
+    {
+        get => _keepsOwnChoices;
+        init
+        {
+            _keepsOwnChoices = value;
+            if (value)
+            {
+                AutoAdvance = true;
+            }
+        }
+    }
+
+    private readonly bool _keepsOwnChoices;
 
     private void Save()
     {

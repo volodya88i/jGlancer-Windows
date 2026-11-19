@@ -90,7 +90,6 @@ internal sealed partial class LibraryGrid
         {
             Draw(index);
         }
-        RecordDrawn(refs, start, end);
         DrawMarquee(context, colors);
     }
 
@@ -100,12 +99,13 @@ internal sealed partial class LibraryGrid
         var side = frame.Width;
         var captionWidth = (int)_geometry.TileSide;
         var square = new Rect(frame.X, frame.Y, side, side);
-        var selection = SelectionAmount(item.Id, _model!.Selection.Contains(item.Id), now);
+        double selection = _model!.Selection.Contains(item.Id) ? 1 : 0;
         var hover = HoverAmount(item.Id, hovered, now);
         var selected = selection >= 0.5;
         _rows.TryGetValue(item.Id, out var asset);
         Bitmap? bitmap = null;
-        var known = asset is not null && Thumbnails.TryGet(ThumbnailRequest.For(asset, _bucket).Key, out bitmap);
+        var known = asset is not null && (Thumbnails.TryGet(ThumbnailRequest.For(asset, _bucket).Key, out bitmap)
+            || (asset.IsCloudOnly && _cloudMisses.Contains(asset.Id)));
         if (asset is not null && !known)
         {
             RepairMissing(asset);
@@ -146,8 +146,9 @@ internal sealed partial class LibraryGrid
         }
         else if (known)
         {
-            // Known to have no thumbnail: the kind's glyph (audio without cover art, unreadable files).
-            DrawGlyph(context, item.Kind, square, colors.Tertiary);
+            // Known to have no thumbnail: the kind's glyph (audio without cover art, unreadable files), or a cloud for a
+            // file kept only in the cloud (MAC-040).
+            DrawGlyph(context, item.Kind, square, colors.Tertiary, cloud: asset?.IsCloudOnly == true);
         }
         // Edges: the hover outline gives way to the accent selection edge.
         Faded(context, hover * (1 - selection), () =>
@@ -305,9 +306,9 @@ internal sealed partial class LibraryGrid
         FlagStyle.Draw(context, this.Brush(FlagStyle.Token(flag)), new Rect(badge.Center.X - star / 2, badge.Center.Y - star / 2, star, star));
     }
 
-    private static void DrawGlyph(DrawingContext context, MediaKind kind, Rect square, IBrush brush)
+    private static void DrawGlyph(DrawingContext context, MediaKind kind, Rect square, IBrush brush, bool cloud = false)
     {
-        var data = kind switch
+        var data = cloud ? JGCustomIcons.Cloud : kind switch
         {
             MediaKind.Video => JGIconData.Film,
             MediaKind.Audio => JGIconData.AudioLines,

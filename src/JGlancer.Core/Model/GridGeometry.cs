@@ -37,12 +37,17 @@ public sealed record GridGeometry
 {
     /// <param name="targetTileSide">Preferred tile side; actual tiles stretch up to fill each row.</param>
     /// <param name="captionHeight">Space under the thumbnail for the name (0 when names are hidden).</param>
-    public GridGeometry(int itemCount, double width, double targetTileSide, double gutter, double inset, double captionHeight)
+    /// <param name="topInset">Room above the first row for a bar lying over the grid (the files scroll under it).</param>
+    /// <param name="bottomInset">Room below the last row, so it can scroll clear of a bar or bubble at the bottom.</param>
+    public GridGeometry(int itemCount, double width, double targetTileSide, double gutter, double inset, double captionHeight,
+        double topInset = 0, double bottomInset = 0)
     {
         ItemCount = Math.Max(0, itemCount);
         Width = width;
         Gutter = gutter;
         Inset = inset;
+        TopInset = topInset;
+        BottomInset = bottomInset;
         CaptionHeight = captionHeight;
         var available = Math.Max(1, width - 2 * inset);
         Columns = Math.Max(1, (int)((available + gutter) / (Math.Max(1, targetTileSide) + gutter)));
@@ -61,32 +66,41 @@ public sealed record GridGeometry
     /// <summary>Outer padding around the grid.</summary>
     public double Inset { get; }
 
+    /// <summary>Room above the first row (a bar over the grid), on top of <see cref="Inset"/>.</summary>
+    public double TopInset { get; }
+
+    /// <summary>Room below the last row (a bar or bubble over the grid), on top of <see cref="Inset"/>.</summary>
+    public double BottomInset { get; }
+
+    /// <summary>Where the first row starts.</summary>
+    private double Top => Inset + TopInset;
+
     /// <summary>Height of one tile including its caption.</summary>
     public double CellHeight => TileSide + CaptionHeight;
 
     public int RowCount => (ItemCount + Columns - 1) / Columns;
 
     /// <summary>Total scrollable height.</summary>
-    public double ContentHeight => RowCount == 0 ? 0 : 2 * Inset + RowCount * CellHeight + (RowCount - 1) * Gutter;
+    public double ContentHeight => RowCount == 0 ? 0 : 2 * Inset + TopInset + BottomInset + RowCount * CellHeight + (RowCount - 1) * Gutter;
 
     /// <summary>Frame of the tile at <paramref name="index"/>.</summary>
     public GridRect Frame(int index)
     {
         var row = index / Columns;
         var column = index % Columns;
-        return new GridRect(Inset + column * (TileSide + Gutter), Inset + row * (CellHeight + Gutter), TileSide, CellHeight);
+        return new GridRect(Inset + column * (TileSide + Gutter), Top + row * (CellHeight + Gutter), TileSide, CellHeight);
     }
 
     /// <summary>Indices of all tiles in the rows that intersect <paramref name="rect"/> (rendering and prefetch); start inclusive, end exclusive.</summary>
     public (int Start, int End) Indices(GridRect rect)
     {
-        if (ItemCount == 0 || rect.Bottom <= Inset)
+        if (ItemCount == 0 || rect.Bottom <= Top)
         {
             return (0, 0);
         }
         var rowPitch = CellHeight + Gutter;
-        var firstRow = Math.Max(0, (int)Math.Floor((rect.Y - Inset) / rowPitch));
-        var lastRow = Math.Min(RowCount - 1, (int)Math.Floor((rect.Bottom - Inset) / rowPitch));
+        var firstRow = Math.Max(0, (int)Math.Floor((rect.Y - Top) / rowPitch));
+        var lastRow = Math.Min(RowCount - 1, (int)Math.Floor((rect.Bottom - Top) / rowPitch));
         return firstRow > lastRow ? (0, 0) : (firstRow * Columns, Math.Min(ItemCount, (lastRow + 1) * Columns));
     }
 
@@ -127,7 +141,7 @@ public sealed record GridGeometry
         {
             return null;
         }
-        var row = (int)Math.Floor((y - Inset + Gutter / 2) / (CellHeight + Gutter));
+        var row = (int)Math.Floor((y - Top + Gutter / 2) / (CellHeight + Gutter));
         if (row < 0)
         {
             row = 0;

@@ -89,6 +89,9 @@ switch (command)
     case "wicmodes" when OperatingSystem.IsWindows():
         ThumbBench.Modes(args[1]);
         break;
+    case "thumbsizes" when OperatingSystem.IsWindows():
+        ThumbBench.Sizes(args[1], args.Length > 2 ? int.Parse(args[2], CultureInfo.InvariantCulture) : 640);
+        break;
     case "thumbbench" when OperatingSystem.IsWindows():
         ThumbBench.Run(args[1], args.Length > 2 ? int.Parse(args[2], CultureInfo.InvariantCulture) : 20);
         break;

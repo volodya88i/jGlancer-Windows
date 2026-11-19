@@ -3,6 +3,35 @@
 All notable changes to jGlancer for Windows. Versions are `major.minor.patch`: the minor number grows with new
 features or something removed, the patch number with fixes; the version changes with each published release.
 
+## 0.6.0 — 2026-11-13
+
+- New: a list view. View ▸ as Grid / as List (Ctrl+Shift+1 / Ctrl+Shift+2) or the two buttons in the top bar: Name with
+  a small thumbnail, Date Modified, Size and Kind; click a header to sort, drag its edge to size it, drag it to move it;
+  subfolders unfold in place. The size slider sets the row height while the list shows.
+- New: animated GIFs and PNGs play in the viewer, the preview pane and Quick Preview.
+- New: files kept only in the cloud (OneDrive, Dropbox and other cloud folders) are no longer downloaded by browsing:
+  they show a cloud and download when opened in a viewer.
+- New: the library's top bar lies over the files as frosted glass, and the status bar is a small bubble at the bottom.
+- New: Settings → Appearance → Effects → See through the photo viewer (needs Windows' transparency effects).
+- New: the mini player has Loop and Play Next, and follows its songs when the next one starts by itself.
+- New: Get Info and the preview's details end with Key · BPM, or "detect" to find them.
+- Changed: photos with a wide-gamut color profile (every iPhone photo) show their true colors in thumbnails and the
+  viewer. Thumbnails are made again once.
+- Changed: kind filters are inverted while on; a selection shows at once, without a fade; toasts fade in and out.
+- Changed: the key and tempo panel and its buttons keep their size; the button no longer adds "+2".
+- Changed: the preview and the sidebar make room in a narrow window; Quick Preview never hides its controls.
+- Changed: the automatic filmstrip hides when the pointer goes down to the controls.
+- Changed: a drawn export icon; a video's waveform is lower.
+- Changed: library folders on a disk plugged in or ejected go online and offline at once.
+- Changed: `.ts` files are no longer taken for video (they are usually TypeScript).
+- Fixed: a library that could not be opened (no permission, a full disk) was replaced by its backup; now the app says
+  so and leaves it alone.
+- Fixed: a photo smaller than the window first filled it, then shrank.
+- Fixed: a Replace that failed left the replaced file in the Recycle Bin.
+- Fixed: short searches matched other letter cases in Latin letters only.
+- Fixed: thumbnails and covers could come out blurred: small icons from Windows' thumbnail cache were taken as
+  thumbnails. Thumbnails are made again once.
+
 ## 0.5.4 — 2026-11-03
 
 - New: frosted glass as the app's material: menus, drop-downs, tooltips, the key and tempo panel, toasts, progress

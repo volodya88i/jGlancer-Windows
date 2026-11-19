@@ -25,6 +25,8 @@ internal sealed partial class NowPlayingBar : UserControl
         PreviousButton.Click += (_, _) => _playback?.Previous();
         NextButton.Click += (_, _) => _playback?.Next();
         MuteButton.Click += (_, _) => _playback?.ToggleMute();
+        LoopButton.Click += (_, _) => _playback?.ToggleLoop();
+        PlayNextButton.Click += (_, _) => _playback?.TogglePlaysNext();
         SpeedButton.Click += (_, _) =>
         {
             if (_playback is { } playback)
@@ -99,7 +101,11 @@ internal sealed partial class NowPlayingBar : UserControl
         ToolTip.SetTip(FolderButton, from);
         AutomationProperties.SetName(FolderButton, from);
         CoverImage.Source = model.Cover;
-        SetBackdrop(model.Cover);
+        // The blurred cover stays until the next song's cover is known (MAC-028).
+        if (model.IsCoverKnown)
+        {
+            SetBackdrop(model.Cover);
+        }
         PlayButton.IsEnabled = playback.Status != PlaybackStatus.Failed;
         PlayGlyph.Data = playback.IsPlaying ? JGCustomIcons.PauseFilled : JGCustomIcons.PlayFilled;
         Label(PlayButton, L.T(playback.IsPlaying ? "Pause" : "Play"));
@@ -111,6 +117,8 @@ internal sealed partial class NowPlayingBar : UserControl
         VolumeSlider.Value = playback.IsMuted ? 0 : playback.Volume * 100;
         _updatingVolume = false;
         SpeedText.Text = SpeedMenu.Label(playback.Rate);
+        LoopButton.Classes.Set("on", playback.Loops);
+        PlayNextButton.Classes.Set("on", playback.AutoAdvance);
         Scrubber.Duration = playback.Duration ?? item?.Duration ?? 0;
         Scrubber.Time = playback.CurrentTime;
         Scrubber.PlaybackRate = playback.MovingRate;

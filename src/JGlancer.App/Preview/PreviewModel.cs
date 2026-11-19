@@ -322,6 +322,12 @@ internal sealed partial class PreviewModel : IDisposable
                 SetPicture(thumbnail);
             }
             Changed?.Invoke(this, EventArgs.Empty);
+            if (asset.IsCloudOnly)
+            {
+                // Kept only in the cloud: nothing reads it here; opening it in a viewer downloads it (MAC-040).
+                IsComplete = true;
+                return;
+            }
 
             // Once the selection rests: the photo at preview size, the player, the waveform.
             await Task.Delay(SettleDelay, cancellation);

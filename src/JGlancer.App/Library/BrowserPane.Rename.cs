@@ -37,13 +37,17 @@ internal sealed partial class BrowserPane
         {
             return;
         }
-        TileGrid.ScrollToVisible(index);
+        var list = model.ShowsList;
+        if (!list)
+        {
+            TileGrid.ScrollToVisible(index);
+        }
         var name = rows[0].Name;
         var field = new TextBox
         {
             Text = name,
-            TextWrapping = TextWrapping.Wrap,
-            TextAlignment = TextAlignment.Center,
+            TextWrapping = list ? TextWrapping.NoWrap : TextWrapping.Wrap,
+            TextAlignment = list ? TextAlignment.Left : TextAlignment.Center,
             AcceptsReturn = false,
             MinHeight = JGMetrics.TileCaptionHeight,
             Padding = new Thickness(JGSpacing.Xxs, 0),
@@ -59,6 +63,8 @@ internal sealed partial class BrowserPane
         PositionRename();
         TileGrid.ScrollInvalidated += OnGridMoved;
         TileGrid.SizeChanged += OnGridMoved;
+        FileList.ScrollInvalidated += OnGridMoved;
+        FileList.SizeChanged += OnGridMoved;
         // Once it is laid out: focus, and select the name without its extension.
         Dispatcher.UIThread.Post(() =>
         {
@@ -79,6 +85,18 @@ internal sealed partial class BrowserPane
     {
         if (_renameField is not { } field || Model?.Order.IndexOf(_renameId) is not { } index)
         {
+            return;
+        }
+        if (Model.ShowsList)
+        {
+            // Over the name in its row (MAC-041).
+            if (FileList.NameRect(_renameId) is { } cell && FileList.TranslatePoint(cell.Position, RenameLayer) is { } place)
+            {
+                field.Width = Math.Max(cell.Width, JGMetrics.ListNameMinWidth);
+                field.MinHeight = cell.Height;
+                Canvas.SetLeft(field, place.X - JGSpacing.Xxs);
+                Canvas.SetTop(field, place.Y);
+            }
             return;
         }
         var geometry = TileGrid.Geometry;
@@ -111,10 +129,12 @@ internal sealed partial class BrowserPane
         _renameField = null;
         TileGrid.ScrollInvalidated -= OnGridMoved;
         TileGrid.SizeChanged -= OnGridMoved;
+        FileList.ScrollInvalidated -= OnGridMoved;
+        FileList.SizeChanged -= OnGridMoved;
         var name = field.Text ?? "";
         var path = _renamePath;
         RenameLayer.Children.Remove(field);
-        TileGrid.Focus();
+        FilesView.Focus();
         if (commit && path is not null && name != Path.GetFileName(path) && RenameFile is { } rename
             && await rename(path, name) is { } problem)
         {

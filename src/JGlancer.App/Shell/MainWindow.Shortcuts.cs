@@ -44,7 +44,8 @@ internal sealed partial class MainWindow
         var map = SettingsStore.Current.Shortcuts;
         var viewerOpen = IsViewerOpen;
         // Plain keys belong to the grid while it has the focus, and to the viewers.
-        var plainReachesFiles = viewerOpen || focused?.FindAncestorOfType<LibraryGrid>(includeSelf: true) is not null;
+        var plainReachesFiles = viewerOpen || focused?.FindAncestorOfType<LibraryGrid>(includeSelf: true) is not null
+            || focused?.FindAncestorOfType<Library.List.LibraryList>(includeSelf: true) is not null;
         foreach (var command in Enum.GetValues<ShortcutCommand>())
         {
             if (map.Shortcut(command) is not { } shortcut || !Matches(shortcut, e))
@@ -163,6 +164,12 @@ internal sealed partial class MainWindow
                 break;
             case ShortcutCommand.ShowNames:
                 model.SetShowNames(!model.State.ShowNames);
+                break;
+            case ShortcutCommand.AsGrid:
+                model.SetViewMode(Core.Model.LibraryViewMode.Grid);
+                break;
+            case ShortcutCommand.AsList:
+                model.SetViewMode(Core.Model.LibraryViewMode.List);
                 break;
             case ShortcutCommand.SplitView:
                 ToggleSplit();

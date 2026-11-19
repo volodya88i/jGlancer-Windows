@@ -81,6 +81,11 @@ public sealed partial class LibraryStore
         return true;
     });
 
+    /// <summary>
+    /// The store at <paramref name="path"/>, or null when the file is damaged: not a database, corrupt, or failing its
+    /// integrity check. Any other error (no permission, a full or read-only disk, a lock, an I/O error) is thrown: the
+    /// file is fine and must stay where it is (macOS MAC-031).
+    /// </summary>
     private static LibraryStore? TryOpenIntact(string path)
     {
         LibraryStore? store = null;
@@ -92,12 +97,20 @@ public sealed partial class LibraryStore
                 return store;
             }
         }
-        catch (SqliteException)
+        catch (SqliteException error) when (IsDamage(error))
         {
+        }
+        catch
+        {
+            store?.Dispose();
+            throw;
         }
         store?.Dispose();
         return null;
     }
+
+    /// <summary>SQLite's verdicts on the file itself: SQLITE_CORRUPT and SQLITE_NOTADB; everything else is not damage.</summary>
+    internal static bool IsDamage(SqliteException error) => error.SqliteErrorCode is 11 or 26;
 
     /// <summary>Renames the database and its WAL files to <c>library-damaged-…</c>; returns the new database path.</summary>
     private static string SetAside(string path, DateTimeOffset now)

@@ -145,6 +145,10 @@ internal static class DeveloperHooks
                 }
             };
         }
+        if (options.ListView)
+        {
+            model.SetViewMode(Core.Model.LibraryViewMode.List);
+        }
         if (options.TileSide is { } side)
         {
             model.SetTileSide(side);

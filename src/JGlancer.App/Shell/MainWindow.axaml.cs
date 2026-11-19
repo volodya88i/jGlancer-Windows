@@ -60,10 +60,45 @@ internal sealed partial class MainWindow : Window, Actions.IActionHost
         AttachSplit(model);
         AttachNowPlaying(model);
         ScanProgress.Model = model;
+        WatchVolumes(model);
+        Settings.SettingsStore.Current.Changed += (_, change) =>
+        {
+            if (change.Old.SeeThroughPhotoViewer != change.New.SeeThroughPhotoViewer)
+            {
+                ApplySeeThrough();
+            }
+        };
+        ActualThemeVariantChanged += (_, _) => ApplySeeThrough();
         model.ConfirmWholeDrive = drive => Support.ConfirmDialog.ShowAsync(this, Core.Localization.L.T("Add the whole drive “{0}”?", drive),
             Core.Localization.L.T("Scanning a whole drive takes long and brings in every photo, video and song on it, system and program folders included."),
             Core.Localization.L.T("Add Drive"));
         ShowOnboarding();
+    }
+
+    /// <summary>
+    /// Disks plugged in or ejected while the app runs (WM_DEVICECHANGE, broadcast to top-level windows): the library's
+    /// roots go offline or come back at once (macOS MAC-032). A short wait lets a new volume's folders appear first.
+    /// </summary>
+    private void WatchVolumes(LibraryModel model)
+    {
+        const uint deviceChange = 0x0219; // WM_DEVICECHANGE
+        const nint arrival = 0x8000; // DBT_DEVICEARRIVAL
+        const nint removed = 0x8004; // DBT_DEVICEREMOVECOMPLETE
+        var settle = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        settle.Tick += (_, _) =>
+        {
+            settle.Stop();
+            model.Indexer.VolumesChanged();
+        };
+        Win32Properties.AddWndProcHookCallback(this, (nint hwnd, uint message, nint wParam, nint lParam, ref bool handled) =>
+        {
+            if (message == deviceChange && (wParam == arrival || wParam == removed))
+            {
+                settle.Stop();
+                settle.Start();
+            }
+            return 0;
+        });
     }
 
     /// <summary>First launch: the choice of a look in place of the library, until it is made or skipped (macOS).</summary>
@@ -161,7 +196,7 @@ internal sealed partial class MainWindow : Window, Actions.IActionHost
                     await OpenAsync(previewed);
                 }
             };
-            window.ArrowPressed += (_, key) => Library.LibraryGrid.MoveSelection(key switch
+            window.ArrowPressed += (_, key) => Library.MoveSelection(key switch
             {
                 Avalonia.Input.Key.Left => GridMove.Left,
                 Avalonia.Input.Key.Right => GridMove.Right,
@@ -310,7 +345,39 @@ internal sealed partial class MainWindow : Window, Actions.IActionHost
         _viewer = viewer;
         Body.Children.Add(viewer);
         Library.IsVisible = false;
+        ApplySeeThrough();
     }
+
+    /// <summary>
+    /// Settings → See through the photo viewer (MAC-023): while a photo is open the window turns clear and shows the
+    /// desktop and other windows through Windows' acrylic; opaque again when the viewer closes. Only with Windows'
+    /// transparency effects on and no contrast theme.
+    /// </summary>
+    private void ApplySeeThrough()
+    {
+        var clear = _viewer is not null && Settings.SettingsStore.Current.Settings.SeeThroughPhotoViewer
+            && Platform.Windows.SystemTransparency.Enabled && !Design.JGTheme.IsContrastTheme;
+        if (_viewer is { } viewer)
+        {
+            viewer.SeeThrough = clear;
+        }
+        if (clear == _isClear)
+        {
+            return;
+        }
+        _isClear = clear;
+        TransparencyLevelHint = clear ? [WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.Blur] : [WindowTransparencyLevel.None];
+        if (clear)
+        {
+            Background = Avalonia.Media.Brushes.Transparent;
+        }
+        else
+        {
+            this[!BackgroundProperty] = this.GetResourceObservable(Design.JGColor.BgBase.ResourceKey).ToBinding();
+        }
+    }
+
+    private bool _isClear;
 
     private void OpenMedia(LibraryModel model, MediaKind kind, List<PlaybackItem> items, int index)
     {
@@ -380,6 +447,7 @@ internal sealed partial class MainWindow : Window, Actions.IActionHost
             viewer.Model = null;
             Body.Children.Remove(viewer);
             _viewer = null;
+            ApplySeeThrough();
         }
         shown = CloseCompare() ?? shown;
         if (_mediaViewer is { } media && media.Model is { } mediaModel)

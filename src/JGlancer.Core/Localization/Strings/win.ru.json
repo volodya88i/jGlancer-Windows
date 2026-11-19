@@ -277,5 +277,6 @@
   "Frosted glass in menus and panels": "Матовое стекло в меню и панелях",
   "Show Status Bar": "Показывать строку состояния",
   "Audio player": "Аудиоплеер",
-  "Video player": "Видеоплеер"
+  "Video player": "Видеоплеер",
+  "Needs Windows' transparency effects: Settings → Personalization → Colors.": "Нужны эффекты прозрачности Windows: Параметры → Персонализация → Цвета."
 }

@@ -143,6 +143,11 @@ public sealed class ThumbnailService
         {
             return null;
         }
+        if (image is null && request.IsCloudOnly)
+        {
+            // Not "has none": it may have one once downloaded (the same modification time, so the same key).
+            return null;
+        }
         var encoded = image is null ? [] : ThumbnailCodec.Encode(image, ThumbnailCodec.PreservesAlpha(request.TypeIdentifier));
         disk?.Store(encoded, image?.Width ?? 0, image?.Height ?? 0, key);
         return image;

@@ -34,6 +34,8 @@ internal sealed partial class MainWindow
     private void AttachActions()
     {
         Library.LibraryGrid.ContextMenuRequested += async (_, _) => await ShowContextMenuAsync(Library.LibraryGrid);
+        Library.LibraryList.ContextMenuRequested += async (_, _) => await ShowContextMenuAsync(Library.LibraryList);
+        Library.LibraryList.FolderMenuRequested += (_, folderId) => ShowFolderMenu(Library.LibraryList, folderId);
         AddHandler(PointerReleasedEvent, OnViewerPointerReleased, RoutingStrategies.Bubble, handledEventsToo: true);
         AddHandler(KeyDownEvent, OnShortcutKey, RoutingStrategies.Bubble);
         TitleBar.AttachActions(_actions!, CurrentTarget, () =>
@@ -120,6 +122,21 @@ internal sealed partial class MainWindow
         menu.Placement = placement;
         menu.Open(anchor);
         return menu;
+    }
+
+    /// <summary>A folder row of the list (MAC-041): Open shows that folder, Show in Explorer opens it there.</summary>
+    private void ShowFolderMenu(Control anchor, long folderId)
+    {
+        if (ActiveModel is not { } model || model.Folder(folderId) is not { } folder
+            || model.Roots.FirstOrDefault(root => root.Id == folder.RootId) is not { } root)
+        {
+            return;
+        }
+        var open = new MenuItem { Header = Core.Localization.L.T("Open") };
+        open.Click += (_, _) => model.SelectFolder(folderId);
+        var show = new MenuItem { Header = Core.Localization.L.T("Show in Explorer") };
+        show.Click += (_, _) => Platform.Windows.ShellFiles.ShowInExplorer([Core.Store.LibraryPaths.Absolute(root.Path, folder.RelativePath)]);
+        new ContextMenu { Items = { open, show } }.Open(anchor);
     }
 
     /// <summary>`--context-menu`: the selection's menu over the grid's middle, Open With unfolded.</summary>

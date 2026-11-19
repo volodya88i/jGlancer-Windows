@@ -83,7 +83,7 @@ public sealed partial class LibraryStore
         return new LibraryStatistics(
             byKind,
             (int)(Sql.Long(connection, "SELECT COUNT(*) FROM asset WHERE state = 1") ?? 0),
-            (int)(Sql.Long(connection, "SELECT COUNT(*) FROM asset WHERE meta_state = 0 AND state = 0") ?? 0),
+            (int)(Sql.Long(connection, "SELECT COUNT(*) FROM asset WHERE meta_state = 0 AND state = 0 AND cloud_only = 0") ?? 0),
             (int)(Sql.Long(connection, "SELECT COUNT(*) FROM folder WHERE state = 0") ?? 0));
     });
 
@@ -132,13 +132,17 @@ public sealed partial class LibraryStore
         if (SearchCondition(query.SearchText) is { } search)
         {
             conditions.Add(search.Sql);
-            parameters.Add(("@search", search.Argument));
+            parameters.AddRange(search.Parameters);
         }
         return (string.Join(" AND ", conditions), parameters.ToArray());
     }
 
-    /// <summary>Three characters or more use the trigram index (a quoted phrase); shorter text a plain LIKE.</summary>
-    internal static (string Sql, string Argument)? SearchCondition(string? text)
+    /// <summary>
+    /// Three characters or more use the trigram index (a quoted phrase); shorter text a plain LIKE. SQLite's LIKE
+    /// ignores case for ASCII letters only, so other letters (Cyrillic, accented) are tried in each case, as the trigram
+    /// search does from three characters on: at most two characters, so at most four patterns (macOS MAC-034).
+    /// </summary>
+    internal static (string Sql, (string, object?)[] Parameters)? SearchCondition(string? text)
     {
         if (text is null)
         {
@@ -147,12 +151,29 @@ public sealed partial class LibraryStore
         if (text.Length >= 3)
         {
             return ("asset.id IN (SELECT rowid FROM asset_search WHERE asset_search MATCH @search)",
-                "\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"");
+                [("@search", "\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"")]);
         }
-        var escaped = text.Replace("\\", "\\\\", StringComparison.Ordinal)
+        var patterns = CaseVariants(text).Select((variant, index) => ($"@search{index}", (object?)("%" + variant
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("%", "\\%", StringComparison.Ordinal)
-            .Replace("_", "\\_", StringComparison.Ordinal);
-        return ("asset.name LIKE @search ESCAPE '\\'", "%" + escaped + "%");
+            .Replace("_", "\\_", StringComparison.Ordinal) + "%"))).ToArray();
+        var sql = string.Join(" OR ", patterns.Select(p => $"asset.name LIKE {p.Item1} ESCAPE '\\'"));
+        return ($"({sql})", patterns);
+    }
+
+    /// <summary><paramref name="text"/> with each non-ASCII letter in lower and upper case, every combination.</summary>
+    internal static IReadOnlyList<string> CaseVariants(string text)
+    {
+        IReadOnlyList<string> variants = [""];
+        foreach (var character in text)
+        {
+            var forms = char.IsAscii(character)
+                ? [character.ToString()]
+                : new[] { char.ToLowerInvariant(character), char.ToUpperInvariant(character), character }
+                    .Distinct().Order().Select(c => c.ToString()).ToArray();
+            variants = [.. variants.SelectMany(prefix => forms.Select(form => prefix + form))];
+        }
+        return variants;
     }
 
     internal static IReadOnlyList<AssetRef> FetchAssetRefs(SqliteConnection connection, AssetQuery query)
@@ -165,8 +186,8 @@ public sealed partial class LibraryStore
         var order = query.Scope is QueryScope.AlbumScope
             ? "(SELECT position FROM album_item WHERE album_id = @scope AND asset_id = asset.id), asset.id"
             : string.Join(", ", OrderColumns(query.Sort).Select(c => $"{c} {direction}"));
-        return Sql.Rows(connection, $"SELECT asset.id, asset.kind FROM asset WHERE {filter.Sql} ORDER BY {order}",
-            r => new AssetRef(r.GetInt64(0), (MediaKind)r.GetInt32(1)), filter.Parameters);
+        return Sql.Rows(connection, $"SELECT asset.id, asset.kind, asset.folder_id FROM asset WHERE {filter.Sql} ORDER BY {order}",
+            r => new AssetRef(r.GetInt64(0), (MediaKind)r.GetInt32(1), r.GetInt64(2)), filter.Parameters);
     }
 
     private static long ScopeId(QueryScope scope) => scope switch

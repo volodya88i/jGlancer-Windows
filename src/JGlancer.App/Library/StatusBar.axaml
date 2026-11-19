@@ -4,20 +4,26 @@
              xmlns:l="using:JGlancer.App.Support"
              xmlns:lib="using:JGlancer.App.Library"
              x:Class="JGlancer.App.Library.StatusBar"
-             x:DataType="lib:LibraryModel"
-             Height="{x:Static d:JGMetrics.FooterHeight}">
-  <!-- Counts and sizes in mono, background activity, the latest problem (macOS StatusBarView). -->
-  <Border BorderBrush="{DynamicResource JG.line.hair}" BorderThickness="0,1,0,0" Padding="{x:Static d:JGInsets.Bar}">
-    <Grid ColumnDefinitions="*,Auto,Auto" VerticalAlignment="Center">
-      <TextBlock Classes="mono" Text="{Binding StatusText}" Foreground="{DynamicResource JG.text.secondary}" TextTrimming="CharacterEllipsis" />
-      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding ActivityText}" Foreground="{DynamicResource JG.text.tertiary}"
-                 IsVisible="{Binding !ProblemText.Length}" />
-      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}" IsVisible="{Binding ProblemText.Length}">
-        <TextBlock Classes="mono" Text="{Binding ProblemText}" Foreground="{DynamicResource JG.danger}" VerticalAlignment="Center" />
-        <Button Name="DismissButton" Classes="icon" Padding="0" AutomationProperties.Name="{l:T 'Dismiss'}">
+             x:DataType="lib:LibraryModel">
+  <!-- The status bubble (macOS StatusBarView, MAC-025, MAC-037): counts and sizes in mono, background activity, the
+       latest problem, in a frosted capsule floating at the bottom centre of the pane. Counts and the problem in
+       text.primary, the separators and the activity in text.secondary, so they read over any thumbnail. -->
+  <Border Name="Bubble"
+          Height="{x:Static d:JGMetrics.StatusBubbleHeight}"
+          CornerRadius="14"
+          BorderBrush="{DynamicResource JG.line.hair}"
+          BorderThickness="{x:Static d:JGInsets.Outline}">
+    <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}" VerticalAlignment="Center"
+                Margin="{x:Static d:JGInsets.StatusBubbleContent}">
+      <TextBlock Name="Counts" Classes="mono" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+      <StackPanel Name="Problem" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}" IsVisible="{Binding ProblemText.Length}">
+        <d:JGIcon Data="{x:Static d:JGCustomIcons.AlertCircle}" Foreground="{DynamicResource JG.danger}"
+                  Width="{x:Static d:JGMetrics.IconSizeSmall}" Height="{x:Static d:JGMetrics.IconSizeSmall}" VerticalAlignment="Center" />
+        <TextBlock Classes="mono" Text="{Binding ProblemText}" Foreground="{DynamicResource JG.text.primary}" VerticalAlignment="Center" />
+        <Button Name="DismissButton" Classes="icon" Padding="0" MinHeight="0" AutomationProperties.Name="{l:T 'Dismiss'}">
           <d:JGIcon Data="{x:Static d:JGIconData.X}" Width="{x:Static d:JGMetrics.IconSizeSmall}" Height="{x:Static d:JGMetrics.IconSizeSmall}" />
         </Button>
       </StackPanel>
-    </Grid>
+    </StackPanel>
   </Border>
 </UserControl>

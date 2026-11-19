@@ -112,5 +112,15 @@ internal static class LibrarySchema
               key_minor INTEGER NOT NULL DEFAULT 0
             );
             """),
+        // `.ts` stopped being video (TypeScript sources, macOS D-124): rows already indexed become tombstones at once,
+        // as a removed file does, instead of waiting for their folder to change.
+        ("v5-no-typescript", """
+            UPDATE asset SET state = 1, missing_since = CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)
+            WHERE state = 0 AND lower(name) LIKE '%.ts';
+            """),
+        // Files kept only in the cloud (macOS D-124): not read for details or thumbnails until downloaded.
+        ("v6-cloud-only", """
+            ALTER TABLE asset ADD COLUMN cloud_only INTEGER NOT NULL DEFAULT 0;
+            """),
     ];
 }

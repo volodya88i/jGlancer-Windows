@@ -154,7 +154,23 @@ public sealed partial class FileOperationRunner(IFileSystem fileSystem, IFileInd
                     break;
             }
         }
-        undo.Add(await RunAsync(copying ? new FileStep.Copy(source, destination) : new FileStep.Move(source, destination)).ConfigureAwait(false));
+        try
+        {
+            undo.Add(await RunAsync(copying ? new FileStep.Copy(source, destination) : new FileStep.Move(source, destination)).ConfigureAwait(false));
+        }
+        catch (Exception error) when (IsFileError(error) && undo.Count > 0)
+        {
+            // The item failed after its replaced file went to the Recycle Bin: that file comes back at once, as the
+            // failed item leaves no undo step to bring it back (macOS MAC-030).
+            try
+            {
+                await RunAsync(undo[0]).ConfigureAwait(false);
+            }
+            catch (Exception restore) when (IsFileError(restore))
+            {
+            }
+            throw;
+        }
         return (undo, destination);
     }
 

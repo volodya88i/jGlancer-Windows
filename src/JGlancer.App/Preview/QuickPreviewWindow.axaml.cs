@@ -42,6 +42,8 @@ internal sealed partial class QuickPreviewWindow : Window
         // Always on top of every window (W-90): it stays in sight while another app has the focus.
         Topmost = true;
         Player.IsQuickPreview = true;
+        // Never narrower than the whole controls row: nothing hides or overlaps (macOS MAC-021).
+        Player.LayoutUpdated += (_, _) => KeepControlsRowWidth();
         Player.FullScreenRequested += (_, _) => ToggleFullScreen();
         CloseButton.Click += (_, _) => Dismiss();
         InfoButton.Click += (_, _) => ShowInfo();
@@ -54,6 +56,24 @@ internal sealed partial class QuickPreviewWindow : Window
             preview.SurfaceMoved += (_, _) => Player.HostsSurface = preview.IsQuickPreviewOpen;
             Player.Model = preview;
             preview.Changed += (_, _) => Update();
+        }
+    }
+
+    private void KeepControlsRowWidth()
+    {
+        var row = Player.ControlsRowWidth;
+        if (row <= 0 || WindowState != WindowState.Normal)
+        {
+            return;
+        }
+        var needed = Math.Ceiling(Math.Max(JGMetrics.PreviewPaneMinWidth, row + JGInsets.Preview.Left + JGInsets.Preview.Right));
+        if (Math.Abs(needed - MinWidth) >= 1)
+        {
+            MinWidth = needed;
+            if (Bounds.Width < needed)
+            {
+                Width = needed;
+            }
         }
     }
 
@@ -146,8 +166,10 @@ internal sealed partial class QuickPreviewWindow : Window
             _infoFor = asset;
             _info.Fill([asset]);
         }
+        // From song to song the blurred cover stays until the next one is known; a photo or a video clears it (MAC-028).
         var cover = asset.Kind == MediaKind.Audio ? _preview.Cover : null;
-        if (!ReferenceEquals(cover, _backdropFor))
+        var settled = asset.Kind != MediaKind.Audio || _preview.IsCoverKnown;
+        if (settled && !ReferenceEquals(cover, _backdropFor))
         {
             _backdropFor = cover;
             (BackdropImage.Source as IDisposable)?.Dispose();

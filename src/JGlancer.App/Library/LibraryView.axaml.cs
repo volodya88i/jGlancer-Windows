@@ -130,6 +130,15 @@ internal sealed partial class LibraryView : UserControl
     /// <summary>The active pane's grid (the window's keys, menus and developer hooks).</summary>
     public Grid.LibraryGrid LibraryGrid => _activePane.Grid;
 
+    /// <summary>The active pane's list (View ▸ as List).</summary>
+    public List.LibraryList LibraryList => _activePane.List;
+
+    /// <summary>The active pane's grid or list, whichever shows the files.</summary>
+    public Avalonia.Controls.Control FilesView => _activePane.FilesView;
+
+    /// <summary>Moves the selection in the active pane as an arrow key does (Quick Preview's arrows).</summary>
+    public void MoveSelection(GridMove move) => _activePane.MoveSelection(move);
+
     /// <summary>The pane showing <paramref name="model"/> (the main one when none does).</summary>
     public BrowserPane PaneOf(LibraryModel? model) =>
         _secondPane is { } second && ReferenceEquals(second.Model, model) ? second : PrimaryPane;
@@ -310,9 +319,25 @@ internal sealed partial class LibraryView : UserControl
         }
         var shown = model.HasRoots && model.State.PreviewVisible;
         Pane.IsVisible = PreviewHairline.IsVisible = shown;
-        Pane.Width = model.State.PreviewWidth;
-        Columns.ColumnDefinitions[0].Width = new GridLength(model.State.SidebarWidth);
+        // A narrow window: the preview, then the sidebar give way (down to their minimums) before the panes go under
+        // LibraryPaneMinWidth; the chosen widths stay saved (macOS MAC-020).
+        var width = Bounds.Width > 0 ? Bounds.Width : double.PositiveInfinity;
+        var preview = shown
+            ? Math.Max(JGMetrics.PreviewPaneMinWidth, Math.Min(model.State.PreviewWidth, width - JGMetrics.LibraryPaneMinWidth - JGMetrics.SidebarMinWidth))
+            : 0;
+        Pane.Width = shown ? preview : model.State.PreviewWidth;
+        var sidebar = Math.Max(JGMetrics.SidebarMinWidth, Math.Min(model.State.SidebarWidth, width - JGMetrics.LibraryPaneMinWidth - preview));
+        Columns.ColumnDefinitions[0].Width = new GridLength(sidebar);
         _preview.SetPaneShown(shown && IsVisible);
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        if (e.WidthChanged)
+        {
+            UpdatePreviewPane();
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

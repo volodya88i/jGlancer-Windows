@@ -26,12 +26,6 @@ public static partial class JGMetrics
     /// <summary>Corner radius of the duration badge on a tile (half of the small radius, as on macOS).</summary>
     public const double BadgeRadius = 3;
 
-    /// <summary>
-    /// Seconds a tile's selection and hover take to fade in or out: the implicit Core Animation duration of the macOS
-    /// tile layers' border and background colors.
-    /// </summary>
-    public const double TileFadeDuration = 0.25;
-
     /// <summary>Opacity of the light color on the part of an audio waveform not played yet (W-71).</summary>
     public const double WaveformUnplayedOpacity = 0.35;
 
@@ -81,6 +75,15 @@ public static partial class JGMetrics
 
     public const double SidebarMaxWidth = 440;
 
+    /// <summary>How much of <c>bg.media</c> lies over the desktop in the see-through photo viewer (macOS MAC-024).</summary>
+    public const double SeeThroughTintOpacity = 0.25;
+
+    /// <summary>The list view's Name column never gets narrower than this (MAC-041).</summary>
+    public const double ListNameMinWidth = 160;
+
+    /// <summary>The narrowest the library's panes get before the sidebar and the preview give way (macOS MAC-020).</summary>
+    public const double LibraryPaneMinWidth = 400;
+
     /// <summary>A light frost behind the viewers' filmstrip and bottom controls (standard deviation, effective pixels).</summary>
     public const double BackdropBlurRadius = 6;
 
@@ -122,9 +125,6 @@ public static partial class JGMetrics
     /// <summary>Width of confirmation dialogs.</summary>
     public const double DialogWidth = 420;
 
-    /// <summary>The audio player's key and tempo panel (W-107).</summary>
-    public const double MusicPanelWidth = 340;
-
     /// <summary>The fields for a typed target pitch and tempo.</summary>
     public const double MusicShiftFieldWidth = 56;
 
@@ -142,6 +142,20 @@ public static partial class JGMetrics
 
     /// <summary>The blur of frosted menus and panels, in effective pixels (standard deviation).</summary>
     public const double PopupGlassBlur = 32;
+
+    /// <summary>
+    /// How much of <c>bg.base</c> tints the library's frosted top bar over the files (macOS MAC-023/024: the thinnest system
+    /// material under <c>bg.base</c> at 30 %; the app's own blur has no material of its own, so more of the color).
+    /// </summary>
+    public const double BarGlassTintOpacity = 0.55;
+
+    /// <summary>The floating status bubble: its height, and how much of <c>bg.raised</c> covers what lies beneath (MAC-037).</summary>
+    public const double StatusBubbleHeight = 28;
+
+    public const double StatusBubbleTintOpacity = 0.9;
+
+    /// <summary>Room the grid keeps below its last row for the status bubble (macOS: 28 + 16).</summary>
+    public const double StatusBubbleClearance = StatusBubbleHeight + JGSpacing.M;
 
     /// <summary>The blur of frosted panels inside a window, in effective pixels (standard deviation).</summary>
     public const double WindowGlassBlur = 18;

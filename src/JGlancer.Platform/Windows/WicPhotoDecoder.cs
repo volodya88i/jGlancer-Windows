@@ -8,7 +8,8 @@ namespace JGlancer.Platform.Windows;
 
 /// <summary>
 /// Photos through WIC (macOS PhotoDecoder): the first frame decoded at size by the scaler (JPEG decodes at 1/2, 1/4,
-/// 1/8 resolution directly), EXIF orientation applied by the flip-rotator, converted to premultiplied BGRA. Used by the
+/// 1/8 resolution directly), a wide-gamut profile converted to sRGB (<see cref="WicColor"/>), EXIF orientation applied,
+/// converted to premultiplied BGRA. Used by the
 /// viewer (screen size, full resolution on zoom) and by the thumbnail generator.
 /// </summary>
 [SupportedOSPlatform("windows")]
@@ -87,6 +88,20 @@ public sealed unsafe class WicPhotoDecoder : IPhotoDecoder
         }
     }
 
+    /// <summary>Whether the photo has an ICC profile other than sRGB, so its pixels are converted (a header read only).</summary>
+    internal static bool HasWideProfile(string path)
+    {
+        try
+        {
+            var factory = t_factory ??= ComInterop.Create<IWICImagingFactory>(FactoryClass, typeof(IWICImagingFactory).GUID);
+            return WicColor.HasWideProfile(factory, path);
+        }
+        catch (Exception error) when (error is COMException or InvalidCastException or IOException)
+        {
+            return false;
+        }
+    }
+
     /// <summary>The decode itself; null when WIC has no codec for the file or it is broken. May throw COM errors.</summary>
     internal static DecodedPhoto? DecodeFile(string path, int boxWidth, int boxHeight) =>
         Run(path, boxWidth, boxHeight, (converter, width, height, orientation, full) =>
@@ -135,6 +150,7 @@ public sealed unsafe class WicPhotoDecoder : IPhotoDecoder
                 return default;
             }
             var orientation = WicPhotoReader.Orientation(frame);
+            var profile = WicColor.WideProfile(factory, frame, owned);
             var (fullWidth, fullHeight) = orientation >= 5 ? ((int)height, (int)width) : ((int)width, (int)height);
             IWICBitmapSource source = frame;
             var scale = PhotoScale.ToFit(width, height, boxWidth, boxHeight);
@@ -146,6 +162,11 @@ public sealed unsafe class WicPhotoDecoder : IPhotoDecoder
                 Check(scaler.Initialize(source, scaled.Item1, scaled.Item2, Interpolation));
                 source = scaler;
                 (width, height) = scaled;
+            }
+            if (profile is not null)
+            {
+                // After the scaler: only the pixels kept are converted.
+                source = WicColor.ToSrgb(factory, source, profile, owned);
             }
             Check(factory.CreateFormatConverter(&pointer));
             var converter = Own<IWICFormatConverter>(pointer, owned);

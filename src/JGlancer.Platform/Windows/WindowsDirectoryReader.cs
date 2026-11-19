@@ -69,7 +69,8 @@ public sealed unsafe class WindowsDirectoryReader : IDirectoryReader
                     isDirectory ? 0 : *(long*)(entry + 40),
                     FileTime(*(long*)(entry + 24)),
                     FileTime(*(long*)(entry + 8)),
-                    *(ulong*)(entry + 96)));
+                    *(ulong*)(entry + 96),
+                    !isDirectory && (attributes & DirectoryEntry.CloudOnlyAttributes) != 0));
             }
             if (next == 0)
             {

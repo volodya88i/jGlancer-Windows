@@ -10,6 +10,9 @@ internal static class AudioAnalyzer
     /// <summary>The library's store; set when the app starts.</summary>
     public static LibraryStore? Store { get; set; }
 
+    /// <summary>A song's tempo and key were found and kept (its path), wherever that happened (MAC-028).</summary>
+    public static event EventHandler<string>? Found;
+
     /// <summary>What was found earlier in this version of the file, or null.</summary>
     public static async Task<AudioAnalysis?> KnownAsync(string path)
     {
@@ -45,6 +48,7 @@ internal static class AudioAnalyzer
         if (Store is { } store && Version(path, out var size, out var ticks))
         {
             await store.SaveAudioAnalysisAsync(path, size, ticks, analysis).ConfigureAwait(false);
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => Found?.Invoke(null, path));
         }
     }
 

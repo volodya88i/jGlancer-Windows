@@ -25,6 +25,8 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
     private readonly Dictionary<long, Asset> _rows = [];
     private readonly Queue<long> _rowOrder = new();
     private readonly HashSet<long> _rowsInFlight = [];
+    // Files kept only in the cloud with no thumbnail on this PC (asked once while they stay in the cloud).
+    private readonly HashSet<long> _cloudMisses = [];
     private readonly Dictionary<long, (CancellationTokenSource Cancel, ThumbnailPriority Priority, ThumbnailKey Key)> _thumbnailTasks = [];
     private readonly DispatcherTimer _rowRefresh;
     private LibraryModel? _model;
@@ -74,6 +76,25 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
     /// <summary>The current layout (for benchmarks and tests).</summary>
     public GridGeometry Geometry => _geometry;
 
+    /// <summary>
+    /// The heights of what lies over the grid at its top (the frosted top bar) and bottom (the status bubble): the files
+    /// scroll under them, and the first and last rows can scroll clear of them (macOS MAC-023, MAC-025).
+    /// </summary>
+    public (double Top, double Bottom) Insets
+    {
+        get => _insets;
+        set
+        {
+            if (_insets != value)
+            {
+                _insets = value;
+                Relayout();
+            }
+        }
+    }
+
+    private (double Top, double Bottom) _insets;
+
     /// <summary>Thumbnails requested and not arrived yet (snapshots wait for zero).</summary>
     public int PendingThumbnails => _thumbnailTasks.Count;
 
@@ -115,7 +136,7 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
 
     public Size ScrollSize => new(0, WheelStep);
 
-    public Size PageScrollSize => new(0, Math.Max(WheelStep, Bounds.Height - _geometry.CellHeight));
+    public Size PageScrollSize => new(0, Math.Max(WheelStep, Bounds.Height - _insets.Top - _insets.Bottom - _geometry.CellHeight));
 
     public Size Extent => new(Bounds.Width, Math.Max(_geometry.ContentHeight, Bounds.Height));
 
@@ -171,7 +192,7 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
         var state = _model?.State;
         _geometry = new GridGeometry(
             Refs.Count, Bounds.Width, state?.TileSide ?? JGMetrics.TileSideDefault, JGMetrics.GridGutter, JGMetrics.GridInset,
-            CaptionsVisible ? JGMetrics.TileCaptionHeight : 0);
+            CaptionsVisible ? JGMetrics.TileCaptionHeight : 0, _insets.Top, _insets.Bottom);
         var bucket = ThumbnailBuckets.Covering(_geometry.TileSide * (TopLevel.GetTopLevel(this)?.RenderScaling ?? 1));
         if (bucket != _bucket)
         {
@@ -197,13 +218,13 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
             return;
         }
         var frame = _geometry.Frame(index);
-        if (frame.Y - _geometry.Gutter < _offset.Y)
+        if (frame.Y - _geometry.Gutter < _offset.Y + _insets.Top)
         {
-            Offset = new Vector(0, frame.Y - _geometry.Inset);
+            Offset = new Vector(0, frame.Y - _geometry.Inset - _insets.Top);
         }
-        else if (frame.Bottom + _geometry.Gutter > _offset.Y + Bounds.Height)
+        else if (frame.Bottom + _geometry.Gutter > _offset.Y + Bounds.Height - _insets.Bottom)
         {
-            Offset = new Vector(0, frame.Bottom + _geometry.Inset - Bounds.Height);
+            Offset = new Vector(0, frame.Bottom + _geometry.Inset + _insets.Bottom - Bounds.Height);
         }
         RaiseScrollInvalidated(EventArgs.Empty);
     }
@@ -261,11 +282,7 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
         }
     }
 
-    private void OnSelectionChanged(object? sender, EventArgs e)
-    {
-        FadeSelectionChanges();
-        InvalidateVisual();
-    }
+    private void OnSelectionChanged(object? sender, EventArgs e) => InvalidateVisual();
 
     private void OnStoreChanged(object? sender, EventArgs e) => Dispatcher.UIThread.Post(() =>
     {
@@ -337,6 +354,10 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
                 {
                     _rowOrder.Enqueue(asset.Id);
                 }
+                if (!asset.IsCloudOnly)
+                {
+                    _cloudMisses.Remove(asset.Id);
+                }
                 _rows[asset.Id] = asset;
             }
             while (_rowOrder.Count > RowCapacity)
@@ -356,7 +377,7 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
         }
         var request = ThumbnailRequest.For(asset, _bucket);
         var key = request.Key;
-        if (Thumbnails.Contains(key))
+        if (Thumbnails.Contains(key) || (asset.IsCloudOnly && _cloudMisses.Contains(asset.Id)))
         {
             return;
         }
@@ -383,6 +404,14 @@ internal sealed partial class LibraryGrid : Control, ILogicalScrollable
             if (_thumbnailTasks.TryGetValue(asset.Id, out var now) && now.Cancel == cancel && now.Priority == ThumbnailPriority.Background)
             {
                 _thumbnailTasks.Remove(asset.Id);
+                return;
+            }
+            if (image is null && asset.IsCloudOnly)
+            {
+                // Nothing on this PC: the cloud glyph, and no new request until the file comes down (MAC-040).
+                _cloudMisses.Add(asset.Id);
+                _thumbnailTasks.Remove(asset.Id);
+                InvalidateVisual();
                 return;
             }
             var bitmap = image is null ? null : await Task.Run(() => ThumbnailCache.ToBitmap(image));

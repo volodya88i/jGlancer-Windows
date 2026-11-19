@@ -68,7 +68,8 @@ public static class MediaClassifier
         Add(MediaKind.Video, "com.adobe.flash.video", "flv", "f4v");
         Add(MediaKind.Video, "org.xiph.ogv", "ogv");
         Add(MediaKind.Video, "public.mpeg", "mpg", "mpeg", "mpe", "m2v", "vob");
-        Add(MediaKind.Video, "public.mpeg-2-transport-stream", "ts", "mts", "m2ts");
+        // Not "ts": far more often TypeScript sources than transport streams (macOS D-124).
+        Add(MediaKind.Video, "public.mpeg-2-transport-stream", "mts", "m2ts");
         Add(MediaKind.Video, "public.dv-movie", "dv");
         Add(MediaKind.Video, "org.smpte.mxf", "mxf");
         // Audio

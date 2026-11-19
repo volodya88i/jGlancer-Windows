@@ -11,6 +11,9 @@
   <Panel Name="Root" Background="{DynamicResource JG.bg.media}">
     <v:PhotoCanvas Name="Canvas" AutomationProperties.Name="{l:T 'Photo'}" />
 
+    <!-- A photo kept only in the cloud while it comes down (MAC-040). -->
+    <TextBlock Name="DownloadingText" Classes="body" Foreground="{DynamicResource JG.text.secondary}" Text="{l:T 'Downloading…'}"
+               HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False" IsHitTestVisible="False" />
     <StackPanel Name="FailedMessage" HorizontalAlignment="Center" VerticalAlignment="Center"
                 Spacing="{x:Static d:JGSpacing.S}" IsVisible="False" IsHitTestVisible="False">
       <d:JGIcon Data="{x:Static d:JGIconData.Image}" HorizontalAlignment="Center"

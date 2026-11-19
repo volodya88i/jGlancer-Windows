@@ -16,6 +16,7 @@ internal sealed partial class TopBar : UserControl
     public TopBar()
     {
         InitializeComponent();
+        Support.WindowGlass.FrostLive(Surface, Design.JGColor.BgBase, Design.JGMetrics.BarGlassTintOpacity);
         VideoChip.Click += (_, _) => Toggle(MediaKind.Video);
         PhotoChip.Click += (_, _) => Toggle(MediaKind.Photo);
         AudioChip.Click += (_, _) => Toggle(MediaKind.Audio);
@@ -63,11 +64,25 @@ internal sealed partial class TopBar : UserControl
         }, Avalonia.Threading.DispatcherPriority.Input);
         SizeSlider.PropertyChanged += (_, e) =>
         {
-            if (e.Property == JGSlider.ValueProperty && !_updating && _model is not null && _model.State.TileSide != SizeSlider.Value)
+            if (e.Property != JGSlider.ValueProperty || _updating || _model is null)
+            {
+                return;
+            }
+            // While the list shows, the ruler sets its row height (MAC-041).
+            if (_model.ShowsList)
+            {
+                if (_model.State.ListRowHeight != SizeSlider.Value)
+                {
+                    _model.SetListRowHeight(SizeSlider.Value);
+                }
+            }
+            else if (_model.State.TileSide != SizeSlider.Value)
             {
                 _model.SetTileSide(SizeSlider.Value);
             }
         };
+        GridModeButton.Click += (_, _) => _model?.SetViewMode(LibraryViewMode.Grid);
+        ListModeButton.Click += (_, _) => _model?.SetViewMode(LibraryViewMode.List);
     }
 
     public LibraryModel? Model
@@ -218,7 +233,14 @@ internal sealed partial class TopBar : UserControl
         AudioChip.IsChecked = AudioIcon.IsChecked = state.KindSet.Contains(MediaKind.Audio);
         SortName.Text = SortTitle(state.Sort);
         SortArrow.Data = state.Ascending ? JGIconData.ArrowUp : JGIconData.ArrowDown;
-        SizeSlider.Value = state.TileSide;
+        var list = state.ViewMode == LibraryViewMode.List;
+        GridModeButton.IsChecked = !list;
+        ListModeButton.IsChecked = list;
+        (SizeSlider.Minimum, SizeSlider.Maximum, SizeSlider.SmallChange) = list
+            ? (ListLayout.MinRowHeight, ListLayout.MaxRowHeight, 2.0)
+            : (JGMetrics.TileSideMin, JGMetrics.TileSideMax, JGMetrics.TileSideStep);
+        SizeSlider.Value = list ? state.ListRowHeight : state.TileSide;
+        Avalonia.Automation.AutomationProperties.SetName(SizeSlider, L.T(list ? "Row Height" : "Thumbnail Size"));
         _updating = false;
         UpdateSearch();
         UpdateFlagFilter();

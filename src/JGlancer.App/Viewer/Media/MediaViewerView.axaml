@@ -158,7 +158,7 @@
                 <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Fades}" />
               </Button>
               <Button Name="ExportButton" Classes="viewer">
-                <d:JGIcon Name="ExportGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Export}" />
+                <d:JGIcon Name="ExportGlyph" Data="{x:Static d:JGCustomIcons.Export}" StrokeWidth="{x:Static d:JGCustomIcons.ExportStroke}" />
               </Button>
               <!-- Video: the current frame as a PNG next to the video (P), or on the clipboard (Shift+P, right click). -->
               <Button Name="FrameButton" Classes="viewer" IsVisible="False" AutomationProperties.Name="{l:T 'Save Frame'}">
@@ -181,10 +181,17 @@
                 <d:JGIcon IsFilled="True" Data="{x:Static d:JGSolidIcons.Segment}" />
               </Button>
               <Button Name="MusicButton" Classes="tertiary" IsVisible="False" ToolTip.Tip="{l:T 'Key and Tempo'}" AutomationProperties.Name="{l:T 'Key and Tempo'}">
-                <TextBlock Name="MusicText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" />
+                <!-- As wide as the widest label, so the button and its panel stay put as values change (MAC-020). -->
+                <Panel>
+                  <TextBlock Classes="mono besideIcons" Text="Eb min · 188" Opacity="0" />
+                  <TextBlock Name="MusicText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" HorizontalAlignment="Center" />
+                </Panel>
               </Button>
               <Button Name="SpeedButton" Classes="tertiary" ToolTip.Tip="{l:T 'Speed'}" AutomationProperties.Name="{l:T 'Speed'}">
-                <TextBlock Name="SpeedText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" />
+                <Panel>
+                  <TextBlock Classes="mono besideIcons" Text="1.25×" Opacity="0" />
+                  <TextBlock Name="SpeedText" Classes="mono besideIcons" Foreground="{DynamicResource JG.text.secondary}" HorizontalAlignment="Center" />
+                </Panel>
               </Button>
               <Button Name="MuteButton" Classes="viewer">
                 <d:JGIcon Name="MuteGlyph" IsFilled="True" Data="{x:Static d:JGSolidIcons.Volume}" />

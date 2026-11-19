@@ -25,6 +25,8 @@ internal sealed partial class TitleBar : UserControl
         ExitItem.Click += (_, _) => _window?.Close();
         AddFolderItem.Click += (_, _) => AddFolderRequested?.Invoke(this, EventArgs.Empty);
         ShowNamesItem.Click += (_, _) => Model?.SetShowNames(!Model.State.ShowNames);
+        AsGridItem.Click += (_, _) => Model?.SetViewMode(Core.Model.LibraryViewMode.Grid);
+        AsListItem.Click += (_, _) => Model?.SetViewMode(Core.Model.LibraryViewMode.List);
         StatusBarItem.Click += (_, _) => Settings.SettingsStore.Current.Update(s => s with { ShowStatusBar = !s.ShowStatusBar });
         SubfoldersItem.Click += (_, _) => Model?.SetIncludeSubfolders(!Model.State.IncludeSubfolders);
         ShowPreviewItem.Click += (_, _) => Primary?.SetPreviewVisible(!Primary.State.PreviewVisible);
@@ -77,6 +79,7 @@ internal sealed partial class TitleBar : UserControl
             (SubfoldersItem, Core.Actions.ShortcutCommand.IncludeSubfolders), (FindItem, Core.Actions.ShortcutCommand.Find),
             (SplitOffItem, Core.Actions.ShortcutCommand.SplitView), (SplitSideItem, Core.Actions.ShortcutCommand.SplitSideBySide),
             (SplitStackedItem, Core.Actions.ShortcutCommand.SplitStacked),
+            (AsGridItem, Core.Actions.ShortcutCommand.AsGrid), (AsListItem, Core.Actions.ShortcutCommand.AsList),
         ];
         foreach (var (item, command) in items)
         {
@@ -206,6 +209,9 @@ internal sealed partial class TitleBar : UserControl
     private void UpdateChecks()
     {
         ShowNamesItem.IsChecked = _model?.State.ShowNames == true;
+        AsListItem.IsChecked = _model?.ShowsList == true;
+        AsGridItem.IsChecked = _model is not null && !_model.ShowsList;
+        AsGridItem.IsEnabled = AsListItem.IsEnabled = _model is not null;
         StatusBarItem.IsChecked = Settings.SettingsStore.Current.Settings.ShowStatusBar;
         SubfoldersItem.IsChecked = _model?.State.IncludeSubfolders == true;
         ShowPreviewItem.IsChecked = Primary?.State.PreviewVisible == true;

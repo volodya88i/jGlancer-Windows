@@ -23,6 +23,9 @@ internal sealed class NowPlaying(AppServices services) : IDisposable
     /// <summary>The current song's cover once loaded (null: none, or not yet).</summary>
     public Bitmap? Cover { get; private set; }
 
+    /// <summary>The current song's cover is known (null <see cref="Cover"/> then means it has none).</summary>
+    public bool IsCoverKnown { get; private set; }
+
     public PlaybackItem? Current => Playback?.Queue.Current;
 
     /// <summary>The folder the current song is in.</summary>
@@ -44,7 +47,7 @@ internal sealed class NowPlaying(AppServices services) : IDisposable
         }
         if (Playback is null)
         {
-            Playback = new MediaPlayback(MediaKind.Audio, services.PlaybackPreferences) { ResumesAfterOthers = true };
+            Playback = new MediaPlayback(MediaKind.Audio, services.PlaybackPreferences) { ResumesAfterOthers = true, KeepsOwnChoices = true };
             Playback.Changed += OnPlaybackChanged;
         }
         Playback.Load(new PlaybackQueue(items, Math.Clamp(index, 0, items.Count - 1)), autoplay, start);
@@ -68,10 +71,12 @@ internal sealed class NowPlaying(AppServices services) : IDisposable
 
     private void OnPlaybackChanged(object? sender, EventArgs e)
     {
+        // Whatever moved the queue (next, previous, or the next song starting by itself), the cover follows (MAC-028).
         if (Current is { } item && !ReferenceEquals(item, _shownItem))
         {
             _shownItem = item;
             SetCover(null);
+            IsCoverKnown = false;
             _ = LoadCoverAsync(item);
         }
         Changed?.Invoke(this, EventArgs.Empty);
@@ -92,6 +97,7 @@ internal sealed class NowPlaying(AppServices services) : IDisposable
                 return;
             }
             SetCover(cover);
+            IsCoverKnown = true;
             Changed?.Invoke(this, EventArgs.Empty);
         }
         catch (OperationCanceledException)

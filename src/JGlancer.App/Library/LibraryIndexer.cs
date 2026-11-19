@@ -19,6 +19,7 @@ internal enum LibraryActivity
 internal sealed class LibraryIndexer(LibraryScanner scanner)
 {
     private readonly Dictionary<long, CancellationTokenSource> _watches = [];
+    private readonly Dictionary<long, RootFolder> _roots = [];
     private readonly HashSet<long> _indexing = [];
     private readonly Dictionary<long, FirstScan> _firstScans = [];
 
@@ -54,6 +55,7 @@ internal sealed class LibraryIndexer(LibraryScanner scanner)
         }
         var stop = new CancellationTokenSource();
         _watches[root.Id] = stop;
+        _roots[root.Id] = root;
         _indexing.Add(root.Id);
         Action<ScanProgress>? progress = null;
         var context = SynchronizationContext.Current;
@@ -73,7 +75,14 @@ internal sealed class LibraryIndexer(LibraryScanner scanner)
             };
         }
         Update();
-        void OnUpdate(WatchUpdate update) => context?.Post(_ => Indexed(root.Id, isOnline: true), null);
+        void OnUpdate(WatchUpdate update) => context?.Post(_ =>
+        {
+            // A late report of a watch already stopped (its disk went away) changes nothing.
+            if (!stop.IsCancellationRequested)
+            {
+                Indexed(root.Id, isOnline: true);
+            }
+        }, null);
         _ = WatchAsync(root.Id, OnUpdate, progress, stop.Token);
     }
 
@@ -96,6 +105,14 @@ internal sealed class LibraryIndexer(LibraryScanner scanner)
 
     public void StopWatching(long rootId)
     {
+        _roots.Remove(rootId);
+        EndWatch(rootId);
+        OfflineRoots.Remove(rootId);
+        Update();
+    }
+
+    private void EndWatch(long rootId)
+    {
         if (_watches.Remove(rootId, out var stop))
         {
             stop.Cancel();
@@ -103,7 +120,49 @@ internal sealed class LibraryIndexer(LibraryScanner scanner)
         }
         _indexing.Remove(rootId);
         EndFirstScan(rootId);
-        Update();
+    }
+
+    /// <summary>
+    /// A disk was plugged in or ejected (macOS MAC-032): every root is checked. One whose folder is gone shows offline at
+    /// once and its watch stops (a late report of that watch cannot bring it back); one that was offline and whose
+    /// folder is back is watched again, which starts with a diff-scan that catches up on the changes made meanwhile.
+    /// </summary>
+    public void VolumesChanged()
+    {
+        _ = CheckRootsAsync();
+    }
+
+    private async Task CheckRootsAsync()
+    {
+        var roots = _roots.Values.ToList();
+        // Off the UI thread: a disk going away can make a check slow.
+        var present = await Task.Run(() => roots.Where(root => Directory.Exists(root.Path)).Select(root => root.Id).ToHashSet());
+        var changed = false;
+        foreach (var root in roots)
+        {
+            if (!_roots.ContainsKey(root.Id))
+            {
+                continue;
+            }
+            var online = present.Contains(root.Id);
+            if (!online && !OfflineRoots.Contains(root.Id))
+            {
+                EndWatch(root.Id);
+                OfflineRoots.Add(root.Id);
+                changed = true;
+            }
+            else if (online && OfflineRoots.Contains(root.Id))
+            {
+                EndWatch(root.Id);
+                OfflineRoots.Remove(root.Id);
+                StartWatching(root);
+                changed = true;
+            }
+        }
+        if (changed)
+        {
+            Update();
+        }
     }
 
     public void StopAll()
@@ -125,7 +184,10 @@ internal sealed class LibraryIndexer(LibraryScanner scanner)
         }
         catch (Exception error) when (error is RootUnavailableException or IOException or UnauthorizedAccessException)
         {
-            Indexed(rootId, isOnline: false);
+            if (!cancellation.IsCancellationRequested)
+            {
+                Indexed(rootId, isOnline: false);
+            }
         }
     }
 

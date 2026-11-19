@@ -66,7 +66,7 @@ internal sealed partial class MediaViewerView
         }
     }
 
-    /// <summary>"clip 01-23.456.png" beside the video; "(2)", "(3)"… when taken.</summary>
+    /// <summary>"clip 01-23.456.png" beside the video; "… 2.png", "… 3.png" when taken, like every copy (macOS MAC-038).</summary>
     private static string FramePath(string video, double seconds)
     {
         var time = TimeSpan.FromSeconds(Math.Max(0, seconds));
@@ -75,12 +75,7 @@ internal sealed partial class MediaViewerView
             : time.ToString(@"mm\-ss\.fff", CultureInfo.InvariantCulture);
         var folder = Path.GetDirectoryName(video) ?? "";
         var name = $"{Path.GetFileNameWithoutExtension(video)} {stamp}";
-        var path = Path.Combine(folder, name + ".png");
-        for (var copy = 2; File.Exists(path); copy++)
-        {
-            path = Path.Combine(folder, $"{name} ({copy}).png");
-        }
-        return path;
+        return Core.FileOps.FileNames.Vacant(Path.Combine(folder, name + ".png"), File.Exists);
     }
 
     private static void TryDelete(string path)

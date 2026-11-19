@@ -239,6 +239,11 @@ private static readonly Geometry PhotoGlyph = Geometry.Parse(JGIconData.Image);
         {
             return;
         }
+        if (image is null && request.IsCloudOnly)
+        {
+            // Kept only in the cloud and nothing on this PC: asked once while it stays in sight (MAC-040).
+            return;
+        }
         var bitmap = image is null ? null : await Task.Run(() => ThumbnailCache.ToBitmap(image));
         if (cancel.IsCancellationRequested)
         {

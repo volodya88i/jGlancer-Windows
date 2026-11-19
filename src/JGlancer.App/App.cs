@@ -144,7 +144,19 @@ internal sealed partial class App : Application
             var paths = AppPaths.For(options);
             Platform.Windows.WindowsThumbnailGenerator.UsesWindowsCache = !options.NoWindowsThumbnailCache;
             JGScrubber.MotionAllowed = () => Settings.Motion.Enabled;
-            _services = AppServices.Start(paths, !options.IsEphemeral);
+            try
+            {
+                _services = AppServices.Start(paths, !options.IsEphemeral);
+            }
+            catch (Exception error) when (error is Microsoft.Data.Sqlite.SqliteException or IOException or UnauthorizedAccessException)
+            {
+                // Not damage (that is recovered from): the library file stays as it is; say so and end (MAC-031).
+                var failure = new Shell.StartupErrorWindow(paths.Library);
+                desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
+                desktop.MainWindow = failure;
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
             // Settings → Library → Thumbnail Cache: the cap on disk, now and when it changes.
             var cache = _services.Cache;
             cache.SetLimit(SettingsStore.Current.Settings.ThumbnailCacheGigabytes * (1L << 30));

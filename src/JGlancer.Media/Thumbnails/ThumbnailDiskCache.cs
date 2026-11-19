@@ -11,6 +11,12 @@ public sealed class ThumbnailDiskCache : IDisposable
     /// <summary>Default size cap (FEATURES §14).</summary>
     public const long DefaultLimitBytes = 2L * 1024 * 1024 * 1024;
 
+    /// <summary>
+    /// 1: thumbnails of wide-gamut photos are sRGB; 2: no Windows-cache thumbnails smaller than their bucket (older caches
+    /// are emptied once).
+    /// </summary>
+    private const int SchemaVersion = 2;
+
     // Insertions between eviction checks.
     private const int EvictionInterval = 64;
     private const long RecencyRefreshMilliseconds = 86_400_000;
@@ -250,11 +256,24 @@ public sealed class ThumbnailDiskCache : IDisposable
         }
         Write(connection =>
         {
+            using var version = connection.CreateCommand();
+            version.CommandText = "PRAGMA user_version";
+            var current = Convert.ToInt64(version.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
             using var check = connection.CreateCommand();
             check.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'thumb'";
-            if (Convert.ToInt64(check.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0)
+            var exists = Convert.ToInt64(check.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture) > 0;
+            if (exists && current >= SchemaVersion)
             {
                 return;
+            }
+            if (exists)
+            {
+                // Version 1: photos with a wide-gamut profile are converted to sRGB (MAC-036); version 2: Explorer's
+                // small cached icons were stored as thumbnails. The old thumbnails go at once (dropping the table is
+                // instant, deleting rows one by one is not) and are made again as shown.
+                using var drop = connection.CreateCommand();
+                drop.CommandText = "DROP TABLE thumb; DROP TABLE usage;";
+                drop.ExecuteNonQuery();
             }
             using var create = connection.CreateCommand();
             create.CommandText = """
@@ -282,6 +301,9 @@ public sealed class ThumbnailDiskCache : IDisposable
                 END;
                 """;
             create.ExecuteNonQuery();
+            using var mark = connection.CreateCommand();
+            mark.CommandText = $"PRAGMA user_version = {SchemaVersion}";
+            mark.ExecuteNonQuery();
         });
     }
 }

@@ -52,6 +52,19 @@ internal sealed class PhotoCanvas : Control
 
     public SwipePager? Pager { get; set; }
 
+    /// <summary>The current frame of an animated photo, drawn in place of its picture; null for a still one.</summary>
+    public Bitmap? AnimationFrame
+    {
+        get => _animationFrame;
+        set
+        {
+            _animationFrame = value;
+            InvalidateVisual();
+        }
+    }
+
+    private Bitmap? _animationFrame;
+
     /// <summary>The photo <paramref name="offset"/> places away, for the swipe (null while it is not decoded).</summary>
     public Func<int, ViewerPicture?> Neighbor { get; set; } = _ => null;
 
@@ -250,7 +263,8 @@ internal sealed class PhotoCanvas : Control
         var offset = Pager?.Offset ?? 0;
         if (_picture is { } picture)
         {
-            Draw(context, picture, _turns, _center + new Vector(offset, 0), _scale);
+            // An animated GIF or PNG draws its current frame in the picture's place (MAC-039).
+            Draw(context, AnimationFrame is { } frame ? picture with { Bitmap = frame } : picture, _turns, _center + new Vector(offset, 0), _scale);
         }
         if (Pager?.Neighbor is { } neighbor && neighbor != 0 && Neighbor(neighbor) is { } next)
         {

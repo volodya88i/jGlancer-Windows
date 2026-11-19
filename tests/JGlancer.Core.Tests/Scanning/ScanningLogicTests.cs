@@ -24,6 +24,8 @@ public sealed class ClassifierTests
     [InlineData("n.flac", MediaKind.Audio)]
     [InlineData("o.ogg", MediaKind.Audio)]
     [InlineData("p.opus", MediaKind.Audio)]
+    [InlineData("q.m2ts", MediaKind.Video)]
+    [InlineData("r.MTS", MediaKind.Video)]
     public void MediaFilesAreClassified(string name, MediaKind kind) => Assert.Equal(kind, MediaClassifier.Classify(name)?.Kind);
 
     [Theory]
@@ -34,6 +36,8 @@ public sealed class ClassifierTests
     [InlineData("archive.zip")]
     [InlineData("page.html")]
     [InlineData("desktop.ini")]
+    [InlineData("index.ts")]
+    [InlineData("types.TS")]
     public void OtherFilesAreIgnored(string name) => Assert.Null(MediaClassifier.Classify(name));
 
     [Fact]

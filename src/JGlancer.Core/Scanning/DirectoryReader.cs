@@ -4,6 +4,7 @@ namespace JGlancer.Core.Scanning;
 /// <param name="IsHidden">Hidden or system attribute (Windows); a leading dot also counts as hidden everywhere.</param>
 /// <param name="IsLink">A symbolic link, junction or other reparse point: never followed.</param>
 /// <param name="FileId">File identifier on its volume, when the reader can get it without opening the file.</param>
+/// <param name="IsCloudOnly">A cloud-files placeholder whose content is not on this PC (reading it downloads it).</param>
 public sealed record DirectoryEntry(
     string Name,
     bool IsDirectory,
@@ -12,7 +13,12 @@ public sealed record DirectoryEntry(
     long Size,
     DateTimeOffset ModifiedAt,
     DateTimeOffset? CreatedAt,
-    ulong? FileId);
+    ulong? FileId,
+    bool IsCloudOnly = false)
+{
+    /// <summary>FILE_ATTRIBUTE_OFFLINE, RECALL_ON_OPEN and RECALL_ON_DATA_ACCESS: the content must be fetched to be read.</summary>
+    public const uint CloudOnlyAttributes = 0x1000 | 0x40000 | 0x400000;
+}
 
 /// <summary>Lists one directory (platform layer: the Windows reader also returns NTFS file ids).</summary>
 public interface IDirectoryReader
@@ -53,7 +59,8 @@ public sealed class ManagedDirectoryReader : IDirectoryReader
                 isDirectory ? 0 : ((FileInfo)info).Length,
                 new DateTimeOffset(info.LastWriteTimeUtc),
                 new DateTimeOffset(info.CreationTimeUtc),
-                FileId: null));
+                FileId: null,
+                IsCloudOnly: !isDirectory && ((uint)attributes & DirectoryEntry.CloudOnlyAttributes) != 0));
         }
         return entries;
     }

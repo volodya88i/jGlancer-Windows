@@ -4,16 +4,14 @@
              xmlns:l="using:JGlancer.App.Support"
              xmlns:lib="using:JGlancer.App.Library"
              xmlns:grid="using:JGlancer.App.Library.Grid"
+             xmlns:list="using:JGlancer.App.Library.List"
              x:Class="JGlancer.App.Library.BrowserPane"
              x:DataType="lib:LibraryModel">
-  <!-- One pane of the library (DESIGN.md §8): top bar, the grid with its empty states, status bar. The split view
-       shows two, each with its own folder, filters, sort, size and selection; the active one has an accent edge. -->
+  <!-- One pane of the library (DESIGN.md §8): the grid with its empty states, the top bar and the status bubble lying
+       over it (the files scroll under both, macOS MAC-023, MAC-025). The split view shows two, each with its own folder,
+       filters, sort, size and selection; the active one has an accent edge. -->
   <Panel>
-    <DockPanel>
-      <!-- Nothing to sort, filter or count before the first folder: the first-run screen stands alone. -->
-      <lib:TopBar Name="Header" DockPanel.Dock="Top" IsVisible="{Binding HasRoots}" />
-      <lib:StatusBar Name="StatusLine" DockPanel.Dock="Bottom" />
-
+    <Panel>
       <!-- Folders dropped from Explorer join the library (files open in the viewer from W3). -->
       <Panel Name="DropZone" DragDrop.AllowDrop="True">
         <!-- First run: one headline, one line, one button. -->
@@ -63,8 +61,15 @@
         <ScrollViewer Name="GridScroller"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto"
-                      IsVisible="{Binding HasRoots}">
+                      IsVisible="False">
           <grid:LibraryGrid Name="TileGrid" AutomationProperties.Name="{l:T 'Library'}" />
+        </ScrollViewer>
+        <!-- The same files as a list (View ▸ as List, MAC-041). -->
+        <ScrollViewer Name="ListScroller"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto"
+                      IsVisible="False">
+          <list:LibraryList Name="FileList" AutomationProperties.Name="{l:T 'Library'}" />
         </ScrollViewer>
 
         <!-- The name being edited in place (F2), over its tile's caption. -->
@@ -76,7 +81,11 @@
                 IsHitTestVisible="False"
                 IsVisible="False" />
       </Panel>
-    </DockPanel>
+      <!-- Nothing to sort, filter or count before the first folder: the first-run screen stands alone. -->
+      <lib:TopBar Name="Header" VerticalAlignment="Top" IsVisible="{Binding HasRoots}" />
+      <lib:StatusBar Name="StatusLine" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                     Margin="{x:Static d:JGInsets.StatusBubble}" />
+    </Panel>
     <Border Name="ActiveEdge" BorderBrush="{DynamicResource JG.accent}" BorderThickness="{x:Static d:JGInsets.Outline}"
             IsHitTestVisible="False" IsVisible="False" />
   </Panel>

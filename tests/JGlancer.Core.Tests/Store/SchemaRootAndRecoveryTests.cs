@@ -6,7 +6,7 @@ namespace JGlancer.Core.Tests.Store;
 
 public sealed class MigrationAndRootTests
 {
-    private static readonly string[] AllMigrations = ["v1-library", "v2-albums", "v3-search", "v4-audio-analysis"];
+    private static readonly string[] AllMigrations = ["v1-library", "v2-albums", "v3-search", "v4-audio-analysis", "v5-no-typescript", "v6-cloud-only"];
 
     [Fact]
     public async Task MigrationsCreateTheSchemaOnceAndReopenCleanly()
@@ -114,6 +114,27 @@ public sealed class RecoveryTests
             // The damaged file is kept, byte for byte.
             Assert.Equal(garbage, System.IO.File.ReadAllBytes(restored.DamagedCopy));
         }
+    }
+
+    [Fact]
+    public async Task ALibraryThatCannotBeReadIsNotTakenForDamaged()
+    {
+        using var folder = new TemporaryDirectory();
+        var path = Path.Combine(folder.Path, "library.sqlite");
+        var backup = Path.Combine(folder.Path, "library-backup.sqlite");
+        using (var original = LibraryStore.Open(path))
+        {
+            await original.AddRootAsync(@"C:\kept");
+            await original.BackupAsync(backup, TimeSpan.Zero);
+        }
+        var before = System.IO.File.ReadAllBytes(path);
+        // Another process holds the file: an error, not damage (MAC-031).
+        using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            Assert.ThrowsAny<Exception>(() => LibraryStore.OpenWithRecovery(path, backup));
+        }
+        Assert.Equal(before, System.IO.File.ReadAllBytes(path));
+        Assert.Empty(Directory.GetFiles(folder.Path, "*-damaged-*"));
     }
 
     [Fact]

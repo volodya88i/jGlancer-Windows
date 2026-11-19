@@ -49,6 +49,10 @@
         <MenuItem Name="DuplicatesItem" Header="{l:T 'Find Duplicates…'}" />
       </MenuItem>
       <MenuItem Name="ViewMenu" Header="{l:T 'View|menu'}">
+        <!-- Grid or list (MAC-041). -->
+        <MenuItem Name="AsGridItem" Header="{l:T 'as Grid'}" ToggleType="Radio" GroupName="viewMode" />
+        <MenuItem Name="AsListItem" Header="{l:T 'as List'}" ToggleType="Radio" GroupName="viewMode" />
+        <Separator />
         <MenuItem Name="ShowPreviewItem" Header="{l:T 'Show Preview'}" ToggleType="CheckBox" />
         <MenuItem Name="QuickPreviewItem" Header="{l:T 'Quick Preview'}" ToggleType="CheckBox" InputGesture="Space" />
         <!-- The split view: one pane, two side by side, or two stacked (a choice, like Flag ▸). -->

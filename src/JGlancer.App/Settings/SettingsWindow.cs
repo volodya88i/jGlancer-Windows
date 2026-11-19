@@ -232,6 +232,7 @@ internal sealed partial class SettingsWindow : Window
             AccentColorGroup(),
             SettingsUi.Group(L.T("Effects"),
                 SettingsUi.Toggle(L.T("Frosted glass in menus and panels"), S.FrostedGlass, on => Set(s => s with { FrostedGlass = on })),
+                SeeThroughToggle(),
                 SettingsUi.Toggle(L.T("Blurred cover behind audio"), S.CoverBackdrop, on => Set(s => s with { CoverBackdrop = on })),
                 SettingsUi.Toggle(L.T("Blend the backdrop into the next song's"), S.BackdropCrossfade, on => Set(s => s with { BackdropCrossfade = on })),
                 SettingsUi.Toggle(L.T("Show the next file while swiping"), S.SwipeAnimation, on => Set(s => s with { SwipeAnimation = on })),

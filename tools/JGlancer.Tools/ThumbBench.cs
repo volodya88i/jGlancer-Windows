@@ -25,6 +25,20 @@ internal static class ThumbBench
         WicPhotoDecoder.Interpolation = 3;
     }
 
+    /// <summary><c>thumbsizes &lt;files…|folder&gt; [size]</c>: what Windows' thumbnail cache gives for a request of that size.</summary>
+    public static void Sizes(string target, int size)
+    {
+        var files = Directory.Exists(target)
+            ? Directory.EnumerateFiles(target).Where(f => Core.Scanning.MediaClassifier.Classify(f) is not null).Take(40)
+            : [target];
+        foreach (var file in files)
+        {
+            var cached = WindowsThumbnailGenerator.Shell(file, size, cacheOnly: true);
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"{(cached is null ? "miss" : $"{cached.Width}x{cached.Height}"),-10} {Path.GetFileName(file)}"));
+        }
+    }
+
     public static void Run(string folder, int count)
     {
         foreach (var extension in new[] { ".jpg", ".jpeg", ".png", ".heic" })

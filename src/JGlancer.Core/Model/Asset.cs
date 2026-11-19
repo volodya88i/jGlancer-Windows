@@ -28,13 +28,20 @@ public sealed record Asset(
     DateTimeOffset? CapturedAt,
     AssetState State,
     MetadataState MetadataState,
-    AssetFlag Flag);
+    AssetFlag Flag)
+{
+    /// <summary>
+    /// The file's content is only in the cloud (OneDrive, Dropbox and other cloud-files providers: a placeholder):
+    /// nothing reads it until it is opened in a viewer, which downloads it (macOS MAC-040).
+    /// </summary>
+    public bool IsCloudOnly { get; init; }
+}
 
 /// <summary>
 /// The lean per-item entry the grid holds for a whole query (macOS ARCHITECTURE §4). The list order is the sort order;
-/// full rows are fetched only for visible items.
+/// full rows are fetched only for visible items. <paramref name="FolderId"/> places it in the list view's folder rows.
 /// </summary>
-public readonly record struct AssetRef(long Id, MediaKind Kind);
+public readonly record struct AssetRef(long Id, MediaKind Kind, long FolderId = 0);
 
 /// <summary>A directory inside a root folder (the root itself has an empty <see cref="RelativePath"/>).</summary>
 /// <param name="RelativePath">Path relative to the root, <c>/</c>-separated, empty for the root itself.</param>

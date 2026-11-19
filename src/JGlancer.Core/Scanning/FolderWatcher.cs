@@ -22,7 +22,8 @@ public sealed class FolderWatcher(TimeSpan? latency = null)
         {
             IncludeSubdirectories = true,
             InternalBufferSize = 64 * 1024,
-            NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size | NotifyFilters.LastWrite,
+            NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Size | NotifyFilters.LastWrite
+                | NotifyFilters.Attributes, // a cloud file downloaded or sent back (MAC-040)
         };
         void Post(FileSystemEvent e) => channel.Writer.TryWrite(e);
         watcher.Created += (_, e) => Post(new FileSystemEvent(FileSystemChange.Created, e.FullPath, IsDirectory: Directory.Exists(e.FullPath)));

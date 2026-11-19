@@ -26,7 +26,7 @@ public sealed partial class LibraryStore
         ReadAsync<IReadOnlyList<PendingMetadataItem>>(connection => Sql.Rows(connection, """
             SELECT asset.id, asset.kind, asset.mtime, asset.name, folder.rel_path, root_folder.path
             FROM asset JOIN folder ON folder.id = asset.folder_id JOIN root_folder ON root_folder.id = folder.root_id
-            WHERE asset.meta_state = 0 AND asset.state = 0 AND asset.id > @after
+            WHERE asset.meta_state = 0 AND asset.state = 0 AND asset.cloud_only = 0 AND asset.id > @after
             ORDER BY asset.id LIMIT @limit
             """, r => new PendingMetadataItem(
                 r.GetInt64(0),

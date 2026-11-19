@@ -61,6 +61,11 @@ public sealed class FlagAndSearchTests
         // Short text uses LIKE, with % and _ taken literally.
         Assert.Equal(["50%_off.png"], await NamesAsync(store, new AssetQuery { Search = "%_" }));
         Assert.Equal(["IMG_99.jpg"], await NamesAsync(store, new AssetQuery { Search = "99" }));
+        // Short text ignores case beyond ASCII too (MAC-034).
+        Assert.Equal(["IMG_1234 Отпуск.jpg"], await NamesAsync(store, new AssetQuery { Search = "от" }));
+        Assert.Equal(["IMG_1234 Отпуск.jpg"], await NamesAsync(store, new AssetQuery { Search = "ПУ" }));
+        Assert.Equal(["ab"], LibraryStore.CaseVariants("ab"));
+        Assert.Equal(["ОТ", "От", "оТ", "от"], LibraryStore.CaseVariants("от").Order(StringComparer.Ordinal));
         Assert.Equal(4, (await NamesAsync(store, new AssetQuery { Search = "  " })).Count);
         // Quotes in the text do not break the query.
         Assert.Empty(await NamesAsync(store, new AssetQuery { Search = "a\"b" }));

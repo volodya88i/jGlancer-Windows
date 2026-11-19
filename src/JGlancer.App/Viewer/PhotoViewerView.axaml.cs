@@ -103,6 +103,7 @@ internal sealed partial class PhotoViewerView : UserControl
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        StopAnimation();
         _hudTimer.Stop();
         _filmstrip.Detach();
         Cursor = null;
@@ -118,6 +119,64 @@ internal sealed partial class PhotoViewerView : UserControl
 
     private void OnModelChanged(object? sender, EventArgs e) => Update();
 
+    /// <summary>
+    /// The window is clear behind the viewer (Settings → See through the photo viewer, MAC-023): the photo lies on the
+    /// desktop's acrylic under <c>bg.media</c> at 25 % instead of on solid <c>bg.media</c>.
+    /// </summary>
+    public bool SeeThrough
+    {
+        get => _seeThrough;
+        set
+        {
+            _seeThrough = value;
+            Root[!Avalonia.Controls.Panel.BackgroundProperty] = Root.GetResourceObservable(Design.JGColor.BgMedia.ResourceKey,
+                brush => value && brush is Avalonia.Media.ISolidColorBrush solid
+                    ? new Avalonia.Media.SolidColorBrush(solid.Color, Design.JGMetrics.SeeThroughTintOpacity) : brush).ToBinding();
+        }
+    }
+
+    private bool _seeThrough;
+
+    private Support.AnimationPlayer? _animation;
+    private long? _animatedId;
+
+    /// <summary>
+    /// An animated GIF or PNG plays once its own picture is decoded (MAC-039): still while a thumbnail stands in, while
+    /// it is turned, out of the window, or with motion off; the decoded first frame shows until the frames come.
+    /// </summary>
+    private void UpdateAnimation(PhotoViewerModel model)
+    {
+        var plays = model.Picture is { IsPlaceholder: false } && model.QuarterTurns == 0 && model.Current is { } asset
+            && Support.AnimationPlayer.MayAnimate(asset.Path) && Settings.Motion.Enabled && VisualRoot is not null;
+        if (!plays)
+        {
+            StopAnimation();
+            return;
+        }
+        if (_animatedId == model.CurrentId)
+        {
+            return;
+        }
+        StopAnimation();
+        var id = model.CurrentId;
+        _animatedId = id;
+        _animation = Support.AnimationPlayer.Start(model.Current!.Path, frame =>
+        {
+            if (_animatedId == id)
+            {
+                Canvas.AnimationFrame = frame;
+            }
+        });
+    }
+
+    private void StopAnimation()
+    {
+        Canvas.AnimationFrame = null;
+        _animation?.Dispose();
+        _animation = null;
+        _animatedId = null;
+    }
+
     private void Update()
     {
         if (_model is not { } model)
@@ -126,12 +185,14 @@ internal sealed partial class PhotoViewerView : UserControl
             return;
         }
         Canvas.Display(model.CurrentId, model.Picture, model.QuarterTurns);
+        UpdateAnimation(model);
         var name = model.Current?.Name ?? "";
         TopBar.Show(name, model.Index, model.Count, model.CurrentId);
         Avalonia.Automation.AutomationProperties.SetName(Canvas, name);
         PreviousButton.IsVisible = model.CanMove(-1);
         NextButton.IsVisible = model.CanMove(1);
         FailedMessage.IsVisible = model.Failed;
+        DownloadingText.IsVisible = model.IsDownloading && model.Picture is null;
         _filmstrip.SetAvailable(model.Count > 1);
     }
 

@@ -40,6 +40,10 @@ public enum ShortcutCommand
     ShowNames,
     IncludeSubfolders,
 
+    // Grid or list (macOS D-125: ⌃⌘1 / ⌃⌘2; Ctrl+Shift here, clear of AltGr).
+    AsGrid,
+    AsList,
+
     // Split view: on and off, side by side, stacked.
     SplitView,
     SplitSideBySide,
@@ -92,6 +96,8 @@ public static class ShortcutCommands
         ShortcutCommand.NewAlbum => new("N", ActionModifiers.Control),
         ShortcutCommand.TogglePreview => new("D0", ActionModifiers.Control | ActionModifiers.Alt),
         ShortcutCommand.ShowNames or ShortcutCommand.IncludeSubfolders => null,
+        ShortcutCommand.AsGrid => new("D1", ActionModifiers.Control | ActionModifiers.Shift),
+        ShortcutCommand.AsList => new("D2", ActionModifiers.Control | ActionModifiers.Shift),
         ShortcutCommand.SplitView => new("S", ActionModifiers.Control | ActionModifiers.Alt),
         ShortcutCommand.SplitSideBySide => new("V", ActionModifiers.Control | ActionModifiers.Alt),
         ShortcutCommand.SplitStacked => new("H", ActionModifiers.Control | ActionModifiers.Alt),

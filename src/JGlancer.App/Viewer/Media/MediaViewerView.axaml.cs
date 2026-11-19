@@ -514,7 +514,9 @@ internal sealed partial class MediaViewerView : UserControl
             return;
         }
         var style = model.Kind == MediaKind.Video ? Settings.SettingsStore.Current.Settings.VideoWaveform : Settings.SettingsStore.Current.Settings.Waveform;
-        Scrubber.Height = style == Core.Settings.WaveformStyle.Timeline ? JGMetrics.ControlHeightCompact : JGMetrics.WaveformHeight / 2;
+        // The waveform fills its scrubber: 48 for songs, 28 for a video's sound (macOS MAC-021).
+        Scrubber.Height = style == Core.Settings.WaveformStyle.Timeline ? JGMetrics.ControlHeightCompact
+            : model.Kind == MediaKind.Video ? JGMetrics.MiniWaveformHeight / 2 : JGMetrics.WaveformHeight / 2;
         Scrubber.Waveform = style == Core.Settings.WaveformStyle.Timeline ? null : _peaks ?? JGScrubber.Flat;
         if (style == Core.Settings.WaveformStyle.Timeline)
         {
@@ -1104,8 +1106,11 @@ internal sealed partial class MediaViewerView : UserControl
         _lastPointer = point;
         Cursor = null;
         ShowChrome();
-        var bandTop = Bounds.Height - ControlsPanel.Bounds.Height - JGMetrics.FilmstripHeight - JGMetrics.FilmstripRevealMargin;
-        _filmstrip.Pointer(point.Y >= bandTop);
+        // The strip's own place only, from a little above it down to its bottom edge: on the controls under it the
+        // strip hides with the rest of the chrome (macOS MAC-026).
+        var bandBottom = Bounds.Height - ControlsPanel.Bounds.Height;
+        var bandTop = bandBottom - JGMetrics.FilmstripHeight - JGMetrics.FilmstripRevealMargin;
+        _filmstrip.Pointer(point.Y >= bandTop && point.Y < bandBottom);
     }
 
     // MARK: Chrome
