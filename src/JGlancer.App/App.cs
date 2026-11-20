@@ -279,6 +279,10 @@ internal sealed partial class App : Application
         {
             FileOpsCheck.Attach(window, model, fileOpsLog);
         }
+        if (options.PreviewCheck is { } previewLog)
+        {
+            PreviewCheck.Attach(window, model, previewLog);
+        }
         if (options.AlbumCheck is { } albumLog)
         {
             AlbumCheck.Attach(window, model, albumLog);

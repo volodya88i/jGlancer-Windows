@@ -74,8 +74,11 @@ public static class JGInsets
     /// <summary>The file's name and facts under the pane's player.</summary>
     public static Thickness PreviewFacts { get; } = new(0, JGSpacing.M, 0, 0);
 
-    /// <summary>Quick Preview's name row: clear of the window's resize edge, not of caption buttons (it has none).</summary>
-    public static Thickness QuickPreviewName { get; } = new(JGSpacing.M, JGSpacing.Xs, JGSpacing.M, 0);
+    /// <summary>Quick Preview's name row: the same room above and below, and at both sides (0.6.1).</summary>
+    public static Thickness QuickPreviewName { get; } = new(JGSpacing.Xs, JGSpacing.Xxs);
+
+    /// <summary>The name in that row, centred on the window: as far from both sides as the buttons take at the right.</summary>
+    public static Thickness QuickPreviewTitle { get; } = new(JGMetrics.QuickPreviewButtonsWidth, 0);
 
     /// <summary>Compare: each photo's caption, inset from the corner of its half.</summary>
     public static Thickness CompareCaption { get; } = new(JGSpacing.M);
@@ -94,6 +97,16 @@ public static class JGInsets
 
     /// <summary>Inside a tooltip.</summary>
     public static Thickness ToolTip { get; } = new(JGSpacing.Xs, JGSpacing.Xxs + 1);
+
+    /// <summary>Quick Preview's bar over a video: around its buttons at the start and end, and around the timeline.</summary>
+    public static Thickness QuickPreviewBarStart { get; } = new(JGSpacing.Xs, JGSpacing.Xxs, 0, JGSpacing.Xxs);
+
+    public static Thickness QuickPreviewBarEnd { get; } = new(0, JGSpacing.Xxs, JGSpacing.Xs, JGSpacing.Xxs);
+
+    public static Thickness QuickPreviewTimeline { get; } = new(JGSpacing.S, 0);
+
+    /// <summary>Inside the volume bubble.</summary>
+    public static Thickness VolumeBubble { get; } = new(JGSpacing.Xxs, JGSpacing.S);
 
     /// <summary>The status bubble from the pane's bottom edge (macOS MAC-025).</summary>
     public static Thickness StatusBubble { get; } = new(0, 0, 0, JGSpacing.Xs);

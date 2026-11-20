@@ -61,6 +61,8 @@
                   <MenuItem Header="{l:T 'Show in Explorer'}" Tag="{Binding}" Click="OnShowFolder" IsEnabled="{Binding !IsOffline}" />
                   <MenuItem Header="{l:T 'Pin to Sidebar'}" Tag="{Binding}" Click="OnTogglePin" IsVisible="{Binding !IsPinned}" />
                   <MenuItem Header="{l:T 'Unpin'}" Tag="{Binding}" Click="OnTogglePin" IsVisible="{Binding IsPinned}" />
+                  <!-- A subfolder leaves the library's views; Settings → Library shows it again. -->
+                  <MenuItem Header="{l:T 'Hide from Library'}" Tag="{Binding}" Click="OnHideFolder" IsVisible="{Binding !IsRoot}" />
                   <Separator />
                   <MenuItem Header="{l:T 'Move to Recycle Bin'}" InputGesture="Delete" Tag="{Binding}" Click="OnTrashFolder"
                             IsVisible="{Binding !IsRoot}" IsEnabled="{Binding !IsOffline}" />

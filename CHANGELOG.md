@@ -3,6 +3,19 @@
 All notable changes to jGlancer for Windows. Versions are `major.minor.patch`: the minor number grows with new
 features or something removed, the patch number with fixes; the version changes with each published release.
 
+## 0.6.1 — 2026-11-20
+
+- New: Quick Preview shows photos and videos on the whole window; the name row and a video's controls (play, timeline,
+  volume, full screen) lie over the picture, translucent and lightly blurred, and fade out when the pointer leaves.
+- New: a pin in Quick Preview keeps it above every window, or lets other windows cover it.
+- New: right-click a subfolder in the sidebar → Hide from Library; Settings → Library shows it again.
+- New: Settings → Library → Small Files hides files smaller than 1, 10, 50 or 100 KB, such as icons.
+- Changed: a photo opens sharp: the thumbnail no longer stands in while it decodes, unless that takes long.
+- Changed: Key · BPM shows in the accent color while a song plays at another speed or pitch.
+- Fixed: Space sometimes did not play or pause the player.
+- Fixed: opening Quick Preview on a video showed its thumbnail stretched and frozen for a moment.
+- Fixed: a video as large as the one before it could play without its picture; Quick Preview opens videos faster.
+
 ## 0.6.0 — 2026-11-13
 
 - New: a list view. View ▸ as Grid / as List (Ctrl+Shift+1 / Ctrl+Shift+2) or the two buttons in the top bar: Name with

@@ -29,7 +29,8 @@ internal sealed partial class SidebarView
         foreach (var id in model.PinnedFolders)
         {
             // A pinned folder gone from disk (or from the library) is skipped, not forgotten: it may come back.
-            if (model.Folder(id) is { } folder && model.Roots.FirstOrDefault(r => r.Id == folder.RootId) is { } root)
+            if (model.Folder(id) is { } folder && model.Roots.FirstOrDefault(r => r.Id == folder.RootId) is { } root
+                && !model.PathTo(id).Any(f => model.HiddenFolders.Contains(f.Id)))
             {
                 var path = Core.Store.LibraryPaths.Absolute(root.Path, folder.RelativePath);
                 PinnedRows.Children.Add(PinRow(id, folder.Name, path, id == selected));
@@ -65,6 +66,14 @@ internal sealed partial class SidebarView
         show.Click += (_, _) => Platform.Windows.ShellFiles.ShowInExplorer([path]);
         row.ContextMenu = new ContextMenu { Items = { show, unpin } };
         return row;
+    }
+
+    private void OnHideFolder(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { Tag: SidebarRow row })
+        {
+            _model?.HideFolder(row.Id);
+        }
     }
 
     private void OnTogglePin(object? sender, RoutedEventArgs e)

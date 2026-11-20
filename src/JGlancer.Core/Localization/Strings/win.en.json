@@ -264,5 +264,13 @@
   "Show Status Bar": "Show Status Bar",
   "Audio player": "Audio player",
   "Video player": "Video player",
-  "Needs Windows' transparency effects: Settings → Personalization → Colors.": "Needs Windows' transparency effects: Settings → Personalization → Colors."
+  "Needs Windows' transparency effects: Settings → Personalization → Colors.": "Needs Windows' transparency effects: Settings → Personalization → Colors.",
+  "Hide from Library": "Hide from Library",
+  "Hidden: {0}": "Hidden: {0}",
+  "Show|hidden folder": "Show",
+  "Small Files": "Small Files",
+  "Hide files smaller than": "Hide files smaller than",
+  "Icons and other tiny pictures in a folder stay out of the library's views; the files are not touched.": "Icons and other tiny pictures in a folder stay out of the library's views; the files are not touched.",
+  "Keep on Top: On": "Keep on Top: On",
+  "Keep on Top: Off": "Keep on Top: Off"
 }

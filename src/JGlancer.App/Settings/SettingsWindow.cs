@@ -285,6 +285,32 @@ internal sealed partial class SettingsWindow : Window
             row.Children.Add(remove);
             folders.Children.Add(row);
         }
+        foreach (var id in _library.HiddenFolders)
+        {
+            // Hidden subfolders: the path from its library folder, and Show to bring it back.
+            if (_library.PathTo(id) is not { Count: > 0 } folderPath)
+            {
+                continue;
+            }
+            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), ColumnSpacing = JGSpacing.Xs, MinHeight = JGMetrics.ControlHeightCompact };
+            var glyph = new JGIcon { Data = JGIconData.Folder, VerticalAlignment = VerticalAlignment.Center };
+            glyph.Bind(JGIcon.ForegroundProperty, glyph.GetResourceObservable(JGColor.TextTertiary.ResourceKey));
+            var name = SettingsUi.Text(L.T("Hidden: {0}", string.Join(" › ", folderPath.Select(f => f.Name))), "body", JGColor.TextSecondary);
+            name.TextTrimming = Avalonia.Media.TextTrimming.PrefixCharacterEllipsis;
+            var show = new Button { Content = L.T("Show|hidden folder") };
+            var folderId = id;
+            show.Click += (_, _) =>
+            {
+                _library.ShowHiddenFolder(folderId);
+                folders.Children.Remove(row);
+            };
+            Grid.SetColumn(name, 1);
+            Grid.SetColumn(show, 2);
+            row.Children.Add(glyph);
+            row.Children.Add(name);
+            row.Children.Add(show);
+            folders.Children.Add(row);
+        }
         var add = new Button { Content = L.T("Add Folder…"), HorizontalAlignment = HorizontalAlignment.Left };
         add.Click += async (_, _) => await _library.AddFoldersAsync(await FolderPicker.ChooseAsync(this));
         folders.Children.Add(add);
@@ -305,9 +331,15 @@ internal sealed partial class SettingsWindow : Window
             SettingsUi.Toggle(L.T("Fold numbered frames into one stack"), S.GroupSequences, on => Set(s => s with { GroupSequences = on })),
             SettingsUi.Text(L.T("Five or more photos named with numbers one after another (render_001 … render_090) show as a stack; a click on its count unfolds it."),
                 "body", JGColor.TextTertiary, wraps: true));
+        var small = SettingsUi.Group(L.T("Small Files"),
+            SettingsUi.Segmented(L.T("Hide files smaller than"),
+                [.. AppSettings.MinFileChoices.Select(kb => (kb == 0 ? L.T("Off") : L.T("{0} KB", kb), kb))],
+                S.MinFileKilobytes, kb => Set(s => s with { MinFileKilobytes = kb })),
+            SettingsUi.Text(L.T("Icons and other tiny pictures in a folder stay out of the library's views; the files are not touched."),
+                "body", JGColor.TextTertiary, wraps: true));
         var preview = SettingsUi.Group(L.T("Preview"),
             SettingsUi.Toggle(L.T("Show camera, codec and other details"), S.PreviewDetails, on => Set(s => s with { PreviewDetails = on })));
-        return [folders, sequences, preview, SettingsUi.Group(L.T("Thumbnail Cache"), cacheRow, usageRow), StemModels()];
+        return [folders, small, sequences, preview, SettingsUi.Group(L.T("Thumbnail Cache"), cacheRow, usageRow), StemModels()];
     }
 
     /// <summary>

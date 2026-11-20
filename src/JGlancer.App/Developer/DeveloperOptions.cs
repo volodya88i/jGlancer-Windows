@@ -68,6 +68,9 @@ internal sealed record DeveloperOptions
     /// <summary>`--switch-check &lt;log&gt;` (with `--open-first --open-kind video`): times moving through the videos; quits.</summary>
     public string? SwitchCheck { get; init; }
 
+    /// <summary>`--preview-check &lt;log&gt;`: Quick Preview's playback sampled over time (logs and quits).</summary>
+    public string? PreviewCheck { get; init; }
+
     /// <summary>The files, folder, Quick Preview or background helper the launch asks for (Explorer, a second launch).</summary>
     public Core.Launch.LaunchArguments Launch { get; init; } = Core.Launch.LaunchArguments.None;
 
@@ -170,6 +173,7 @@ internal sealed record DeveloperOptions
             TracksCheck = Value("--tracks-check"),
             UpdateCheck = Value("--update-check"),
             SwitchCheck = Value("--switch-check"),
+            PreviewCheck = Value("--preview-check"),
             Launch = Core.Launch.LaunchArguments.Parse(args, ValueOptions),
             FlagFirst = args.Contains("--flag-first", StringComparer.OrdinalIgnoreCase),
             MiniPlayer = args.Contains("--mini-player", StringComparer.OrdinalIgnoreCase),

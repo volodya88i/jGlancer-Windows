@@ -278,5 +278,13 @@
   "Show Status Bar": "Показывать строку состояния",
   "Audio player": "Аудиоплеер",
   "Video player": "Видеоплеер",
-  "Needs Windows' transparency effects: Settings → Personalization → Colors.": "Нужны эффекты прозрачности Windows: Параметры → Персонализация → Цвета."
+  "Needs Windows' transparency effects: Settings → Personalization → Colors.": "Нужны эффекты прозрачности Windows: Параметры → Персонализация → Цвета.",
+  "Hide from Library": "Скрыть из библиотеки",
+  "Hidden: {0}": "Скрыта: {0}",
+  "Show|hidden folder": "Показать",
+  "Small Files": "Маленькие файлы",
+  "Hide files smaller than": "Скрывать файлы меньше",
+  "Icons and other tiny pictures in a folder stay out of the library's views; the files are not touched.": "Значки и другие крошечные картинки не попадают в библиотеку; сами файлы не трогаются.",
+  "Keep on Top: On": "Поверх всех окон: вкл.",
+  "Keep on Top: Off": "Поверх всех окон: выкл."
 }

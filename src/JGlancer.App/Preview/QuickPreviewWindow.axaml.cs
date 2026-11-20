@@ -39,14 +39,35 @@ internal sealed partial class QuickPreviewWindow : Window
         Settings.SettingsStore.Current.Changed += (_, change) => Backdrop.IsVisible = BackdropImage.Source is not null && change.New.CoverBackdrop;
         _preview = preview;
         JGWindowChrome.Apply(this);
-        // Always on top of every window (W-90): it stays in sight while another app has the focus.
-        Topmost = true;
+        // On top of every window (W-90): it stays in sight while another app has the focus; its pin turns that off.
+        ApplyOnTop();
+        PinButton.Click += (_, _) => Settings.SettingsStore.Current.Update(s => s with { QuickPreviewOnTop = !s.QuickPreviewOnTop });
+        Settings.SettingsStore.Current.Changed += (_, change) =>
+        {
+            if (change.Old.QuickPreviewOnTop != change.New.QuickPreviewOnTop)
+            {
+                ApplyOnTop();
+            }
+        };
         Player.IsQuickPreview = true;
         // Never narrower than the whole controls row: nothing hides or overlaps (macOS MAC-021).
         Player.LayoutUpdated += (_, _) => KeepControlsRowWidth();
+        Player.OverlayChanged += (_, _) => ApplyOverlay();
+        Player.BarsShownChanged += (_, shown) =>
+        {
+            if (Player.IsOverlay)
+            {
+                NameBar.Opacity = shown ? 1 : 0;
+                NameBar.IsHitTestVisible = shown;
+            }
+        };
+        PointerExited += (_, _) => StartPhotoHide();
+        PointerEntered += (_, _) => ShowNameBar();
+        PointerMoved += (_, _) => ShowNameBar();
         Player.FullScreenRequested += (_, _) => ToggleFullScreen();
         CloseButton.Click += (_, _) => Dismiss();
         InfoButton.Click += (_, _) => ShowInfo();
+        NameRow.SizeChanged += (_, _) => FitTitle();
         OpenButton.Click += (_, _) => OpenRequested?.Invoke(this, EventArgs.Empty);
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         if (preview is not null)
@@ -141,6 +162,92 @@ internal sealed partial class QuickPreviewWindow : Window
         }
     }
 
+    /// <summary>Above every window while the pin is on; the pin in the accent then.</summary>
+    private void ApplyOnTop()
+    {
+        var onTop = Settings.SettingsStore.Current.Settings.QuickPreviewOnTop;
+        Topmost = onTop;
+        PinGlyph[!JGIcon.ForegroundProperty] = PinGlyph.GetResourceObservable((onTop ? JGColor.AccentText : JGColor.TextSecondary).ResourceKey).ToBinding();
+        var label = Core.Localization.L.T(onTop ? "Keep on Top: On" : "Keep on Top: Off");
+        ToolTip.SetTip(PinButton, label);
+        Avalonia.Automation.AutomationProperties.SetName(PinButton, label);
+    }
+
+    /// <summary>
+    /// The name shows only when it fits between the buttons' room at both sides; otherwise it hides, and the Get Info
+    /// button's tooltip names the file (owner, 0.6.1: a narrow window had the name over the buttons).
+    /// </summary>
+    private void FitTitle()
+    {
+        TitlePanel.IsVisible = true;
+        TitlePanel.Measure(Size.Infinity);
+        var room = NameRow.Bounds.Width - TitlePanel.Margin.Left - TitlePanel.Margin.Right;
+        var fits = NameRow.Bounds.Width <= 0 || TitlePanel.DesiredSize.Width - TitlePanel.Margin.Left - TitlePanel.Margin.Right <= room;
+        TitlePanel.IsVisible = fits;
+        var info = Core.Localization.L.T("Get Info");
+        ToolTip.SetTip(InfoButton, fits ? info : NameText.Text + Environment.NewLine + info);
+    }
+
+    /// <summary>
+    /// A photo or a video under the name row (owner, 0.6.1): the row lies over the picture, translucent and lightly
+    /// blurred, and fades two seconds after the pointer leaves the window (with a video's bar). Songs keep it above.
+    /// </summary>
+    private void ApplyOverlay()
+    {
+        var overlay = Player.IsOverlay;
+        Grid.SetRow(Player, overlay ? 0 : 1);
+        Grid.SetRowSpan(Player, overlay ? 2 : 1);
+        NameBlur.IsVisible = overlay;
+        if (overlay)
+        {
+            NameBar[!Border.BackgroundProperty] = NameBar.GetResourceObservable(JGColor.OverlayScrim.ResourceKey,
+                brush => brush is Avalonia.Media.ISolidColorBrush scrim
+                    ? new Avalonia.Media.SolidColorBrush(scrim.Color, JGMetrics.QuickPreviewBarOpacity) : brush).ToBinding();
+        }
+        else
+        {
+            NameBar.ClearValue(Border.BackgroundProperty);
+        }
+        NameBar.Transitions = overlay && Settings.Motion.Enabled
+            ? [new Avalonia.Animation.DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromSeconds(JGMetrics.FadeDuration), Easing = new Avalonia.Animation.Easings.CubicEaseOut() }]
+            : null;
+        NameBar.Opacity = 1;
+        NameBar.IsHitTestVisible = true;
+    }
+
+    private Avalonia.Threading.DispatcherTimer? _nameHide;
+
+    /// <summary>A photo has no bar of its own: the name row fades by itself once the pointer left.</summary>
+    private void StartPhotoHide()
+    {
+        if (!Player.IsOverlay || Player.Controls.IsVisible)
+        {
+            return;
+        }
+        _nameHide ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromSeconds(JGMetrics.QuickPreviewBarHideDelay),
+            Avalonia.Threading.DispatcherPriority.Normal, (_, _) =>
+            {
+                _nameHide!.Stop();
+                if (Player.IsOverlay)
+                {
+                    NameBar.Opacity = 0;
+                    NameBar.IsHitTestVisible = false;
+                }
+            });
+        _nameHide.Stop();
+        _nameHide.Start();
+    }
+
+    private void ShowNameBar()
+    {
+        _nameHide?.Stop();
+        if (NameBar.Opacity < 1)
+        {
+            NameBar.Opacity = 1;
+            NameBar.IsHitTestVisible = true;
+        }
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -160,6 +267,7 @@ internal sealed partial class QuickPreviewWindow : Window
             return;
         }
         NameText.Text = asset.Name;
+        FitTitle();
         Star.AssetId = asset.Id;
         if (_info is not null && !ReferenceEquals(asset, _infoFor))
         {

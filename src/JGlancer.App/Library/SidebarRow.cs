@@ -19,14 +19,19 @@ internal sealed record SidebarRow(
     /// <summary>Flattens the trees of <paramref name="roots"/> in sidebar order, children of expanded folders only.</summary>
     public static List<SidebarRow> Build(
         IReadOnlyList<RootFolder> roots, IReadOnlyDictionary<long, FolderNode> trees, IReadOnlySet<long> expanded,
-        long? selected, IReadOnlySet<long> offline, IReadOnlySet<long>? pinned = null)
+        long? selected, IReadOnlySet<long> offline, IReadOnlySet<long>? pinned = null, IReadOnlySet<long>? hidden = null)
     {
         ArgumentNullException.ThrowIfNull(roots);
         ArgumentNullException.ThrowIfNull(trees);
         var rows = new List<SidebarRow>();
         void Add(FolderNode node, long rootId, int depth)
         {
-            var hasChildren = node.Children is not null;
+            // A folder hidden from the library is no row, nor is anything below it.
+            if (depth > 0 && hidden?.Contains(node.Id) == true)
+            {
+                return;
+            }
+            var hasChildren = node.Children?.Any(child => hidden?.Contains(child.Id) != true) == true;
             var isExpanded = hasChildren && expanded.Contains(node.Id);
             rows.Add(new SidebarRow(node.Id, rootId, node.Folder.Name, depth, depth == 0, hasChildren, isExpanded,
                 node.Id == selected, depth == 0 && offline.Contains(rootId), pinned?.Contains(node.Id) == true));

@@ -40,6 +40,7 @@ internal sealed partial class LibraryModel
         primary.TreesChanged += OnPrimaryTreesChanged;
         primary.AlbumsChanged += OnPrimaryAlbumsChanged;
         primary.FlagsChanged += OnPrimaryFlagsChanged;
+        primary.HiddenFoldersChanged += OnPrimaryHiddenChanged;
         Indexer.Changed += OnIndexerChanged;
         Mirror();
         _albums = primary._albums;
@@ -63,6 +64,7 @@ internal sealed partial class LibraryModel
         primary.TreesChanged -= OnPrimaryTreesChanged;
         primary.AlbumsChanged -= OnPrimaryAlbumsChanged;
         primary.FlagsChanged -= OnPrimaryFlagsChanged;
+        primary.HiddenFoldersChanged -= OnPrimaryHiddenChanged;
         Indexer.Changed -= OnIndexerChanged;
         _refsWatch?.Cancel();
         _totalsWork?.Cancel();

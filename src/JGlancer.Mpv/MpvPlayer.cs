@@ -178,7 +178,11 @@ public sealed unsafe class MpvPlayer : IDisposable
     /// <summary>mpv writes its detailed log to <paramref name="path"/> (developer checks).</summary>
     public void SetLogFile(string path) => MpvNative.SetPropertyString(_handle, "log-file", path);
 
-    public void SetPaused(bool paused) => SetFlag("pause", paused);
+    /// <remarks>
+    /// Queued with the loads (<see cref="Load"/>), in order: set at once, a "play" right after a load would run before the
+    /// load's own "pause" and the file would stay paused (0.6.1, Quick Preview's next video).
+    /// </remarks>
+    public void SetPaused(bool paused) => CommandAsync("set", "pause", paused ? "yes" : "no");
 
     /// <summary>Jumps to <paramref name="seconds"/>; <paramref name="exact"/> to the frame, else the nearest keyframe (scrubbing).</summary>
     public void Seek(double seconds, bool exact) =>
@@ -429,6 +433,11 @@ public sealed unsafe class MpvPlayer : IDisposable
                 case MpvNative.EventPropertyChange:
                     PropertyChanged(e->ReplyUserdata, (MpvNative.PropertyData*)e->Data);
                     break;
+                case MpvNative.EventVideoReconfig:
+                    // Every file's video, also when it is as large as the last one (no property change then): the app
+                    // shows the picture once it knows its size (0.6.1, Quick Preview's next video stayed hidden).
+                    ReportVideoSize();
+                    break;
             }
         }
     }
@@ -459,12 +468,17 @@ public sealed unsafe class MpvPlayer : IDisposable
                 break;
             case VideoWidthId:
             case VideoHeightId:
-                long width = 0, height = 0;
-                MpvNative.GetProperty(_handle, "dwidth", MpvNative.FormatInt64, &width);
-                MpvNative.GetProperty(_handle, "dheight", MpvNative.FormatInt64, &height);
-                VideoSizeChanged?.Invoke((int)width, (int)height);
+                ReportVideoSize();
                 break;
         }
+    }
+
+    private void ReportVideoSize()
+    {
+        long width = 0, height = 0;
+        MpvNative.GetProperty(_handle, "dwidth", MpvNative.FormatInt64, &width);
+        MpvNative.GetProperty(_handle, "dheight", MpvNative.FormatInt64, &height);
+        VideoSizeChanged?.Invoke((int)width, (int)height);
     }
 
     private static void Check(int result, string call)

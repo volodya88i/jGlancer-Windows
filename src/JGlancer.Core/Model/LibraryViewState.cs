@@ -46,6 +46,9 @@ public sealed record LibraryViewState
     /// <summary>The orientation the split view comes back with when turned on again.</summary>
     public SplitMode LastSplit { get; set; } = SplitMode.SideBySide;
 
+    /// <summary>Subfolders hidden from the library (its files and the sidebar), by folder id.</summary>
+    public IReadOnlyList<long> HiddenFolders { get; set; } = [];
+
     /// <summary>Folders pinned to the top of the sidebar, in the order pinned.</summary>
     public IReadOnlyList<long> PinnedFolders { get; set; } = [];
 

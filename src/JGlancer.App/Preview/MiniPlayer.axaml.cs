@@ -170,6 +170,9 @@ internal sealed partial class MiniPlayer : UserControl
         {
             _window = top;
             top.PropertyChanged += OnWindowChanged;
+            top.PointerEntered += OnWindowPointerEntered;
+            top.PointerMoved += OnWindowPointerMoved;
+            top.PointerExited += OnWindowPointerExited;
         }
     }
 
@@ -229,6 +232,9 @@ internal sealed partial class MiniPlayer : UserControl
         if (_window is not null)
         {
             _window.PropertyChanged -= OnWindowChanged;
+            _window.PointerEntered -= OnWindowPointerEntered;
+            _window.PointerMoved -= OnWindowPointerMoved;
+            _window.PointerExited -= OnWindowPointerExited;
             _window = null;
         }
         StopAnimation();
@@ -308,10 +314,13 @@ internal sealed partial class MiniPlayer : UserControl
         var audio = kind == MediaKind.Audio;
         var picture = _model.Picture;
 
-        PictureImage.Source = audio ? null : _animationFrame ?? picture;
+        // Quick Preview shows a video's own frames only: its small poster stretched over the window looked frozen while
+        // the player opened the file (0.6.1); the window's dark background stands in for that moment instead.
+        var noPoster = _isQuickPreview && video && !asset.IsCloudOnly && !failed;
+        PictureImage.Source = audio || noPoster ? null : _animationFrame ?? picture;
         Stage.IsVisible = !audio && !failed;
         Stage.Aspect = Aspect(asset, picture);
-        Placeholder.IsVisible = !audio && !failed && picture is null && _model.Surface?.Parent != SurfaceHost;
+        Placeholder.IsVisible = !audio && !failed && !noPoster && picture is null && _model.Surface?.Parent != SurfaceHost;
         Placeholder.Data = video ? JGIconData.Film : JGIconData.Image;
         if (_model.Surface is { } surface)
         {
@@ -393,6 +402,8 @@ internal sealed partial class MiniPlayer : UserControl
         FullScreenButton.IsVisible = _isQuickPreview && !audio;
         FullScreenGlyph.Data = _isFullScreen ? JGSolidIcons.FullScreenExit : JGSolidIcons.FullScreen;
         Label(FullScreenButton, L.T(_isFullScreen ? "Exit Full Screen" : "Full Screen"));
+        // Quick Preview: photos and videos take the whole window, a video's controls over it (owner, 0.6.1).
+        ApplyOverlay(_isQuickPreview && !audio && !cloud && !failed && _model.Frames is null, video);
     }
 
     private static void Label(Control control, string label)

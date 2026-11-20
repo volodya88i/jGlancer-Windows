@@ -427,6 +427,10 @@ internal sealed partial class MediaViewerView : UserControl
         if (_model is { Kind: MediaKind.Audio } model)
         {
             MusicText.Text = MusicPanel.ButtonLabel(model);
+            // The song does not sound as recorded (another speed, a target pitch or tempo): the label in the accent, as
+            // on the Mac.
+            var changed = Math.Abs(model.Playback.Rate - 1) > 0.001;
+            MusicText.Foreground = this.Brush(changed ? JGColor.AccentText : JGColor.TextSecondary);
             _musicPanel?.Update();
         }
     }

@@ -173,9 +173,18 @@ internal sealed class PhotoViewerModel : IFilmstripSource, IDisposable
         {
             Show(ready);
         }
-        else
+        else if (CurrentId is { } waiting)
         {
-            SetPicture(Placeholder());
+            // The grid's thumbnail stands in only when the photo takes longer than a moment: most decode within it,
+            // and a blurred picture turning sharp is worse than a short wait (owner, 0.6.1).
+            SetPicture(null);
+            Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+            {
+                if (!_disposed && CurrentId == waiting && _picture is null && !_decoded.ContainsKey(waiting))
+                {
+                    SetPicture(Placeholder());
+                }
+            }, TimeSpan.FromSeconds(Design.JGMetrics.PhotoStandInDelay));
         }
         for (var order = 0; order < window.Count; order++)
         {

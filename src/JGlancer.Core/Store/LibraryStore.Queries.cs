@@ -134,6 +134,21 @@ public sealed partial class LibraryStore
             conditions.Add(search.Sql);
             parameters.AddRange(search.Parameters);
         }
+        if (query.MinSize > 0)
+        {
+            conditions.Add("asset.size >= @minSize");
+            parameters.Add(("@minSize", query.MinSize));
+        }
+        for (var i = 0; i < query.HiddenFolders.Count; i++)
+        {
+            // The hidden folder and its subtree, by the same rel_path range as a folder's scope.
+            conditions.Add($"""
+                asset.folder_id NOT IN (
+                  SELECT f.id FROM folder f JOIN folder p ON p.id = @hidden{i} AND f.root_id = p.root_id
+                  WHERE f.id = p.id OR (p.rel_path != '' AND f.rel_path >= p.rel_path || '/' AND f.rel_path < p.rel_path || '0'))
+                """);
+            parameters.Add(($"@hidden{i}", query.HiddenFolders[i]));
+        }
         return (string.Join(" AND ", conditions), parameters.ToArray());
     }
 

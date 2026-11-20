@@ -61,6 +61,19 @@ internal sealed partial class MainWindow : Window, Actions.IActionHost
         AttachNowPlaying(model);
         ScanProgress.Model = model;
         WatchVolumes(model);
+        // Space plays and pauses the open player wherever the keyboard is (a menu, the title bar, a control that took the
+        // focus): the player's own keys reach it only from inside it.
+        AddHandler(KeyDownEvent, (_, e) =>
+        {
+            if (e.Key == Avalonia.Input.Key.Space && e.KeyModifiers == Avalonia.Input.KeyModifiers.None && _mediaViewer is { } player
+                && e.Source is Avalonia.Visual source && !Avalonia.VisualTree.VisualExtensions.IsVisualAncestorOf(player, source)
+                && source is not TextBox && FocusManager?.GetFocusedElement() is not TextBox)
+            {
+                player.PerformMediaKey(JGlancer.App.Viewer.Media.MediaCommand.TogglePlay);
+                player.Focus();
+                e.Handled = true;
+            }
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         Settings.SettingsStore.Current.Changed += (_, change) =>
         {
             if (change.Old.SeeThroughPhotoViewer != change.New.SeeThroughPhotoViewer)

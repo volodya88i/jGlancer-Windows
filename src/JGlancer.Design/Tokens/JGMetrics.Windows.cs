@@ -75,6 +75,25 @@ public static partial class JGMetrics
 
     public const double SidebarMaxWidth = 440;
 
+    /// <summary>Quick Preview's four buttons at the right of its name row (Keep on Top, Open in Viewer, Get Info, ×) with their gaps.</summary>
+    public const double QuickPreviewButtonsWidth = 4 * ControlHeightCompact + 3 * JGSpacing.Xxs + JGSpacing.Xs;
+
+    /// <summary>Quick Preview's bar over a video: how much of the scrim shows, and seconds before it fades once the pointer left.</summary>
+    public const double QuickPreviewBarOpacity = 0.6;
+
+    public const double QuickPreviewBarHideDelay = 2;
+
+    /// <summary>The volume bubble's upright slider: its width (the capsule's, less padding) and its track's length.</summary>
+    public const double VolumeBubbleWidth = 20;
+
+    public const double VolumeBubbleTrackHeight = 88;
+
+    /// <summary>Seconds the volume bubble waits for the pointer to come back before it closes.</summary>
+    public const double VolumeBubbleCloseDelay = 0.35;
+
+    /// <summary>Seconds a photo may take to decode before the grid's thumbnail stands in for it in the viewer.</summary>
+    public const double PhotoStandInDelay = 0.15;
+
     /// <summary>How much of <c>bg.media</c> lies over the desktop in the see-through photo viewer (macOS MAC-024).</summary>
     public const double SeeThroughTintOpacity = 0.25;
 

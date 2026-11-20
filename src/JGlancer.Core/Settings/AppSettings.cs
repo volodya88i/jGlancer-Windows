@@ -128,6 +128,15 @@ public sealed record AppSettings
     /// <summary>A heavily blurred cover art behind audio files (defaults = the Performance preset).</summary>
     public bool CoverBackdrop { get; set; }
 
+    /// <summary>Quick Preview stays above every window (W-90), unless its pin is turned off (owner, 0.6.1).</summary>
+    public bool QuickPreviewOnTop { get; set; } = true;
+
+    /// <summary>Files smaller than this many kilobytes are left out of the library's views (0: none are).</summary>
+    public int MinFileKilobytes { get; set; }
+
+    /// <summary>The choices Settings → Library offers for <see cref="MinFileKilobytes"/>.</summary>
+    public static IReadOnlyList<int> MinFileChoices { get; } = [0, 1, 10, 50, 100];
+
     /// <summary>The library's bottom line with the selection's count and size.</summary>
     public bool ShowStatusBar { get; set; } = true;
 

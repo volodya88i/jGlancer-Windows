@@ -15,11 +15,21 @@ public sealed class JGSlider : RangeBase
 {
     private bool _dragging;
 
+    /// <summary>Upright: the value grows from the bottom up (the volume bubble, 0.6.1).</summary>
+    public static readonly StyledProperty<bool> IsVerticalProperty =
+        AvaloniaProperty.Register<JGSlider, bool>(nameof(IsVertical));
+
+    public bool IsVertical
+    {
+        get => GetValue(IsVerticalProperty);
+        set => SetValue(IsVerticalProperty, value);
+    }
+
     static JGSlider()
     {
         FocusableProperty.OverrideDefaultValue<JGSlider>(true);
         HeightProperty.OverrideDefaultValue<JGSlider>(JGMetrics.ControlHeightCompact);
-        AffectsRender<JGSlider>(ValueProperty, MinimumProperty, MaximumProperty);
+        AffectsRender<JGSlider>(ValueProperty, MinimumProperty, MaximumProperty, IsVerticalProperty);
         // No focus ring: the slider shows its value itself.
         FocusAdornerProperty.OverrideDefaultValue<JGSlider>(null);
     }
@@ -31,6 +41,16 @@ public sealed class JGSlider : RangeBase
         context.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
         if (Bounds.Width <= 0 || span <= 0)
         {
+            return;
+        }
+        if (IsVertical)
+        {
+            // Turned a quarter: the track runs up, filled from the bottom.
+            var size = Bounds.Size;
+            using (context.PushTransform(Matrix.CreateRotation(-Math.PI / 2) * Matrix.CreateTranslation(0, size.Height)))
+            {
+                JGSliderTrack.Draw(context, this, new Size(size.Height, size.Width), (Value - Minimum) / span);
+            }
             return;
         }
         JGSliderTrack.Draw(context, this, Bounds.Size, (Value - Minimum) / span);
@@ -45,7 +65,7 @@ public sealed class JGSlider : RangeBase
         }
         _dragging = true;
         e.Pointer.Capture(this);
-        Track(e.GetPosition(this).X, e.KeyModifiers);
+        Track(e.GetPosition(this), e.KeyModifiers);
         e.Handled = true;
     }
 
@@ -54,7 +74,7 @@ public sealed class JGSlider : RangeBase
         base.OnPointerMoved(e);
         if (_dragging)
         {
-            Track(e.GetPosition(this).X, e.KeyModifiers);
+            Track(e.GetPosition(this), e.KeyModifiers);
         }
     }
 
@@ -106,9 +126,11 @@ public sealed class JGSlider : RangeBase
     }
 
     /// <summary>Shift held: in steps.</summary>
-    private void Track(double x, KeyModifiers modifiers)
+    private void Track(Point point, KeyModifiers modifiers)
     {
-        var fraction = Math.Clamp(x / Math.Max(Bounds.Width, 1), 0, 1);
+        var fraction = IsVertical
+            ? Math.Clamp(1 - point.Y / Math.Max(Bounds.Height, 1), 0, 1)
+            : Math.Clamp(point.X / Math.Max(Bounds.Width, 1), 0, 1);
         Set(Minimum + fraction * (Maximum - Minimum), snap: modifiers.HasFlag(KeyModifiers.Shift));
     }
 

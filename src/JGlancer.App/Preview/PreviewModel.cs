@@ -290,7 +290,25 @@ internal sealed partial class PreviewModel : IDisposable
             SetPicture(null);
             SetCover(null, known: false);
             Waveform = null;
-            StopPlayback();
+            // Quick Preview from one video to the next: the new file replaces the last one in the same player, as the
+            // full player switches, at once and without the poster. Stopping first would tear down mpv's video output,
+            // and a file opened right after that never shows (0.6.1, `--preview-check`).
+            // Nothing playing (Quick Preview just opened over a hidden pane) needs no stop either: it starts at once.
+            var quickVideo = IsQuickPreviewOpen && asset.Kind == MediaKind.Video && !asset.IsCloudOnly;
+            var replaces = quickVideo && (!OwnsPlayback
+                || (Playback is { Kind: MediaKind.Video, Status: not PlaybackStatus.Failed } && Surface?.Released.IsCompleted == false));
+            if (replaces)
+            {
+                if (OwnsPlayback)
+                {
+                    Playback!.Pause();
+                }
+                StartPlayer(asset);
+            }
+            else
+            {
+                StopPlayback();
+            }
             // The views drop the old picture now: it is disposed right after, and nothing may draw it while the
             // sequence's frames are read (a crash when the selection changed fast, e.g. files moving).
             Changed?.Invoke(this, EventArgs.Empty);
@@ -329,15 +347,22 @@ internal sealed partial class PreviewModel : IDisposable
                 return;
             }
 
-            // Once the selection rests: the photo at preview size, the player, the waveform.
-            await Task.Delay(SettleDelay, cancellation);
+            // Once the selection rests: the photo at preview size, the player, the waveform. A stopped player must also
+            // have let go of the last file before it opens the next one, or the new one never starts (0.6.1).
+            if (!replaces)
+            {
+                await Task.Delay(SettleDelay, cancellation);
+            }
             switch (asset.Kind)
             {
                 case MediaKind.Photo:
                     await ShowPhotoAsync(asset, cancellation);
                     break;
                 default:
-                    StartPlayer(asset);
+                    if (!replaces)
+                    {
+                        StartPlayer(asset);
+                    }
                     if (asset.Kind == MediaKind.Audio)
                     {
                         await ShowWaveformAsync(asset, cancellation);

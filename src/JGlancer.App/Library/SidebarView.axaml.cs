@@ -212,7 +212,8 @@ internal sealed partial class SidebarView : UserControl
         // An album shown: no folder is the selected one. The highlight is the active pane's (split view).
         var shown = Shown;
         Rows.ItemsSource = SidebarRow.Build(_model.Roots, _model.Trees, _model.ExpandedFolders,
-            shown.State.AlbumId is null ? shown.State.FolderId : null, _model.Indexer.OfflineRoots, _model.PinnedFolders.ToHashSet());
+            shown.State.AlbumId is null ? shown.State.FolderId : null, _model.Indexer.OfflineRoots, _model.PinnedFolders.ToHashSet(),
+            _model.HiddenFolders.ToHashSet());
         RebuildPins();
         RebuildAlbums();
     }

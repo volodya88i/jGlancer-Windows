@@ -84,7 +84,8 @@ internal sealed partial class LibraryModel : ObservableObject
     /// <summary>Settings → Library → Group image sequences applies at once.</summary>
     private void WatchSequenceSetting() => Settings.SettingsStore.Current.Changed += (_, change) =>
     {
-        if (change.Old.GroupSequences != change.New.GroupSequences && _refsWatch is not null)
+        if ((change.Old.GroupSequences != change.New.GroupSequences || change.Old.MinFileKilobytes != change.New.MinFileKilobytes)
+            && _refsWatch is not null)
         {
             ReloadQuery();
         }
@@ -425,6 +426,8 @@ internal sealed partial class LibraryModel : ObservableObject
         Ascending = State.Ascending,
         Flags = State.FlagFilter,
         Search = IsSearching ? SearchText : null,
+        MinSize = Settings.SettingsStore.Current.Settings.MinFileKilobytes * 1024L,
+        HiddenFolders = HiddenFolders,
     };
 
     public void UpdateState(Action<LibraryViewState> change)

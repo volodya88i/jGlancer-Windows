@@ -33,16 +33,27 @@
       <l:SafeImage Name="BackdropImage" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
       <Border Name="BackdropWash" Background="{DynamicResource JG.bg.raised}" Opacity="{x:Static d:JGMetrics.BackdropScrimOpacity}" />
     </Panel>
-    <DockPanel>
-      <Grid Name="NameRow" DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.QuickPreviewName}">
+    <!-- The name row above the file; over a photo or a video it lies on the picture, translucent and lightly blurred,
+         and fades with the video's bar (MiniPlayer.Overlay). -->
+    <Grid Name="Layout" RowDefinitions="Auto,*">
+      <p:MiniPlayer Name="Player" Grid.Row="1" Margin="{x:Static d:JGInsets.Preview}" />
+      <Border Name="NameBar" VerticalAlignment="Top">
+      <Panel>
+      <l:BackdropBlur Name="NameBlur" IsVisible="False" />
+      <Grid Name="NameRow" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.QuickPreviewName}">
         <Border Grid.ColumnSpan="2" Background="Transparent" chrome:WindowDecorationProperties.ElementRole="TitleBar" />
-        <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}" HorizontalAlignment="Center" IsHitTestVisible="False">
+        <StackPanel Name="TitlePanel" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}" HorizontalAlignment="Center"
+                    Margin="{x:Static d:JGInsets.QuickPreviewTitle}" IsHitTestVisible="False">
           <TextBlock Name="NameText" Classes="body" Foreground="{DynamicResource JG.text.primary}"
                      VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                      Height="{x:Static d:JGMetrics.ControlHeightCompact}" LineHeight="{x:Static d:JGMetrics.ControlHeightCompact}" />
           <lib:FlagStar Name="Star" />
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}">
+          <!-- Above every window or not (remembered); the pin in the accent while it is. -->
+          <Button Name="PinButton" Classes="icon" chrome:WindowDecorationProperties.ElementRole="User">
+            <d:JGIcon Name="PinGlyph" Data="{x:Static d:JGCustomIcons.Pin}" />
+          </Button>
           <Button Name="OpenButton" Classes="icon" chrome:WindowDecorationProperties.ElementRole="User"
                   ToolTip.Tip="{l:T 'Open in Viewer'}" AutomationProperties.Name="{l:T 'Open in Viewer'}">
             <d:JGIcon Data="{x:Static d:JGIconData.SquareArrowOutUpRight}" />
@@ -57,7 +68,8 @@
           </Button>
         </StackPanel>
       </Grid>
-      <p:MiniPlayer Name="Player" Margin="{x:Static d:JGInsets.Preview}" />
-    </DockPanel>
+      </Panel>
+      </Border>
+    </Grid>
   </Panel>
 </Window>

@@ -67,6 +67,12 @@ public sealed record AssetQuery
     /// <summary>Text the file name must contain (case-insensitive); null or blank matches every file.</summary>
     public string? Search { get; init; }
 
+    /// <summary>Files smaller than this many bytes are left out (icons and other small images); 0 keeps every file.</summary>
+    public long MinSize { get; init; }
+
+    /// <summary>Folders hidden from the library (with everything below them); their files are left out.</summary>
+    public IReadOnlyList<long> HiddenFolders { get; init; } = [];
+
     /// <summary>Photo, video and audio.</summary>
     public static IReadOnlySet<MediaKind> AllKinds { get; } = new HashSet<MediaKind> { MediaKind.Photo, MediaKind.Video, MediaKind.Audio };
 
