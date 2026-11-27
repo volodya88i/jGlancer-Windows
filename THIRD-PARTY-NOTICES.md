@@ -17,4 +17,5 @@ and About box, W12).
 | [ONNX Runtime](https://github.com/microsoft/onnxruntime) | Stem splitting | MIT |
 | [DirectML](https://github.com/microsoft/DirectML) | GPU for stem splitting | Microsoft Software License Terms (`DirectML-LICENSE.txt`) |
 | [Demucs](https://github.com/facebookresearch/demucs) models | Downloaded on request for stem splitting | MIT |
+| [Mel-Band RoFormer](https://huggingface.co/KimberleyJSN/melbandroformer) vocals model (Kimberley Jensen) | Downloaded on request for 2 stems at High Quality | MIT |
 | [xunit.v3](https://xunit.net) | Tests, not shipped | Apache-2.0 |

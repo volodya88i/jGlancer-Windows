@@ -11,7 +11,7 @@
         Icon="avares://jGlancer/Assets/jGlancer.ico"
         Width="{x:Static d:JGMetrics.WindowDefaultWidth}"
         Height="{x:Static d:JGMetrics.WindowDefaultHeight}"
-        MinWidth="{x:Static d:JGMetrics.WindowMinWidth}"
+        MinWidth="{x:Static d:JGMetrics.LibraryWindowMinWidth}"
         MinHeight="{x:Static d:JGMetrics.WindowMinHeight}"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource JG.bg.base}"

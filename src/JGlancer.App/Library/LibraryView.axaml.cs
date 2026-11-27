@@ -25,6 +25,7 @@ internal sealed partial class LibraryView : UserControl
         _activePane = PrimaryPane;
         AttachPane(PrimaryPane);
         Sidebar.ActiveModel = () => ActiveModel;
+        AttachSidebarFold();
         SidebarHandle.PointerPressed += (_, e) =>
         {
             if (Model is { } model && e.GetCurrentPoint(SidebarHandle).Properties.IsLeftButtonPressed)
@@ -147,6 +148,21 @@ internal sealed partial class LibraryView : UserControl
     {
         base.OnDataContextChanged(e);
         Sidebar.Model = Model;
+        if (Model is { } model)
+        {
+            model.StateChanged += (_, _) => UpdateSidebarFold();
+            UpdateSidebarFold();
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // A dialog started in the sidebar over the files ended: it may go now.
+        if (TopLevel.GetTopLevel(this) is Window window)
+        {
+            window.Activated += (_, _) => CloseIfLeft();
+        }
     }
 
     private void AttachPane(BrowserPane pane)
@@ -289,8 +305,14 @@ internal sealed partial class LibraryView : UserControl
     }
 
     private PreviewModel? _preview;
+    private SizeMap.SizeMapModel? _sizeMap;
+    private (double Size, double Start)? _rightDrag;
+    private (double Size, double Start)? _bottomDrag;
 
-    /// <summary>The preview pane on the right, shown while the library has folders and View ▸ Show Preview is on.</summary>
+    /// <summary>
+    /// The side modules (macOS D-127): the preview, shown while the library has folders and View ▸ Show Preview is on,
+    /// and the size map (View ▸ Show Size Map), each right of the files or under them.
+    /// </summary>
     public void AttachPreview(PreviewModel preview)
     {
         ArgumentNullException.ThrowIfNull(preview);
@@ -300,53 +322,157 @@ internal sealed partial class LibraryView : UserControl
         }
         _preview = preview;
         Pane.Attach(preview, model);
-        model.StateChanged += (_, _) => UpdatePreviewPane();
+        _sizeMap = new SizeMap.SizeMapModel(model);
+        SizeMap.Attach(_sizeMap);
+        SizeMap.RevealRequested += (_, id) => PrimaryPane.Reveal(id);
+        model.StateChanged += (_, _) => UpdateModules();
         model.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(LibraryModel.HasRoots))
             {
-                UpdatePreviewPane();
+                UpdateModules();
             }
         };
-        UpdatePreviewPane();
+        AttachPlaceHandles(model);
+        UpdateModules();
     }
 
-    private void UpdatePreviewPane()
+    /// <summary>The right place's left edge drags its width; the place under the files drags by its top edge.</summary>
+    private void AttachPlaceHandles(LibraryModel model)
+    {
+        RightHandle.PointerPressed += (_, e) =>
+        {
+            if (e.GetCurrentPoint(RightHandle).Properties.IsLeftButtonPressed)
+            {
+                _rightDrag = (model.State.PreviewWidth, e.GetPosition(null).X);
+                e.Pointer.Capture(RightHandle);
+                e.Handled = true;
+            }
+        };
+        RightHandle.PointerMoved += (_, e) =>
+        {
+            if (_rightDrag is { } drag)
+            {
+                model.SetPreviewWidth(drag.Size - (e.GetPosition(null).X - drag.Start));
+            }
+        };
+        RightHandle.PointerReleased += (_, e) =>
+        {
+            _rightDrag = null;
+            e.Pointer.Capture(null);
+        };
+        BottomHandle.PointerPressed += (_, e) =>
+        {
+            if (e.GetCurrentPoint(BottomHandle).Properties.IsLeftButtonPressed)
+            {
+                _bottomDrag = (model.State.BottomHeight, e.GetPosition(null).Y);
+                e.Pointer.Capture(BottomHandle);
+                e.Handled = true;
+            }
+        };
+        BottomHandle.PointerMoved += (_, e) =>
+        {
+            if (_bottomDrag is { } drag)
+            {
+                model.SetBottomHeight(drag.Size - (e.GetPosition(null).Y - drag.Start));
+            }
+        };
+        BottomHandle.PointerReleased += (_, e) =>
+        {
+            _bottomDrag = null;
+            e.Pointer.Capture(null);
+        };
+    }
+
+    /// <summary>
+    /// The module shown in a place, if it can show: the preview needs its model, the size map no split view (they exclude
+    /// each other for now, D-127); neither shows before the library has a folder.
+    /// </summary>
+    private Core.Model.LibraryModule? ShownModule(Core.Model.ModuleSlot slot)
+    {
+        if (Model is not { HasRoots: true } model || model.State.ModuleIn(slot) is not { } module)
+        {
+            return null;
+        }
+        return module == Core.Model.LibraryModule.Preview
+            ? _preview is null ? null : module
+            : _sizeMap is null || model.State.Split != SplitMode.Off ? null : module;
+    }
+
+    private void UpdateModules()
     {
         if (Model is not { } model || _preview is null)
         {
             return;
         }
-        var shown = model.HasRoots && model.State.PreviewVisible;
-        Pane.IsVisible = PreviewHairline.IsVisible = shown;
-        // A narrow window: the preview, then the sidebar give way (down to their minimums) before the panes go under
+        var right = ShownModule(Core.Model.ModuleSlot.Right);
+        var bottom = ShownModule(Core.Model.ModuleSlot.Bottom);
+        Place(Pane, Core.Model.LibraryModule.Preview, right, bottom);
+        Place(SizeMap, Core.Model.LibraryModule.SizeMap, right, bottom);
+        RightPlace.IsVisible = RightHairline.IsVisible = RightHandle.IsVisible = right is not null;
+        BottomPlace.IsVisible = BottomHairline.IsVisible = BottomHandle.IsVisible = bottom is not null;
+        // A narrow window: the right place, then the sidebar give way (down to their minimums) before the panes go under
         // LibraryPaneMinWidth; the chosen widths stay saved (macOS MAC-020).
         var width = Bounds.Width > 0 ? Bounds.Width : double.PositiveInfinity;
-        var preview = shown
-            ? Math.Max(JGMetrics.PreviewPaneMinWidth, Math.Min(model.State.PreviewWidth, width - JGMetrics.LibraryPaneMinWidth - JGMetrics.SidebarMinWidth))
+        var sidebarRoom = WantsDocked ? JGMetrics.SidebarMinWidth : JGMetrics.SidebarStripWidth;
+        var rightWidth = right is not null
+            ? Math.Max(JGMetrics.PreviewPaneMinWidth, Math.Min(model.State.PreviewWidth, width - JGMetrics.LibraryPaneMinWidth - sidebarRoom))
             : 0;
-        Pane.Width = shown ? preview : model.State.PreviewWidth;
-        var sidebar = Math.Max(JGMetrics.SidebarMinWidth, Math.Min(model.State.SidebarWidth, width - JGMetrics.LibraryPaneMinWidth - preview));
-        Columns.ColumnDefinitions[0].Width = new GridLength(sidebar);
-        _preview.SetPaneShown(shown && IsVisible);
+        RightPlace.Width = right is not null ? rightWidth : model.State.PreviewWidth;
+        _dockedWidth = Math.Max(JGMetrics.SidebarMinWidth, Math.Min(model.State.SidebarWidth, width - JGMetrics.LibraryPaneMinWidth - rightWidth));
+        UpdateSidebarFold();
+        // The place under the files: its chosen height, lower when the window leaves the files too little room.
+        var height = Bounds.Height > 0 ? Bounds.Height : double.PositiveInfinity;
+        BottomPlace.Height = Math.Max(JGMetrics.BottomModuleMinHeight, Math.Min(model.State.BottomHeight, height - JGMetrics.BottomModuleMinHeight));
+        var previewShown = right == Core.Model.LibraryModule.Preview || bottom == Core.Model.LibraryModule.Preview;
+        _preview.SetPaneShown(previewShown && IsVisible);
+        var mapShown = right == Core.Model.LibraryModule.SizeMap || bottom == Core.Model.LibraryModule.SizeMap;
+        SizeMap.IsActive = mapShown && IsVisible;
+    }
+
+    /// <summary>Puts a module in the place it is shown in (it moves between the places), or hides it.</summary>
+    private void Place(Control module, Core.Model.LibraryModule which, Core.Model.LibraryModule? right, Core.Model.LibraryModule? bottom)
+    {
+        var slot = right == which ? Core.Model.ModuleSlot.Right : bottom == which ? Core.Model.ModuleSlot.Bottom : (Core.Model.ModuleSlot?)null;
+        module.IsVisible = slot is not null;
+        if (slot is not { } place)
+        {
+            return;
+        }
+        var host = place == Core.Model.ModuleSlot.Right ? RightPlace : BottomPlace;
+        if (!ReferenceEquals(module.Parent, host))
+        {
+            if (module is PreviewPane)
+            {
+                _preview?.SurfaceMoving();
+            }
+            (module.Parent as Panel)?.Children.Remove(module);
+            host.Children.Add(module);
+        }
+        if (module is SizeMap.SizeMapModule map)
+        {
+            map.Slot = place;
+        }
+        else if (module is PreviewPane pane)
+        {
+            pane.Slot = place;
+        }
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
         base.OnSizeChanged(e);
-        if (e.WidthChanged)
-        {
-            UpdatePreviewPane();
-        }
+        UpdateModules();
+        UpdateSidebarFold();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        // Hidden behind a viewer: the pane shows nothing.
+        // Hidden behind a viewer: the modules show nothing.
         if (change.Property == IsVisibleProperty)
         {
-            UpdatePreviewPane();
+            UpdateModules();
         }
     }
 

@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="using:JGlancer.Design"
+             xmlns:l="using:JGlancer.App.Support"
+             xmlns:lib="using:JGlancer.App.Library"
+             xmlns:map="using:JGlancer.App.SizeMap"
+             x:Class="JGlancer.App.SizeMap.SizeMapModule"
+             Background="{DynamicResource JG.bg.panel}">
+  <!-- The size map as a side module (macOS D-127, SizeMapModule): the main pane's folder as nested rectangles by size;
+       the header names what is under the pointer, or the folder and its total. -->
+  <DockPanel>
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="{x:Static d:JGInsets.Bar}" Height="{x:Static d:JGMetrics.BarHeight}">
+      <d:JGSectionHeader Label="{l:T 'Size Map'}" VerticalAlignment="Center" />
+      <TextBlock Name="InfoText" Grid.Column="1" Classes="mono" Foreground="{DynamicResource JG.text.secondary}"
+                 VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="{x:Static d:JGInsets.SizeMapInfo}" />
+      <lib:ModuleHeaderButtons Name="HeaderButtons" Grid.Column="2" Module="SizeMap" />
+    </Grid>
+    <Panel Margin="{x:Static d:JGInsets.SizeMapContent}">
+      <map:SizeMapCanvas Name="Canvas" />
+      <TextBlock Name="MessageText" Classes="body" Foreground="{DynamicResource JG.text.tertiary}"
+                 HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" IsVisible="False" />
+    </Panel>
+  </DockPanel>
+</UserControl>

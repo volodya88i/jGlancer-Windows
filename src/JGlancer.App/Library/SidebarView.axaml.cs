@@ -33,6 +33,7 @@ internal sealed partial class SidebarView : UserControl
         Rows.AddHandler(PointerMovedEvent, OnRowMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         Rows.AddHandler(PointerReleasedEvent, (_, _) => _rowPress = null, RoutingStrategies.Tunnel, handledEventsToo: true);
         AttachAlbums();
+        AttachFold();
         ToolTip.SetTip(TrashButton, L.T("Show the Recycle Bin in Explorer; drop files here to move them to the Recycle Bin"));
         TrashButton.Click += (_, _) => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", "shell:RecycleBinFolder") { UseShellExecute = true });
         TrashButton.AddHandler(DragDrop.DragOverEvent, (_, e) =>
@@ -202,6 +203,8 @@ internal sealed partial class SidebarView : UserControl
 
     private void Rebuild()
     {
+        _morphDirty = true;
+        InvalidateArrange();
         if (_model is null)
         {
             Rows.ItemsSource = null;
@@ -209,11 +212,18 @@ internal sealed partial class SidebarView : UserControl
             RebuildAlbums();
             return;
         }
-        // An album shown: no folder is the selected one. The highlight is the active pane's (split view).
+        // An album shown: no folder is the selected one. The highlight is the active pane's (split view). The strip has
+        // the library folders only, each named by its tooltip (macOS D-128).
         var shown = Shown;
-        Rows.ItemsSource = SidebarRow.Build(_model.Roots, _model.Trees, _model.ExpandedFolders,
+        var rows = SidebarRow.Build(_model.Roots, _model.Trees, IsCompact ? new HashSet<long>() : _model.ExpandedFolders,
             shown.State.AlbumId is null ? shown.State.FolderId : null, _model.Indexer.OfflineRoots, _model.PinnedFolders.ToHashSet(),
             _model.HiddenFolders.ToHashSet());
+        var icons = _model.RootIcons;
+        Rows.ItemsSource = rows.Select(row => row with
+        {
+            Tip = IsCompact ? row.Name : null,
+            CustomIcon = row.IsRoot && icons.TryGetValue(row.RootId, out var icon) ? icon : null,
+        }).ToList();
         RebuildPins();
         RebuildAlbums();
     }

@@ -162,6 +162,13 @@ internal sealed partial class MainWindow
                 // One preview pane for the window: the main model holds it.
                 _model?.SetPreviewVisible(!_model.State.PreviewVisible);
                 break;
+            case ShortcutCommand.ToggleSidebar:
+                Library.ToggleSidebar();
+                break;
+            case ShortcutCommand.ToggleSizeMap when Split == Core.Model.SplitMode.Off && _model is { } main:
+                // The size map and the split view exclude each other for now (D-127).
+                main.SetModuleVisible(Core.Model.LibraryModule.SizeMap, !main.State.SizeMapVisible);
+                break;
             case ShortcutCommand.ShowNames:
                 model.SetShowNames(!model.State.ShowNames);
                 break;
@@ -171,13 +178,13 @@ internal sealed partial class MainWindow
             case ShortcutCommand.AsList:
                 model.SetViewMode(Core.Model.LibraryViewMode.List);
                 break;
-            case ShortcutCommand.SplitView:
+            case ShortcutCommand.SplitView when !IsSizeMapShown:
                 ToggleSplit();
                 break;
-            case ShortcutCommand.SplitSideBySide:
+            case ShortcutCommand.SplitSideBySide when !IsSizeMapShown:
                 SetSplit(Split == Core.Model.SplitMode.SideBySide ? Core.Model.SplitMode.Off : Core.Model.SplitMode.SideBySide);
                 break;
-            case ShortcutCommand.SplitStacked:
+            case ShortcutCommand.SplitStacked when !IsSizeMapShown:
                 SetSplit(Split == Core.Model.SplitMode.Stacked ? Core.Model.SplitMode.Off : Core.Model.SplitMode.Stacked);
                 break;
             case ShortcutCommand.IncludeSubfolders:

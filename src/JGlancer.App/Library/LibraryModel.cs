@@ -187,7 +187,32 @@ internal sealed partial class LibraryModel : ObservableObject
 
     // MARK: Preview pane
 
-    public void SetPreviewVisible(bool visible) => UpdateState(s => s.PreviewVisible = visible);
+    public void SetPreviewVisible(bool visible) => SetModuleVisible(Core.Model.LibraryModule.Preview, visible);
+
+    /// <summary>Shows or hides a side module; shown where the other one is, it takes the free place (macOS D-127).</summary>
+    public void SetModuleVisible(Core.Model.LibraryModule module, bool visible) => UpdateState(s => s.SetVisible(module, visible));
+
+    /// <summary>Folds the sidebar into its strip, or docks it again (macOS D-128); remembered.</summary>
+    public void SetSidebarCollapsed(bool collapsed)
+    {
+        if (State.SidebarCollapsed != collapsed)
+        {
+            UpdateState(s => s.SidebarCollapsed = collapsed);
+        }
+    }
+
+    /// <summary>Moves a side module to the other place, swapping it with the module there.</summary>
+    public void MoveModule(Core.Model.LibraryModule module) => UpdateState(s => s.Move(module));
+
+    /// <summary>The place under the files, within <see cref="JGlancer.Design.JGMetrics.BottomModuleMinHeight"/> … <see cref="JGlancer.Design.JGMetrics.BottomModuleMaxHeight"/>.</summary>
+    public void SetBottomHeight(double height)
+    {
+        var clamped = Math.Clamp(height, JGlancer.Design.JGMetrics.BottomModuleMinHeight, JGlancer.Design.JGMetrics.BottomModuleMaxHeight);
+        if (clamped != State.BottomHeight)
+        {
+            UpdateState(s => s.BottomHeight = clamped);
+        }
+    }
 
     /// <summary>Within <see cref="JGlancer.Design.JGMetrics.PreviewPaneMinWidth"/> … <see cref="JGlancer.Design.JGMetrics.PreviewPaneMaxWidth"/>.</summary>
     public void SetSidebarWidth(double width)
@@ -246,6 +271,7 @@ internal sealed partial class LibraryModel : ObservableObject
         Indexer.FirstScanEnded += (_, rootId) => ShowScannedRoot(rootId);
         _ = WatchRootsAsync();
         StartAlbums();
+        StartRootIcons();
         ReloadQuery();
         await Task.CompletedTask.ConfigureAwait(true);
     }
@@ -640,6 +666,7 @@ internal sealed partial class LibraryModel : ObservableObject
         Indexer.StopAll();
         _refsWatch?.Cancel();
         _albumsWatch?.Cancel();
+        _rootIconsWatch?.Cancel();
         foreach (var stop in _folderWatches.Values)
         {
             stop.Cancel();

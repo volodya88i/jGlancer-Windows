@@ -5,7 +5,20 @@
              xmlns:lib="using:JGlancer.App.Library"
              x:Class="JGlancer.App.Library.SidebarView"
              Background="{DynamicResource JG.bg.panel}">
-  <!-- PINNED folders (W-76), FOLDERS (roots and their trees), the Trash at the bottom (DESIGN.md §8, macOS SidebarView). -->
+  <!-- PINNED folders (W-76), FOLDERS (roots and their trees), the Trash at the bottom (DESIGN.md §8, macOS SidebarView).
+       Folded (macOS D-128) the same view is the strip: laid out at its full width all the time, only its visible width
+       changes; names fade (class "fade"), icons glide to the strip's middle (class "stripIcon"), what only the strip
+       shows comes in (class "stripOnly"). LibraryView drives it (SidebarView.Fold.cs). -->
+  <UserControl.Styles>
+    <!-- Folded or folding: the rows draw no highlight of their own; the selection mark does (it shrinks to a square). -->
+    <Style Selector="lib|SidebarView.folding Button.row">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="lib|SidebarView.folding Button.row:pointerover">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+  </UserControl.Styles>
+  <Panel>
   <DockPanel>
     <Border DockPanel.Dock="Bottom"
             Height="{x:Static d:JGMetrics.FooterHeight}"
@@ -13,35 +26,40 @@
             BorderThickness="0,1,0,0"
             Padding="{x:Static d:JGInsets.SidebarRow}">
       <!-- The Recycle Bin: a click shows it in Explorer; files dropped here go there (undoable). -->
-      <Button Name="TrashButton" Theme="{StaticResource JG.sidebarRow}"
+      <Button Name="TrashButton" Theme="{StaticResource JG.sidebarRow}" Classes="row"
               VerticalAlignment="Center"
               DragDrop.AllowDrop="True"
               AutomationProperties.Name="{l:T 'Trash'}">
         <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xs}">
-          <d:JGIcon Data="{x:Static d:JGIconData.Trash}" Foreground="{DynamicResource JG.text.secondary}" />
-          <TextBlock Classes="body" Text="{l:T 'Trash'}" VerticalAlignment="Center" />
+          <d:JGIcon Classes="stripIcon" Tag="trash" Data="{x:Static d:JGIconData.Trash}" Foreground="{DynamicResource JG.text.secondary}" />
+          <TextBlock Classes="body fade" Text="{l:T 'Trash'}" VerticalAlignment="Center" />
         </StackPanel>
       </Button>
     </Border>
     <!-- Pinned folders: any depth, in the order pinned; rows built in code. Hidden while nothing is pinned. -->
-    <StackPanel Name="PinnedSection" DockPanel.Dock="Top" IsVisible="False">
+    <StackPanel Name="PinnedSection" Classes="fade" DockPanel.Dock="Top" IsVisible="False">
       <Border Margin="{x:Static d:JGInsets.SidebarHeader}" Height="{x:Static d:JGMetrics.BarHeight}">
         <d:JGSectionHeader Label="{l:T 'Pinned'}" VerticalAlignment="Center" />
       </Border>
       <StackPanel Name="PinnedRows" Margin="{x:Static d:JGInsets.SidebarRow}" />
     </StackPanel>
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}" Height="{x:Static d:JGMetrics.BarHeight}">
-      <d:JGSectionHeader Label="{l:T 'Folders'}" VerticalAlignment="Center" />
+    <Grid Name="FoldersHeader" DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}" Height="{x:Static d:JGMetrics.BarHeight}">
+      <d:JGSectionHeader Classes="fade" Label="{l:T 'Folders'}" VerticalAlignment="Center" />
       <Button Name="AddButton"
               Grid.Column="1"
-              Classes="icon"
+              Classes="icon fade"
               ToolTip.Tip="{l:T 'Add Folder…'}"
               AutomationProperties.Name="{l:T 'Add Folder…'}">
         <d:JGIcon Data="{x:Static d:JGIconData.Plus}" />
       </Button>
     </Grid>
     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-      <StackPanel>
+      <Panel>
+      <!-- The selection while folded or folding: the full row, shrinking to a square round the icon on the strip. -->
+      <Canvas Name="MarkLayer" IsHitTestVisible="False">
+        <Border Name="SelectionMark" Background="{DynamicResource JG.bg.raised}" CornerRadius="{StaticResource JG.radius.small}" IsVisible="False" />
+      </Canvas>
+      <StackPanel Name="RowsPanel">
       <ItemsControl Name="Rows"
                     Margin="{x:Static d:JGInsets.SidebarRow}"
                     Focusable="True"
@@ -49,16 +67,20 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="lib:SidebarRow">
             <Button Theme="{StaticResource JG.sidebarRow}"
+                    Classes="row"
                     Classes.selected="{Binding IsSelected}"
                     Tag="{Binding}"
+                    ToolTip.Tip="{Binding Tip}"
                     Click="OnRowClick"
                     AutomationProperties.Name="{Binding Name}">
               <Button.ContextMenu>
                 <!-- Folders on disk: a subfolder, Explorer, the Recycle Bin (not for a library folder itself, which
                      leaves the library instead; files stay). -->
-                <ContextMenu>
+                <ContextMenu Opened="OnMenuOpened" Closed="OnMenuClosed">
                   <MenuItem Header="{l:T 'New Folder…'}" Tag="{Binding}" Click="OnNewFolder" IsEnabled="{Binding !IsOffline}" />
                   <MenuItem Header="{l:T 'Show in Explorer'}" Tag="{Binding}" Click="OnShowFolder" IsEnabled="{Binding !IsOffline}" />
+                  <!-- A library folder's own icon (macOS D-129). -->
+                  <MenuItem Header="{l:T 'Folder Icon…'}" Tag="{Binding}" Click="OnFolderIcon" IsVisible="{Binding IsRoot}" />
                   <MenuItem Header="{l:T 'Pin to Sidebar'}" Tag="{Binding}" Click="OnTogglePin" IsVisible="{Binding !IsPinned}" />
                   <MenuItem Header="{l:T 'Unpin'}" Tag="{Binding}" Click="OnTogglePin" IsVisible="{Binding IsPinned}" />
                   <!-- A subfolder leaves the library's views; Settings → Library shows it again. -->
@@ -70,7 +92,7 @@
                 </ContextMenu>
               </Button.ContextMenu>
               <StackPanel Orientation="Horizontal" Spacing="{x:Static d:JGSpacing.Xxs}" Margin="{Binding Indent}">
-                <Panel Width="{x:Static d:JGSpacing.M}">
+                <Panel Classes="fade" Width="{x:Static d:JGSpacing.M}">
                   <Button Classes="icon"
                           Padding="0"
                           IsVisible="{Binding HasChildren}"
@@ -80,12 +102,13 @@
                     <d:JGIcon Data="{Binding Chevron}" Width="12" Height="12" Foreground="{DynamicResource JG.text.tertiary}" />
                   </Button>
                 </Panel>
-                <d:JGIcon Data="{Binding Icon}" Foreground="{Binding $parent[Button].Foreground}" />
-                <TextBlock Classes="body"
+                <lib:FolderIconView Classes.stripIcon="{Binding IsRoot}" Tag="{Binding StripKey}" Fallback="{Binding Icon}"
+                                    Icon="{Binding CustomIcon}" Foreground="{Binding $parent[Button].Foreground}" />
+                <TextBlock Classes="body fade"
                            Text="{Binding Name}"
                            TextTrimming="CharacterEllipsis"
                            VerticalAlignment="Center" />
-                <TextBlock Classes="label section"
+                <TextBlock Classes="label section fade"
                            Text="{l:T 'Offline'}"
                            IsVisible="{Binding IsOffline}"
                            VerticalAlignment="Center" />
@@ -96,18 +119,36 @@
       </ItemsControl>
 
       <!-- ALBUMS (macOS SidebarAlbums): + makes one; rows are built in code (cover, name, count, rename in place). -->
+      <Panel Name="AlbumsSection">
+      <!-- On the strip: a short line between the folders and the albums. -->
+      <Border Name="AlbumsLine" Classes="stripOnly" Width="{x:Static d:JGMetrics.IconSize}" Height="{x:Static d:JGMetrics.OutlineWidth}"
+              HorizontalAlignment="Left" VerticalAlignment="Center" Background="{DynamicResource JG.line.hair}" />
       <Grid Name="AlbumsHeader" ColumnDefinitions="*,Auto" Margin="{x:Static d:JGInsets.SidebarHeader}" Height="{x:Static d:JGMetrics.BarHeight}">
-        <d:JGSectionHeader Label="{l:T 'Albums'}" VerticalAlignment="Center" />
+        <d:JGSectionHeader Classes="fade" Label="{l:T 'Albums'}" VerticalAlignment="Center" />
         <Button Name="NewAlbumButton"
                 Grid.Column="1"
-                Classes="icon"
+                Classes="icon fade"
                 ToolTip.Tip="{l:T 'New Album'}"
                 AutomationProperties.Name="{l:T 'New Album'}">
           <d:JGIcon Data="{x:Static d:JGIconData.Plus}" />
         </Button>
       </Grid>
+      </Panel>
       <StackPanel Name="AlbumRows" Margin="{x:Static d:JGInsets.SidebarRow}" />
       </StackPanel>
+      </Panel>
     </ScrollViewer>
   </DockPanel>
+
+  <!-- Hide Sidebar (docked) or Keep Sidebar Open (over the files), at the right of the first header row. -->
+  <Button Name="FoldButton" Classes="icon fade" HorizontalAlignment="Right" VerticalAlignment="Top"
+          Margin="{x:Static d:JGInsets.SidebarFoldButton}">
+    <d:JGIcon Data="{x:Static d:JGIconData.PanelLeft}" />
+  </Button>
+  <!-- On the strip: Show Sidebar, in the first row. -->
+  <Button Name="ShowButton" Classes="icon stripOnly" HorizontalAlignment="Left" VerticalAlignment="Top"
+          Width="{x:Static d:JGMetrics.SidebarStripWidth}" Height="{x:Static d:JGMetrics.BarHeight}">
+    <d:JGIcon Data="{x:Static d:JGIconData.PanelLeft}" />
+  </Button>
+  </Panel>
 </UserControl>

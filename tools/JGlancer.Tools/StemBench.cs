@@ -5,14 +5,19 @@ using JGlancer.Stems;
 namespace JGlancer.Tools;
 
 /// <summary>
-/// <c>stems &lt;model.onnx&gt; four|six &lt;song&gt; &lt;folder&gt; [--cpu]</c>: splits a song as the app does and reports the
-/// time of each step and the peak memory (W-85 budgets). Writes every stem into the folder.
+/// <c>stems &lt;model.onnx&gt; two|four|six &lt;song&gt; &lt;folder&gt; [--cpu]</c>: splits a song as the app does and reports the
+/// time of each step and the peak memory (W-85 budgets). Writes every stem into the folder. A model named
+/// "…roformer…" runs Mel-Band RoFormer (2 stems at High Quality).
 /// </summary>
 internal static class StemBench
 {
     public static async Task<int> RunAsync(string modelPath, string mode, string song, string folder, bool cpuOnly)
     {
-        var model = StemModelInfo.For(mode == "six" ? StemMode.Six : StemMode.Four);
+        var stemMode = Enum.Parse<StemMode>(mode, ignoreCase: true);
+        // A RoFormer model (2 stems at High Quality) by its file name.
+        var name = Path.GetFileName(modelPath);
+        var network = name.Contains("roformer", StringComparison.OrdinalIgnoreCase) ? StemNetwork.Vocals : stemMode.Network();
+        var model = StemModelInfo.For(network, full: name.Contains("-full", StringComparison.OrdinalIgnoreCase));
         var clock = Stopwatch.StartNew();
         var audio = await JGlancer.Mpv.MpvAudioDecoder.StereoAsync(song, model.SampleRate, CancellationToken.None);
         if (audio is null)
@@ -36,11 +41,11 @@ internal static class StemBench
         Directory.CreateDirectory(folder);
         // The decoded input, for comparing with Demucs itself (scripts/stems/compare_demucs.py).
         await File.WriteAllBytesAsync(Path.Combine(folder, "_input.wav"), JGlancer.Core.Playback.PcmFiles.WriteWave(audio));
-        var writers = new Dictionary<int, IStemSink>();
-        for (var source = 0; source < model.Sources.Count; source++)
+        var writers = new List<StemOutput>();
+        foreach (var stem in stemMode == StemMode.Two ? StemModelInfo.Shown(stemMode) : model.Sources)
         {
-            var path = Path.Combine(folder, StemNaming.FileName(song, model.Sources[source]));
-            writers[source] = new WaveStemWriter(File.Create(path), model.SampleRate);
+            var path = Path.Combine(folder, StemNaming.FileName(song, stem));
+            writers.Add(new StemOutput(model.Part(stem)!.Value, new WaveStemWriter(File.Create(path), model.SampleRate)));
         }
         clock.Restart();
         var peak = 0L;
@@ -50,7 +55,7 @@ internal static class StemBench
             Console.Write($"\r{done:P0}  {clock.Elapsed.TotalSeconds:0.0} s   ");
         }, CancellationToken.None);
         Console.WriteLine();
-        foreach (var writer in writers.Values.Cast<WaveStemWriter>())
+        foreach (var writer in writers.Select(w => w.Sink).Cast<WaveStemWriter>())
         {
             writer.Complete();
             writer.Dispose();

@@ -42,6 +42,15 @@ internal static class LaunchProbe
                         SnapshotSoon(settingsWindow, path);
                         return;
                     }
+                    // The library folder icon picker on the first library folder (macOS D-129): its own window, offscreen.
+                    if (options.FolderIconPicker && main.DataContext is Library.LibraryModel library && library.Roots.Count > 0)
+                    {
+                        var picker = new Library.FolderIconPicker(library, library.Roots[0]);
+                        picker.Show(main);
+                        await Task.Delay(500);
+                        SnapshotSoon(picker, path);
+                        return;
+                    }
                     if (options.About)
                     {
                         var about = new Shell.AboutWindow();

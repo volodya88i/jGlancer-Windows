@@ -113,4 +113,19 @@ public static class JGInsets
 
     /// <summary>Inside the status bubble, left and right of its text.</summary>
     public static Thickness StatusBubbleContent { get; } = new(JGSpacing.M, 0);
+
+    /// <summary>The size map's header text between its label and its buttons (macOS D-127).</summary>
+    public static Thickness SizeMapInfo { get; } = new(JGSpacing.Xs, 0);
+
+    /// <summary>Round the size map under its header: a little at the sides and the bottom.</summary>
+    public static Thickness SizeMapContent { get; } = new(JGSpacing.Xs, 0, JGSpacing.Xs, JGSpacing.Xs);
+
+    /// <summary>The sidebar's fold button at the right of its first header row (macOS D-128), centred in the row.</summary>
+    public static Thickness SidebarFoldButton { get; } = new(0, (JGMetrics.BarHeight - JGMetrics.ControlHeightCompact) / 2, JGSpacing.Xs, 0);
+
+    /// <summary>FOLDERS' + when the fold button stands beside it (no pinned folders above).</summary>
+    public static Thickness SidebarAddBesideFold { get; } = new(0, 0, JGMetrics.ControlHeightCompact + JGSpacing.Xxs, 0);
+
+    /// <summary>An album row of the sidebar: as wide as the folder rows, its cover and name one step further in.</summary>
+    public static Thickness SidebarAlbumRow { get; } = new(JGSpacing.Xs + JGSpacing.M, 0, JGSpacing.Xs, 0);
 }

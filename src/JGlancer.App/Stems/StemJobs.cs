@@ -16,7 +16,7 @@ internal sealed record StemJob(string Song, string Folder, bool FolderIsNew, Ste
 
 /// <summary>
 /// The stem splits of the window (W-85), one at a time in the background while the app stays usable: decode the song
-/// (mpv, 44.1 kHz stereo), run Demucs (<see cref="OnnxStemSeparator"/>, one session for the songs of a run), write the
+/// (mpv, 44.1 kHz stereo), run Demucs or RoFormer (<see cref="OnnxStemSeparator"/>, one session for the songs of a run), write the
 /// ticked stems as ".partial" files in the folder and rename them into place at the end. Stop (or an error)
 /// removes this run's partial files and the folder it made. Done: a toast with Show in Explorer, and Ctrl+Z moves
 /// what it made to the Recycle Bin. The original song is never touched. UI thread only, except the work itself.
@@ -109,7 +109,7 @@ internal sealed class StemJobs(string modelFolder, FileOperationsModel fileOps) 
     /// <summary>Splits one song; returns what it made (the folder, or the files in a folder that was there).</summary>
     private async Task<IReadOnlyList<string>> SplitAsync(StemJob job, CancellationToken stop)
     {
-        var model = StemModelInfo.For(job.Choice.Mode, job.FullModel);
+        var model = StemModelInfo.For(job.Choice.Network, job.FullModel);
         var audio = await Mpv.MpvAudioDecoder.StereoAsync(job.Song, model.SampleRate, stop)
             ?? throw (stop.IsCancellationRequested ? new OperationCanceledException(stop) : new InvalidDataException("No audio"));
         if (_separator?.Model != model)
@@ -121,7 +121,7 @@ internal sealed class StemJobs(string modelFolder, FileOperationsModel fileOps) 
         }
         var separator = _separator;
         var made = new List<(string Partial, string Final)>();
-        var writers = new Dictionary<int, IStemSink>();
+        var writers = new List<StemOutput>();
         var createdFolder = job.FolderIsNew && !Directory.Exists(job.Folder);
         try
         {
@@ -132,7 +132,8 @@ internal sealed class StemJobs(string modelFolder, FileOperationsModel fileOps) 
                 var partial = Path.Combine(job.Folder, "." + Path.GetFileName(final) + ".partial");
                 made.Add((partial, final));
                 var file = new FileStream(partial, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-                writers[model.Sources.ToList().IndexOf(stem)] = new WaveStemWriter(file, model.SampleRate);
+                var part = model.Part(stem) ?? throw new InvalidOperationException($"The model has no {stem}");
+                writers.Add(new StemOutput(part, new WaveStemWriter(file, model.SampleRate)));
             }
             var clock = Stopwatch.StartNew();
             await Task.Run(() =>
@@ -145,7 +146,7 @@ internal sealed class StemJobs(string modelFolder, FileOperationsModel fileOps) 
                     Changed?.Invoke(this, EventArgs.Empty);
                 }), stop);
             }, stop);
-            foreach (var writer in writers.Values.Cast<WaveStemWriter>())
+            foreach (var writer in writers.Select(w => w.Sink).Cast<WaveStemWriter>())
             {
                 writer.Complete();
                 writer.Dispose();
@@ -159,7 +160,7 @@ internal sealed class StemJobs(string modelFolder, FileOperationsModel fileOps) 
         }
         catch
         {
-            foreach (var writer in writers.Values.Cast<WaveStemWriter>())
+            foreach (var writer in writers.Select(w => w.Sink).Cast<WaveStemWriter>())
             {
                 writer.Dispose();
             }

@@ -5,9 +5,11 @@
              xmlns:lib="using:JGlancer.App.Library"
              xmlns:grid="using:JGlancer.App.Library.Grid"
              xmlns:preview="using:JGlancer.App.Preview"
+             xmlns:map="using:JGlancer.App.SizeMap"
              x:Class="JGlancer.App.Library.LibraryView"
              x:DataType="lib:LibraryModel">
-  <!-- The library window (DESIGN.md §8, macOS LibraryView): sidebar · top bar / content / status bar · preview pane. -->
+  <!-- The library window (DESIGN.md §8, macOS LibraryView): sidebar · top bar / content / status bar, and two places for
+       side modules, right of the files and under them (macOS D-127): the preview and the size map. -->
   <Grid Name="Columns">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="{x:Static d:JGLayout.SidebarColumn}" />
@@ -17,19 +19,43 @@
       <ColumnDefinition Width="Auto" />
     </Grid.ColumnDefinitions>
 
-    <Border Name="PreviewHairline" Grid.Column="3" Width="{x:Static d:JGMetrics.OutlineWidth}" Background="{DynamicResource JG.line.hair}" />
-    <preview:PreviewPane Name="Pane" Grid.Column="4" />
-
-    <lib:SidebarView Name="Sidebar" />
-
-    <Border Grid.Column="1" Background="{DynamicResource JG.line.hair}" />
-    <!-- The sidebar's right edge: drag to widen or narrow it (as the preview pane's left edge). -->
-    <Border Name="SidebarHandle" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Right"
+    <!-- The place right of the files; its left edge drags its width. -->
+    <Border Name="RightHairline" Grid.Column="3" Width="{x:Static d:JGMetrics.OutlineWidth}" Background="{DynamicResource JG.line.hair}" IsVisible="False" />
+    <Panel Name="RightPlace" Grid.Column="4" IsVisible="False">
+      <preview:PreviewPane Name="Pane" />
+    </Panel>
+    <Border Name="RightHandle" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Left" IsVisible="False"
             Width="{x:Static d:JGMetrics.ResizeHandleWidth}" Background="Transparent" Cursor="SizeWestEast" />
 
-    <!-- One pane, or two side by side or stacked with a splitter between them (View ▸ Split View). -->
-    <Grid Name="PaneArea" Grid.Column="2">
-      <lib:BrowserPane Name="PrimaryPane" />
+
+    <Grid Grid.Column="2" RowDefinitions="*,Auto,Auto">
+      <!-- One pane, or two side by side or stacked with a splitter between them (View ▸ Split View). -->
+      <Grid Name="PaneArea">
+        <lib:BrowserPane Name="PrimaryPane" />
+      </Grid>
+      <!-- The place under the files; its top edge drags its height. -->
+      <Border Name="BottomHairline" Grid.Row="1" Height="{x:Static d:JGMetrics.OutlineWidth}" Background="{DynamicResource JG.line.hair}" IsVisible="False" />
+      <Panel Name="BottomPlace" Grid.Row="2" IsVisible="False">
+        <map:SizeMapModule Name="SizeMap" />
+      </Panel>
+      <Border Name="BottomHandle" Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Top" IsVisible="False"
+              Height="{x:Static d:JGMetrics.ResizeHandleWidth}" Background="Transparent" Cursor="SizeNorthSouth" />
     </Grid>
+
+    <!-- The sidebar as one panel (macOS D-128): docked over its room (columns 0 and 1), folded into its strip, or out
+         over the files from the strip with a shadow. Its content keeps the unfolded width; only the visible width
+         (clipped, so the pointer beside the strip reaches the files) changes. LibraryView.Sidebar.cs drives it. -->
+    <Border Name="SidebarShadow" Grid.ColumnSpan="5" HorizontalAlignment="Left" ZIndex="10">
+      <Border Name="SidebarPanel" ClipToBounds="True" Background="{DynamicResource JG.bg.panel}" DragDrop.AllowDrop="True">
+        <Panel>
+          <lib:SidebarView Name="Sidebar" HorizontalAlignment="Left" />
+          <Border Name="SidebarEdge" HorizontalAlignment="Right" Width="{x:Static d:JGMetrics.OutlineWidth}"
+                  Background="{DynamicResource JG.line.hair}" IsHitTestVisible="False" />
+        </Panel>
+      </Border>
+    </Border>
+    <!-- The docked sidebar's right edge: drag to widen or narrow it (as the right place's left edge). -->
+    <Border Name="SidebarHandle" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Right" ZIndex="11"
+            Width="{x:Static d:JGMetrics.ResizeHandleWidth}" Background="Transparent" Cursor="SizeWestEast" />
   </Grid>
 </UserControl>

@@ -98,7 +98,7 @@ public sealed record AppSettings
     /// <summary>Image sequences (frame_001 … frame_090) fold into one stack in the grid (W-81).</summary>
     public bool GroupSequences { get; set; } = true;
 
-    /// <summary>The split window's mode (4 or 6 stems), remembered (W-85).</summary>
+    /// <summary>The split window's mode (2, 4 or 6 stems), remembered (W-85).</summary>
     public Stems.StemMode StemMode { get; set; } = Stems.StemMode.Four;
 
     /// <summary>Split with the full-precision model (twice the download) instead of the compact one (W-92).</summary>
@@ -106,6 +106,9 @@ public sealed record AppSettings
 
     /// <summary>The stems ticked in the split window; null: all.</summary>
     public IReadOnlyList<Stems.StemKind>? StemTicks { get; set; }
+
+    /// <summary>2 stems at High Quality (Mel-Band RoFormer) rather than Standard (the 4-stem Demucs), remembered (MAC-056).</summary>
+    public bool StemHighQuality { get; set; }
 
     /// <summary>The video player shows HDR through mpv's own window (W-87).</summary>
     public bool HdrVideo { get; set; }

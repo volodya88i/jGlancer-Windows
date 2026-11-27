@@ -53,7 +53,10 @@
         <MenuItem Name="AsGridItem" Header="{l:T 'as Grid'}" ToggleType="Radio" GroupName="viewMode" />
         <MenuItem Name="AsListItem" Header="{l:T 'as List'}" ToggleType="Radio" GroupName="viewMode" />
         <Separator />
+        <MenuItem Name="ShowSidebarItem" Header="{l:T 'Show Sidebar'}" ToggleType="CheckBox" />
         <MenuItem Name="ShowPreviewItem" Header="{l:T 'Show Preview'}" ToggleType="CheckBox" />
+        <!-- The size map (D-127): not with the split view for now, each disables the other. -->
+        <MenuItem Name="ShowSizeMapItem" Header="{l:T 'Show Size Map'}" ToggleType="CheckBox" />
         <MenuItem Name="QuickPreviewItem" Header="{l:T 'Quick Preview'}" ToggleType="CheckBox" InputGesture="Space" />
         <!-- The split view: one pane, two side by side, or two stacked (a choice, like Flag ▸). -->
         <MenuItem Name="SplitItem" Header="{l:T 'Split View'}">

@@ -73,7 +73,24 @@ internal sealed partial class SidebarView
     private void RebuildAlbumRows()
     {
         var typed = _albumField is { } open && _model?.RenamingAlbumId == open.AlbumId ? (open.AlbumId, open.Field.Text, open.Field.SelectionStart, open.Field.SelectionEnd) : default;
+        var wasEditing = _albumField is not null;
         _albumField = null;
+        try
+        {
+            RebuildAlbumList(typed);
+        }
+        finally
+        {
+            // An album's name was edited and is no more: the sidebar over the files may go now.
+            if (wasEditing && _albumField is null)
+            {
+                MenuClosed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+
+    private void RebuildAlbumList((long AlbumId, string? Text, int SelectionStart, int SelectionEnd) typed)
+    {
         AlbumRows.Children.Clear();
         if (_model is not { } model)
         {
@@ -100,6 +117,8 @@ internal sealed partial class SidebarView
         var renaming = model.RenamingAlbumId == album.Id;
         var cover = new Border
         {
+            Classes = { "stripIcon" },
+            Tag = "album:" + album.Id.ToString(System.Globalization.CultureInfo.InvariantCulture),
             Width = JGMetrics.IconSize + JGSpacing.Xxs,
             Height = JGMetrics.IconSize + JGSpacing.Xxs,
             CornerRadius = new CornerRadius(JGMetrics.RadiusSmall),
@@ -153,11 +172,11 @@ internal sealed partial class SidebarView
         }
         else
         {
-            var text = new TextBlock { Text = album.Name, Classes = { "body" }, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
+            var text = new TextBlock { Text = album.Name, Classes = { "body", "fade" }, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
             text[!TextBlock.ForegroundProperty] = this.GetResourceObservable((isSelected ? JGColor.TextPrimary : JGColor.TextSecondary).ResourceKey).ToBinding();
             name = text;
         }
-        var count = new TextBlock { Text = album.ItemCount.ToString(System.Globalization.CultureInfo.CurrentCulture), Classes = { "mono" }, VerticalAlignment = VerticalAlignment.Center };
+        var count = new TextBlock { Text = album.ItemCount.ToString(System.Globalization.CultureInfo.CurrentCulture), Classes = { "mono", "fade" }, VerticalAlignment = VerticalAlignment.Center };
         count[!TextBlock.ForegroundProperty] = this.GetResourceObservable(JGColor.TextTertiary.ResourceKey).ToBinding();
         var content = new Avalonia.Controls.Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), ColumnSpacing = JGSpacing.Xs };
         Avalonia.Controls.Grid.SetColumn(name, 1);
@@ -165,7 +184,15 @@ internal sealed partial class SidebarView
         content.Children.Add(cover);
         content.Children.Add(name);
         content.Children.Add(count);
-        var row = new Button { Content = content, Margin = new Thickness(JGSpacing.M, 0, 0, 0), HorizontalContentAlignment = HorizontalAlignment.Stretch };
+        // The row starts where the folder rows start, its content one step in: on the strip the cover glides to the strip's
+        // middle and must stay inside its row, which clips it (macOS D-128).
+        var row = new Button
+        {
+            Classes = { "row" },
+            Content = content,
+            Padding = JGInsets.SidebarAlbumRow,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+        };
         if (this.TryFindResource("JG.sidebarRow", out var theme) && theme is Avalonia.Styling.ControlTheme controlTheme)
         {
             row.Theme = controlTheme;
@@ -173,7 +200,18 @@ internal sealed partial class SidebarView
         row.Classes.Set("selected", isSelected);
         AutomationProperties.SetName(row, album.Name);
         row.Click += (_, _) => Shown.SelectAlbum(album.Id);
-        row.DoubleTapped += (_, _) => model.BeginAlbumRename(album.Id);
+        // On the strip (macOS D-128) the name is the tooltip, and there is no name to edit in place.
+        if (IsCompact)
+        {
+            ToolTip.SetTip(row, album.Name);
+        }
+        row.DoubleTapped += (_, _) =>
+        {
+            if (!IsCompact)
+            {
+                model.BeginAlbumRename(album.Id);
+            }
+        };
         row.ContextMenu = AlbumMenu(model, album);
         DragDrop.SetAllowDrop(row, true);
         row.AddHandler(DragDrop.DragOverEvent, (_, e) =>
@@ -196,7 +234,7 @@ internal sealed partial class SidebarView
 
     private ContextMenu AlbumMenu(LibraryModel model, Album album)
     {
-        var rename = new MenuItem { Header = L.T("Rename") };
+        var rename = new MenuItem { Header = L.T("Rename"), IsVisible = !IsCompact };
         rename.Click += (_, _) => model.BeginAlbumRename(album.Id);
         var export = new MenuItem { Header = L.T("Export to Folder…"), IsEnabled = album.ItemCount > 0 };
         export.Click += async (_, _) =>
@@ -215,7 +253,7 @@ internal sealed partial class SidebarView
                 await model.DeleteAlbumAsync(album.Id);
             }
         };
-        return new ContextMenu { Items = { rename, export, new Separator(), delete } };
+        return Tracked(new ContextMenu { Items = { rename, export, new Separator(), delete } });
     }
 
     /// <summary>The album's cover thumbnail once loaded, else the albums glyph.</summary>

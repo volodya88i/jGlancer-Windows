@@ -352,15 +352,21 @@ internal sealed partial class SettingsWindow : Window
             [(L.T("Compact (91 MB)"), false), (L.T("Full (174 MB)"), true)], S.StemModelFull, full => Set(s => s with { StemModelFull = full }));
         var group = SettingsUi.Group(L.T("Stem Splitting"), quality,
             SettingsUi.Text(L.T("The compact model keeps its numbers at half precision and sounds the same (the difference is far below hearing); the full one is the original, twice the download."),
+                "body", JGColor.TextTertiary, wraps: true),
+            SettingsUi.Text(L.T("The choice also holds for 2 stems at High Quality: its RoFormer model is {0} compact or {1} full.",
+                ByteFormat.Format(JGlancer.Stems.StemModelDownload.Source(Core.Stems.StemModelInfo.RoFormer).Bytes),
+                ByteFormat.Format(JGlancer.Stems.StemModelDownload.Source(Core.Stems.StemModelInfo.RoFormerFull).Bytes)),
                 "body", JGColor.TextTertiary, wraps: true));
         var folder = _library.Services.Paths.Models;
         foreach (var model in Core.Stems.StemModelInfo.All)
         {
             var path = JGlancer.Stems.StemModelDownload.PathIn(folder, model);
-            var name = SettingsUi.Text((model.Mode, model.IsFull) switch
+            var name = SettingsUi.Text((model.Network, model.IsFull) switch
             {
-                (Core.Stems.StemMode.Six, true) => L.T("Full model for 6 stems"),
-                (Core.Stems.StemMode.Six, false) => L.T("Compact model for 6 stems"),
+                (Core.Stems.StemNetwork.Six, true) => L.T("Full model for 6 stems"),
+                (Core.Stems.StemNetwork.Six, false) => L.T("Compact model for 6 stems"),
+                (Core.Stems.StemNetwork.Vocals, true) => L.T("Full model for 2 stems, High Quality"),
+                (Core.Stems.StemNetwork.Vocals, false) => L.T("Compact model for 2 stems, High Quality"),
                 (_, true) => L.T("Full model for 4 stems"),
                 _ => L.T("Compact model for 4 stems"),
             });

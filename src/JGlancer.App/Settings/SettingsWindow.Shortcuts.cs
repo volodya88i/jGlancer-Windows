@@ -174,6 +174,8 @@ internal sealed partial class SettingsWindow
         ShortcutCommand.AddFolder => L.T("Add Folder…"),
         ShortcutCommand.NewAlbum => L.T("New Album"),
         ShortcutCommand.TogglePreview => L.T("Show Preview"),
+        ShortcutCommand.ToggleSizeMap => L.T("Show Size Map"),
+        ShortcutCommand.ToggleSidebar => L.T("Show Sidebar"),
         ShortcutCommand.ShowNames => L.T("Show Names"),
         ShortcutCommand.AsGrid => L.T("as Grid"),
         ShortcutCommand.AsList => L.T("as List"),

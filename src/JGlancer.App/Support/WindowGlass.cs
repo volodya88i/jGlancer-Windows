@@ -25,11 +25,29 @@ internal static class WindowGlass
         {
             return;
         }
-        var content = panel.Child;
-        panel.Child = null;
+        var content = TakeContent(panel);
         panel.ClipToBounds = true;
-        panel.Child = new Panel { Children = { new BackdropBlur { Radius = JGMetrics.WindowGlassBlur }, content! } };
+        panel.Child = new Panel { Children = { new BackdropBlur { Radius = JGMetrics.WindowGlassBlur }, content } };
         panel[!Border.BackgroundProperty] = Tinted(panel, color, JGMetrics.WindowGlassTintOpacity).ToBinding();
+    }
+
+    /// <summary>
+    /// The panel's content, with the panel's padding moved onto it: the blur fills the whole panel, its padding too (inside
+    /// the padding it left the files unblurred under the tint, a hard edge at each side of the top bar).
+    /// </summary>
+    private static Control TakeContent(Border panel)
+    {
+        var content = panel.Child ?? throw new InvalidOperationException("a frosted panel needs content");
+        panel.Child = null;
+        var padding = panel.Padding;
+        if (padding == default)
+        {
+            return content;
+        }
+        panel.Padding = default;
+        content.Margin = new Thickness(
+            content.Margin.Left + padding.Left, content.Margin.Top + padding.Top, content.Margin.Right + padding.Right, content.Margin.Bottom + padding.Bottom);
+        return content;
     }
 
     /// <summary>
@@ -40,11 +58,10 @@ internal static class WindowGlass
     {
         ArgumentNullException.ThrowIfNull(panel);
         ArgumentNullException.ThrowIfNull(color);
-        var content = panel.Child;
-        panel.Child = null;
+        var content = TakeContent(panel);
         panel.ClipToBounds = true;
         var blur = new BackdropBlur { Radius = JGMetrics.WindowGlassBlur };
-        panel.Child = new Panel { Children = { blur, content! } };
+        panel.Child = new Panel { Children = { blur, content } };
         bool? applied = null;
         void Apply()
         {

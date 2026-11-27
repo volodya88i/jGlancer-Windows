@@ -70,7 +70,7 @@ public sealed class StemTests
         var vocals = new Collect();
         var bass = new Collect();
         var progress = new List<double>();
-        StemSplitter.Split(left, right, separator, new Dictionary<int, IStemSink> { [3] = vocals, [1] = bass }, progress.Add, CancellationToken.None);
+        StemSplitter.Split(left, right, separator, [new(new StemPart(3), vocals), new(new StemPart(1), bass)], progress.Add, CancellationToken.None);
         Assert.Equal(frames, vocals.Left.Count);
         Assert.Equal(frames, bass.Right.Count);
         for (var i = 0; i < frames; i++)
@@ -83,6 +83,64 @@ public sealed class StemTests
         Assert.Equal(separator.Runs, progress.Count);
     }
 
+    /// <summary>The "vocals" are a share of the piece, the rest is the other sources.</summary>
+    private sealed class Share(int segment) : IStemSeparator
+    {
+        public int Sources => 4;
+
+        public int SegmentFrames => segment;
+
+        public void Separate(ReadOnlySpan<float> input, Span<float> output)
+        {
+            output.Clear();
+            for (var i = 0; i < input.Length; i++)
+            {
+                output[3 * input.Length + i] = 0.3f * input[i];
+                output[i] = 0.7f * input[i];
+            }
+        }
+    }
+
+    [Fact]
+    public void TheInstrumentalIsTheSongLessTheVocals()
+    {
+        var (left, right) = Song(4321);
+        var vocals = new Collect();
+        var instrumental = new Collect();
+        var model = StemModelInfo.For(StemMode.Two.Network());
+        StemSplitter.Split(left, right, new Share(1000),
+            [new(model.Part(StemKind.Vocals)!.Value, vocals), new(model.Part(StemKind.Instrumental)!.Value, instrumental)], null, CancellationToken.None);
+        Assert.Equal(left.Length, instrumental.Left.Count);
+        for (var i = 0; i < left.Length; i++)
+        {
+            // Normalized by the mono mix and back: a share of the audio around its mean.
+            Assert.Equal(left[i], vocals.Left[i] + instrumental.Left[i], 1e-5f);
+            Assert.Equal(right[i], vocals.Right[i] + instrumental.Right[i], 1e-5f);
+        }
+    }
+
+    [Fact]
+    public void TwoStemsRunTheFourStemNetwork()
+    {
+        Assert.Equal(StemNetwork.Four, StemMode.Two.Network());
+        Assert.Equal(StemNetwork.Six, StemMode.Six.Network());
+        Assert.Equal(new StemPart(3, SongWithout: true), StemModelInfo.Four.Part(StemKind.Instrumental));
+        Assert.Equal(new StemPart(3), StemModelInfo.SixFull.Part(StemKind.Vocals));
+        Assert.Equal(new StemPart(5), StemModelInfo.Six.Part(StemKind.Piano));
+        Assert.Null(StemModelInfo.Four.Part(StemKind.Guitar));
+        Assert.Equal([StemKind.Vocals, StemKind.Instrumental], StemModelInfo.Shown(StemMode.Two));
+    }
+
+    [Fact]
+    public void SwitchingToTwoStemsTicksTheirOwnStems()
+    {
+        var vocalsOnly = StemChoice.Default.With(StemKind.Drums, false).With(StemKind.Bass, false).With(StemKind.Other, false);
+        Assert.Equal([StemKind.Vocals, StemKind.Instrumental], vocalsOnly.WithMode(StemMode.Two).Stems);
+        var instrumentalOnly = new StemChoice(StemMode.Two, new HashSet<StemKind> { StemKind.Instrumental });
+        Assert.Equal([StemKind.Drums, StemKind.Bass, StemKind.Other], instrumentalOnly.WithMode(StemMode.Four).Stems);
+        Assert.Equal(StemNetwork.Four, instrumentalOnly.Network);
+    }
+
     [Fact]
     public void StoppingEndsBetweenPieces()
     {
@@ -90,7 +148,7 @@ public sealed class StemTests
         using var cancel = new CancellationTokenSource();
         var separator = new Identity(4, 1000);
         Assert.Throws<OperationCanceledException>(() => StemSplitter.Split(left, right, separator,
-            new Dictionary<int, IStemSink> { [0] = new Collect() }, _ => cancel.Cancel(), cancel.Token));
+            [new(new StemPart(0), new Collect())], _ => cancel.Cancel(), cancel.Token));
         Assert.Equal(1, separator.Runs);
     }
 

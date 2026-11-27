@@ -16,7 +16,8 @@ internal sealed record StemSplitRequest(string? Folder, StemChoice Choice);
 
 /// <summary>
 /// Split into Stems… (W-85, macOS docs/windows/STEM_SPLIT.md): where the stems go (a new "&lt;song&gt; split" folder
-/// next to the song by default, or a chosen folder), 4 or 6 stems, and which of them to write (at least one). The
+/// next to the song by default, or a chosen folder), 2 stems (vocals and the instrumental, MAC-055), 4 or 6, and which
+/// of them to write (at least one); 2 stems at Standard or High Quality (Mel-Band RoFormer, MAC-056). The
 /// mode and ticks are remembered by the caller, the folder is not. Several songs share the settings; each then gets
 /// its own "… split" folder, next to it or inside the chosen one.
 /// </summary>
@@ -26,6 +27,8 @@ internal sealed class StemSplitWindow : Window
     private readonly TextBlock _where;
     private readonly StackPanel _ticks = new() { Spacing = JGSpacing.Xxs };
     private readonly TextBlock _note;
+    private readonly Control _quality;
+    private readonly TextBlock _load;
     private readonly Button _split = new() { Content = L.T("Split"), IsDefault = true, Classes = { "primary" } };
     private string? _folder;
     private StemChoice _choice;
@@ -54,11 +57,20 @@ internal sealed class StemSplitWindow : Window
         Avalonia.Controls.Grid.SetColumn(choose, 1);
         whereRow.Children.Add(choose);
 
-        var mode = SettingsUi.Segmented(L.T("Stems"), [(L.T("4 stems"), StemMode.Four), (L.T("6 stems"), StemMode.Six)], choice.Mode, value =>
+        var mode = SettingsUi.Segmented(L.T("Stems"),
+            [(L.T("2 stems"), StemMode.Two), (L.T("4 stems"), StemMode.Four), (L.T("6 stems"), StemMode.Six)], choice.Mode, value =>
         {
             _choice = _choice.WithMode(value);
             ShowTicks();
         });
+        _quality = SettingsUi.Segmented(L.T("Quality"), [(L.T("Standard Quality"), false), (L.T("High Quality"), true)], choice.HighQuality, value =>
+        {
+            _choice = _choice with { HighQuality = value };
+            ShowLoad();
+        });
+        // High Quality takes minutes per song at full GPU and several GB of memory (W-120): said before it starts.
+        _load = SettingsUi.Text(L.T("High Quality puts a heavy load on the computer and needs a powerful PC with a strong graphics card. A song takes several minutes, longer on a weaker computer. Better not to play games or do other heavy work until the splitting is done."),
+            "body", JGColor.Warning, wraps: true);
         _note = SettingsUi.Text(L.T("6 stems also separate guitar and piano; piano is the least clean."), "body", JGColor.TextTertiary, wraps: true);
 
         var cancel = new Button { Content = L.T("Cancel"), IsCancel = true };
@@ -72,7 +84,7 @@ internal sealed class StemSplitWindow : Window
             {
                 heading,
                 SettingsUi.Group(L.T("Save To"), whereRow),
-                SettingsUi.Group(L.T("Stems"), mode, _ticks, _note),
+                SettingsUi.Group(L.T("Stems"), mode, _quality, _load, _ticks, _note),
                 new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
@@ -137,8 +149,13 @@ internal sealed class StemSplitWindow : Window
             _ticks.Children.Add(box);
         }
         _note.IsVisible = _choice.Mode == StemMode.Six;
+        _quality.IsVisible = _choice.Mode == StemMode.Two;
+        ShowLoad();
         _split.IsEnabled = _choice.CanSplit;
     }
+
+    /// <summary>The load warning, while a split would run RoFormer.</summary>
+    private void ShowLoad() => _load.IsVisible = _choice.Network == StemNetwork.Vocals;
 
     /// <summary>A stem's name in the app's language.</summary>
     public static string StemTitle(StemKind stem) => stem switch
@@ -148,6 +165,7 @@ internal sealed class StemSplitWindow : Window
         StemKind.Bass => L.T("Bass"),
         StemKind.Guitar => L.T("Guitar"),
         StemKind.Piano => L.T("Piano"),
+        StemKind.Instrumental => L.T("Instrumental"),
         _ => L.T("Other|stem"),
     };
 }

@@ -3,6 +3,18 @@
 All notable changes to jGlancer for Windows. Versions are `major.minor.patch`: the minor number grows with new
 features or something removed, the patch number with fixes; the version changes with each published release.
 
+## 0.6.4 — 2026-11-27
+
+- New: a size map. View ▸ Show Size Map (Ctrl+Alt+T) shows the folder's files as rectangles by size, folders inside folders, colored by kind; hover names a file, a click selects it, a double-click opens a file or shows a folder.
+- New: the preview and the size map can each sit right of the files or under them: the button in their header moves them, swapping places with the other.
+- New: the sidebar folds into a narrow strip of icons (Ctrl+B, View ▸ Show Sidebar, or its button), and by itself in a narrow window; resting the pointer on the strip opens it over the files. The window can now be narrower.
+- New: a library folder can have its own icon: right-click it ▸ Folder Icon… for a symbol, an emoji or a picture, or right-click a photo ▸ Use as Folder Icon.
+- New: Split into Stems… → 2 stems: just the vocals and the instrumental (the song without its vocals, a backing track);
+  added together they give the song back. It uses the 4-stem model, so there is nothing new to download.
+- New: High Quality for 2 stems: a much cleaner instrumental and vocals with the Mel-Band RoFormer model, an optional
+  download (462 MB, or 918 MB full). It is slow and loads the computer heavily (the window says so): on a GeForce GTX 1070 about 1.2 times the song's length.
+- Fixed: the frosted top bar left the files under its two ends unblurred.
+
 ## 0.6.1 — 2026-11-20
 
 - New: Quick Preview shows photos and videos on the whole window; the name row and a video's controls (play, timeline,

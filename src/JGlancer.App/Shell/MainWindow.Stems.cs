@@ -21,7 +21,7 @@ internal sealed partial class MainWindow
     }
 
     /// <summary>`--stem-check`: splits <paramref name="song"/> as Split would with 4 stems, logs what it made, quits.</summary>
-    public async Task RunStemCheckAsync(string song, string log)
+    public async Task RunStemCheckAsync(string song, string log, string? mode)
     {
         if (_stems is not { } jobs)
         {
@@ -37,7 +37,14 @@ internal sealed partial class MainWindow
             }
         };
         var folder = StemNaming.DefaultFolder(song, Directory.Exists);
-        jobs.Enqueue([new StemJob(song, folder, FolderIsNew: true, StemChoice.Default)]);
+        var choice = mode switch
+        {
+            null => StemChoice.Default,
+            // 2 stems at High Quality (RoFormer).
+            "high" => StemChoice.Default.WithMode(StemMode.Two) with { HighQuality = true },
+            _ => StemChoice.Default.WithMode(Enum.Parse<StemMode>(mode, ignoreCase: true)),
+        };
+        jobs.Enqueue([new StemJob(song, folder, FolderIsNew: true, choice)]);
         await done.Task;
         var lines = new List<string> { $"song {song}", $"seconds {clock.Elapsed.TotalSeconds:0.0}", $"toast {_fileOps?.Toast?.Message}", $"undo {_fileOps?.UndoTitle}" };
         lines.AddRange(Directory.Exists(folder)
@@ -57,18 +64,18 @@ internal sealed partial class MainWindow
         }
         var settings = SettingsStore.Current.Settings;
         var all = StemModelInfo.Shown(settings.StemMode).ToHashSet();
-        var remembered = new StemChoice(settings.StemMode, settings.StemTicks is { Count: > 0 } ticks ? ticks.ToHashSet() : all);
+        var remembered = new StemChoice(settings.StemMode, settings.StemTicks is { Count: > 0 } ticks ? ticks.ToHashSet() : all, settings.StemHighQuality);
         if (!remembered.CanSplit)
         {
-            remembered = new StemChoice(settings.StemMode, all);
+            remembered = remembered with { Ticked = all };
         }
         if (await StemSplitWindow.AskAsync(this, songs, remembered) is not { } request)
         {
             return;
         }
-        SettingsStore.Current.Update(s => s with { StemMode = request.Choice.Mode, StemTicks = [.. request.Choice.Ticked] });
+        SettingsStore.Current.Update(s => s with { StemMode = request.Choice.Mode, StemTicks = [.. request.Choice.Ticked], StemHighQuality = request.Choice.HighQuality });
         var full = SettingsStore.Current.Settings.StemModelFull;
-        if (!await StemModelWindow.EnsureAsync(this, StemModelInfo.For(request.Choice.Mode, full), jobs.ModelFolder))
+        if (!await StemModelWindow.EnsureAsync(this, StemModelInfo.For(request.Choice.Network, full), jobs.ModelFolder))
         {
             return;
         }

@@ -37,6 +37,12 @@ public enum ShortcutCommand
     AddFolder,
     NewAlbum,
     TogglePreview,
+
+    /// <summary>View ▸ Show Sidebar: folds it into a strip and back (macOS D-128: ⌥⌘S; Ctrl+B here, W-118).</summary>
+    ToggleSidebar,
+
+    /// <summary>View ▸ Show Size Map (macOS D-127: ⌥⌘T; Ctrl+Alt+T here, as Show Preview's Ctrl+Alt+0).</summary>
+    ToggleSizeMap,
     ShowNames,
     IncludeSubfolders,
 
@@ -95,6 +101,8 @@ public static class ShortcutCommands
         ShortcutCommand.AddFolder => new("O", ActionModifiers.Control),
         ShortcutCommand.NewAlbum => new("N", ActionModifiers.Control),
         ShortcutCommand.TogglePreview => new("D0", ActionModifiers.Control | ActionModifiers.Alt),
+        ShortcutCommand.ToggleSizeMap => new("T", ActionModifiers.Control | ActionModifiers.Alt),
+        ShortcutCommand.ToggleSidebar => new("B", ActionModifiers.Control),
         ShortcutCommand.ShowNames or ShortcutCommand.IncludeSubfolders => null,
         ShortcutCommand.AsGrid => new("D1", ActionModifiers.Control | ActionModifiers.Shift),
         ShortcutCommand.AsList => new("D2", ActionModifiers.Control | ActionModifiers.Shift),

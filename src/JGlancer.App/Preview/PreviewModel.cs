@@ -464,6 +464,14 @@ internal sealed partial class PreviewModel : IDisposable
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
+    private bool _resumeAfterMove;
+
+    /// <summary>
+    /// The pane is about to move to its other place (D-127): its surface gets a new render context, and a video that
+    /// plays now goes on playing there (mpv drops the video with the old context, W-41).
+    /// </summary>
+    public void SurfaceMoving() => _resumeAfterMove = OwnsPlayback && Playback is { Kind: MediaKind.Video, IsPlaying: true };
+
     /// <summary>Quick Preview plays as soon as the file is there.</summary>
     private void Begin(MediaPlayback playback)
     {
@@ -493,7 +501,13 @@ internal sealed partial class PreviewModel : IDisposable
             {
                 if (Playback == playback && OwnsPlayback)
                 {
+                    var resume = _resumeAfterMove;
+                    _resumeAfterMove = false;
                     playback.Reattach();
+                    if (resume)
+                    {
+                        playback.Play();
+                    }
                     Begin(playback);
                 }
             };

@@ -96,6 +96,7 @@ internal sealed class ActionPerformer(AppServices services, IActionHost host)
         ActionId.AddToAlbum => L.T("Add to Album"),
         ActionId.RemoveFromAlbum => L.T("Remove from Album"),
         ActionId.SetAlbumCover => L.T("Use as Album Cover"),
+        ActionId.SetFolderIcon => L.T("Use as Folder Icon"),
         ActionId.Flag => L.T("Flag"),
         _ => id.ToString(),
     };
@@ -153,6 +154,9 @@ internal sealed class ActionPerformer(AppServices services, IActionHost host)
                 break;
             case ActionId.SetAlbumCover when host.Library is { } library:
                 await library.SetCoverAsync(target.AssetIds[0]);
+                break;
+            case ActionId.SetFolderIcon when host.Library is { } library:
+                await library.SetFolderIconFromAssetAsync(target.AssetIds[0]);
                 break;
             case ActionId.MoveToTrash:
                 var trashed = await host.FileOps.TrashAsync(await target.Paths());

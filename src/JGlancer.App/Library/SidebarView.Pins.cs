@@ -36,7 +36,9 @@ internal sealed partial class SidebarView
                 PinnedRows.Children.Add(PinRow(id, folder.Name, path, id == selected));
             }
         }
-        PinnedSection.IsVisible = PinnedRows.Children.Count > 0;
+        // The strip has no pinned folders (macOS D-128). With none above it, FOLDERS' + makes room for the fold button.
+        PinnedSection.IsVisible = PinnedRows.Children.Count > 0 && !IsCompact;
+        AddButton.Margin = PinnedSection.IsVisible ? default : JGInsets.SidebarAddBesideFold;
     }
 
     private Button PinRow(long folderId, string name, string path, bool isSelected)
@@ -47,9 +49,10 @@ internal sealed partial class SidebarView
         text[!TextBlock.ForegroundProperty] = this.GetResourceObservable((isSelected ? JGColor.TextPrimary : JGColor.TextSecondary).ResourceKey).ToBinding();
         var row = new Button
         {
+            Classes = { "row" },
             Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = JGSpacing.Xs, Children = { pin, text } },
             // In line with the album rows below.
-            Margin = new Thickness(JGSpacing.M, 0, 0, 0),
+            Padding = JGInsets.SidebarAlbumRow,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
         };
         if (this.TryFindResource("JG.sidebarRow", out var theme) && theme is Avalonia.Styling.ControlTheme controlTheme)
@@ -64,8 +67,17 @@ internal sealed partial class SidebarView
         unpin.Click += (_, _) => _model?.TogglePin(folderId);
         var show = new MenuItem { Header = L.T("Show in Explorer") };
         show.Click += (_, _) => Platform.Windows.ShellFiles.ShowInExplorer([path]);
-        row.ContextMenu = new ContextMenu { Items = { show, unpin } };
+        row.ContextMenu = Tracked(new ContextMenu { Items = { show, unpin } });
         return row;
+    }
+
+    private async void OnFolderIcon(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { Tag: SidebarRow row } && _model is { } model && TopLevel.GetTopLevel(this) is Window owner
+            && model.Roots.FirstOrDefault(r => r.Id == row.RootId) is { } root)
+        {
+            await new FolderIconPicker(model, root).ShowDialog(owner);
+        }
     }
 
     private void OnHideFolder(object? sender, RoutedEventArgs e)

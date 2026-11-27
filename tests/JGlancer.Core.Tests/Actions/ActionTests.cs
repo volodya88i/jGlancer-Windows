@@ -19,7 +19,7 @@ public sealed class ActionRegistryTests
     {
         var menu = Ids(ActionRegistry.Menu(Selection(1, ActionPlace.Library, MediaKind.Photo), W6, NoPrimary));
         Assert.Equal(
-            [[ActionId.Open, ActionId.QuickPreview, ActionId.OpenWith], [ActionId.GetInfo, ActionId.ShowInExplorer, ActionId.CopyPath, ActionId.Copy]],
+            [[ActionId.Open, ActionId.QuickPreview, ActionId.OpenWith], [ActionId.SetFolderIcon], [ActionId.GetInfo, ActionId.ShowInExplorer, ActionId.CopyPath, ActionId.Copy]],
             menu);
     }
 
@@ -86,6 +86,16 @@ public sealed class ActionRegistryTests
         var all = ActionRegistry.Sections.SelectMany(s => s).ToList();
         Assert.Equal(Enum.GetValues<ActionId>().Length, all.Distinct().Count());
     }
+
+    [Theory]
+    [InlineData(1, ActionPlace.Library, MediaKind.Photo, ActionAvailability.Enabled)]
+    [InlineData(1, ActionPlace.Album, MediaKind.Photo, ActionAvailability.Enabled)]
+    [InlineData(2, ActionPlace.Library, MediaKind.Photo, ActionAvailability.Hidden)]
+    [InlineData(1, ActionPlace.Library, MediaKind.Video, ActionAvailability.Hidden)]
+    [InlineData(1, ActionPlace.Viewer, MediaKind.Photo, ActionAvailability.Hidden)]
+    [InlineData(1, ActionPlace.Compare, MediaKind.Photo, ActionAvailability.Hidden)]
+    public void OnePhotoInTheLibraryCanBeItsFoldersIcon(int count, ActionPlace place, MediaKind kind, ActionAvailability expected) =>
+        Assert.Equal(expected, ActionRegistry.Availability(ActionId.SetFolderIcon, Selection(count, place, kind), Everything, NoPrimary));
 
     [Fact]
     public void AlbumActionsAppearInAlbums()

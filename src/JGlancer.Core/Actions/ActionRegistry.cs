@@ -18,6 +18,9 @@ public enum ActionId
     AddToAlbum,
     RemoveFromAlbum,
     SetAlbumCover,
+
+    /// <summary>One photo becomes the icon of the library folder that holds it (macOS D-129).</summary>
+    SetFolderIcon,
     MoveTo,
     CopyTo,
     Rename,
@@ -137,7 +140,7 @@ public static class ActionRegistry
     [
         [ActionId.Open, ActionId.QuickPreview, ActionId.PlayInMiniPlayer, ActionId.Compare, ActionId.OpenWith, ActionId.EditInPrimaryApp],
         [ActionId.RotateLeft, ActionId.RotateRight, ActionId.Edit, ActionId.SplitIntoStems],
-        [ActionId.AddToAlbum, ActionId.RemoveFromAlbum, ActionId.SetAlbumCover, ActionId.MoveTo, ActionId.CopyTo, ActionId.Rename],
+        [ActionId.AddToAlbum, ActionId.RemoveFromAlbum, ActionId.SetAlbumCover, ActionId.SetFolderIcon, ActionId.MoveTo, ActionId.CopyTo, ActionId.Rename],
         [ActionId.Flag],
         [ActionId.GetInfo, ActionId.ShowInExplorer, ActionId.CopyPath, ActionId.Copy],
         [ActionId.MoveToTrash],
@@ -216,6 +219,12 @@ public static class ActionRegistry
                 return OpenWithAvailability(id, selection, features, primaryAppKinds);
             case ActionId.RotateLeft or ActionId.RotateRight or ActionId.Edit:
                 return PhotoAvailability(id, selection, features);
+            case ActionId.SetFolderIcon:
+                // One photo, in the library or an album (its library folder's icon); a viewer has no folder at hand.
+                return selection.Place is ActionPlace.Library or ActionPlace.Album && selection.FileCount == 1
+                    && selection.Kinds.Count == 1 && selection.Kinds.Contains(MediaKind.Photo)
+                    ? ActionAvailability.Enabled
+                    : ActionAvailability.Hidden;
             case ActionId.AddToAlbum or ActionId.RemoveFromAlbum or ActionId.SetAlbumCover:
                 return AlbumAvailability(id, selection, features);
             default:

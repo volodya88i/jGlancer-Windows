@@ -9,6 +9,15 @@ internal sealed record SidebarRow(
     long Id, long RootId, string Name, int Depth, bool IsRoot, bool HasChildren, bool IsExpanded, bool IsSelected, bool IsOffline,
     bool IsPinned = false)
 {
+    /// <summary>A library folder's own icon (macOS D-129); null for the default disk, and for subfolders.</summary>
+    public FolderIconImage? CustomIcon { get; init; }
+
+    /// <summary>The name as a tooltip on the strip (macOS D-128), where only the icon shows; null otherwise.</summary>
+    public string? Tip { get; init; }
+
+    /// <summary>Its icon among the strip's icons (macOS D-128): folders by id.</summary>
+    public string StripKey => "folder:" + Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
     /// <summary>Left padding: one small step per level (macOS: depth × 12).</summary>
     public Thickness Indent => new(Depth * JGSpacing.S, 0, 0, 0);
 

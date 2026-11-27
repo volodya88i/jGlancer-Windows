@@ -56,6 +56,9 @@ internal sealed record DeveloperOptions
     /// <summary>`--stem-check &lt;log&gt;`: splits the first song into 4 stems next to it (the model must be in the data folder's Models), logs, quits.</summary>
     public string? StemCheck { get; init; }
 
+    /// <summary>`--stem-mode two|four|six|high` (with `--stem-check`): the split's mode instead of 4 stems; high: 2 stems at High Quality.</summary>
+    public string? StemMode { get; init; }
+
     /// <summary>`--hdr-check &lt;log&gt;` (with `--open-first --open-kind video`): HDR on, then off; logs mpv's view of it, quits.</summary>
     public string? HdrCheck { get; init; }
 
@@ -80,6 +83,7 @@ internal sealed record DeveloperOptions
         "--data-dir", "--add-folder", "--launch-log", "--snapshot", "--benchmark", "--theme", "--lang", "--open-menu",
         "--tile-side", "--flag-check", "--accent-check", "--accent", "--search", "--open-kind", "--viewer-step", "--select-kind", "--file-ops-check",
         "--album-check", "--settings", "--window-size", "--split", "--stem-check", "--hdr-check", "--switch-check", "--update-check", "--tracks-check",
+        "--size-map", "--module-check", "--sidebar", "--sidebar-check", "--folder-icon",
     };
 
     public bool FlagFirst { get; init; }
@@ -88,6 +92,18 @@ internal sealed record DeveloperOptions
     public bool MiniPlayer { get; init; }
 
     public string? Search { get; init; }
+
+    /// <summary><c>--size-map bottom|right</c>: start with the size map shown there (macOS -JGSizeMap; snapshots).</summary>
+    public Core.Model.ModuleSlot? SizeMap { get; init; }
+
+    /// <summary><c>--sidebar docked|collapsed|peek</c>: start with the sidebar docked, folded, or out over the files (macOS -JGSidebar).</summary>
+    public string? Sidebar { get; init; }
+
+    /// <summary><c>--sidebar-check &lt;log&gt;</c>: folds, peeks and docks the sidebar, logs, quits (<see cref="SidebarCheck"/>).</summary>
+    public string? SidebarCheck { get; init; }
+
+    /// <summary><c>--module-check &lt;log&gt;</c>: moves the side modules while a video plays, logs, quits (<see cref="ModuleCheck"/>).</summary>
+    public string? ModuleCheck { get; init; }
 
     /// <summary><c>--split side|stacked</c>: start in the split view (snapshots).</summary>
     public Core.Model.SplitMode? Split { get; init; }
@@ -107,6 +123,12 @@ internal sealed record DeveloperOptions
 
     /// <summary>`--duplicates`: opens Edit ▸ Find Duplicates… (a snapshot then shows that window).</summary>
     public bool Duplicates { get; init; }
+
+    /// <summary><c>--folder-icon &lt;symbol|emoji|photo&gt;</c>: gives the first library folder that icon (a Lucide name, an emoji, or the first photo's picture).</summary>
+    public string? FolderIcon { get; init; }
+
+    /// <summary><c>--folder-icon-picker</c>: opens Folder Icon… on the first library folder (a snapshot then shows that window).</summary>
+    public bool FolderIconPicker { get; init; }
 
     /// <summary>`--about`: shows Help ▸ About jGlancer (a snapshot then shows that window).</summary>
     public bool About { get; init; }
@@ -169,6 +191,7 @@ internal sealed record DeveloperOptions
             AccentCheck = Value("--accent-check"),
             Accent = Value("--accent"),
             StemCheck = Value("--stem-check"),
+            StemMode = Value("--stem-mode"),
             HdrCheck = Value("--hdr-check"),
             TracksCheck = Value("--tracks-check"),
             UpdateCheck = Value("--update-check"),
@@ -178,6 +201,10 @@ internal sealed record DeveloperOptions
             FlagFirst = args.Contains("--flag-first", StringComparer.OrdinalIgnoreCase),
             MiniPlayer = args.Contains("--mini-player", StringComparer.OrdinalIgnoreCase),
             Search = Value("--search"),
+            ModuleCheck = Value("--module-check"),
+            SidebarCheck = Value("--sidebar-check"),
+            Sidebar = Value("--sidebar") is "docked" or "collapsed" or "peek" ? Value("--sidebar") : null,
+            SizeMap = Value("--size-map") switch { "bottom" => Core.Model.ModuleSlot.Bottom, "right" => Core.Model.ModuleSlot.Right, _ => null },
             Split = Value("--split") switch { "side" => Core.Model.SplitMode.SideBySide, "stacked" => Core.Model.SplitMode.Stacked, _ => null },
             OpenFirst = args.Contains("--open-first", StringComparer.OrdinalIgnoreCase),
             SaveFrame = args.Contains("--save-frame", StringComparer.OrdinalIgnoreCase),
@@ -186,6 +213,8 @@ internal sealed record DeveloperOptions
             CompareFirst = args.Contains("--compare-first", StringComparer.OrdinalIgnoreCase),
             Duplicates = args.Contains("--duplicates", StringComparer.OrdinalIgnoreCase),
             About = args.Contains("--about", StringComparer.OrdinalIgnoreCase),
+            FolderIcon = Value("--folder-icon"),
+            FolderIconPicker = args.Contains("--folder-icon-picker", StringComparer.OrdinalIgnoreCase),
             OpenKind = Value("--open-kind") switch { "video" => JGlancer.Core.Model.MediaKind.Video, "audio" => JGlancer.Core.Model.MediaKind.Audio, _ => JGlancer.Core.Model.MediaKind.Photo },
             ViewerStep = (int)(Number("--viewer-step") ?? 0),
             ShowFilmstrip = args.Contains("--show-filmstrip", StringComparer.OrdinalIgnoreCase),

@@ -48,7 +48,7 @@ internal static class DeveloperHooks
                     // While the folder's first scan runs its path may not be known yet: the next change tries again.
                     if (await model.Store.AssetsAsync([song.Id]) is [var row])
                     {
-                        await window.RunStemCheckAsync(row.Path, stemLog);
+                        await window.RunStemCheckAsync(row.Path, stemLog, options.StemMode);
                     }
                     else
                     {

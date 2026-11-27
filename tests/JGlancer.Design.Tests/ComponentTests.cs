@@ -58,6 +58,13 @@ public sealed class ComponentTests
         }
     }
 
+    [Theory]
+    [InlineData("M1 2a1.5 1.5 0 00-2.474-1.561l-9 9", "M1 2a1.5 1.5 0 0 0 -2.474 -1.561l-9 9")]
+    [InlineData("M22 11.5A3.5 3.5 0 0018.5 8", "M22 11.5A3.5 3.5 0 0 0 18.5 8")]
+    [InlineData("a6 6 0 01-8.943 0 1 1 0 0 1 2 2", "a6 6 0 0 1 -8.943 0 1 1 0 0 1 2 2")]
+    [InlineData("M3 3h4a2 2 0 0 1 2 2", "M3 3h4a2 2 0 0 1 2 2")]
+    public void ArcFlagsAreWrittenApart(string packed, string spaced) => Assert.Equal(spaced, IconGenerator.SpacedArcFlags(packed));
+
     [Fact]
     public void RectanglesWithRoundCornersBecomeArcs()
     {

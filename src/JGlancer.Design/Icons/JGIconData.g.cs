@@ -11,28 +11,28 @@ public static partial class JGIconData
     public const string Film = "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3Z M7 3v18 M3 7.5h4 M3 12h18 M3 16.5h4 M17 3v18 M17 7.5h4 M17 16.5h4";
 
     /// <summary>lucide <c>image</c></summary>
-    public const string Image = "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3Z M7 9A2 2 0 1 0 11 9A2 2 0 1 0 7 9Z M21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21";
+    public const string Image = "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3Z M7 9A2 2 0 1 0 11 9A2 2 0 1 0 7 9Z M21 15l-3.086-3.086a2 2 0 0 0 -2.828 0L6 21";
 
     /// <summary>lucide <c>audio-lines</c></summary>
     public const string AudioLines = "M2 10v3 M6 6v11 M10 3v18 M14 8v7 M18 5v13 M22 10v3";
 
     /// <summary>lucide <c>star</c></summary>
-    public const string Star = "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z";
+    public const string Star = "M11.525 2.295a.53 .53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53 .53 0 0 1 .294 .904l-3.736 3.638a2.123 2.123 0 0 0 -.611 1.878l.882 5.14a.53 .53 0 0 1 -.771 .56l-4.618-2.428a2.122 2.122 0 0 0 -1.973 0L6.396 21.01a.53 .53 0 0 1 -.77 -.56l.881-5.139a2.122 2.122 0 0 0 -.611 -1.879L2.16 9.795a.53 .53 0 0 1 .294 -.906l5.165-.755a2.122 2.122 0 0 0 1.597 -1.16z";
 
     /// <summary>lucide <c>search</c></summary>
     public const string Search = "M21 21l-4.34-4.34 M3 11A8 8 0 1 0 19 11A8 8 0 1 0 3 11Z";
 
     /// <summary>lucide <c>hard-drive</c></summary>
-    public const string HardDrive = "M10 16h.01 M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z M21.946 12.013H2.054 M6 16h.01";
+    public const string HardDrive = "M10 16h.01 M2.212 11.577a2 2 0 0 0 -.212 .896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2 -2v-5.527a2 2 0 0 0 -.212 -.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0 -1.79 1.11z M21.946 12.013H2.054 M6 16h.01";
 
     /// <summary>lucide <c>folder</c></summary>
-    public const string Folder = "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z";
+    public const string Folder = "M20 20a2 2 0 0 0 2 -2V8a2 2 0 0 0 -2 -2h-7.9a2 2 0 0 1 -1.69 -.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0 -2 2v13a2 2 0 0 0 2 2Z";
 
     /// <summary>lucide <c>layers</c></summary>
-    public const string Layers = "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12 M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17";
+    public const string Layers = "M12.83 2.18a2 2 0 0 0 -1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0 -1.83z M2 12a1 1 0 0 0 .58 .91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12 M2 17a1 1 0 0 0 .58 .91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17";
 
     /// <summary>lucide <c>trash</c></summary>
-    public const string Trash = "M10 11v6 M14 11v6 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2";
+    public const string Trash = "M10 11v6 M14 11v6 M19 6v14a2 2 0 0 1 -2 2H7a2 2 0 0 1 -2 -2V6 M3 6h18 M8 6V4a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2";
 
     /// <summary>lucide <c>info</c></summary>
     public const string Info = "M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12Z M12 16v-4 M12 8h.01";
@@ -65,16 +65,16 @@ public static partial class JGIconData
     public const string ArrowDown = "M12 5v14 M19 12l-7 7-7-7";
 
     /// <summary>lucide <c>play</c></summary>
-    public const string Play = "M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z";
+    public const string Play = "M5 5a2 2 0 0 1 3.008 -1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z";
 
     /// <summary>lucide <c>pause</c></summary>
     public const string Pause = "M15 3H18A1 1 0 0 1 19 4V20A1 1 0 0 1 18 21H15A1 1 0 0 1 14 20V4A1 1 0 0 1 15 3Z M6 3H9A1 1 0 0 1 10 4V20A1 1 0 0 1 9 21H6A1 1 0 0 1 5 20V4A1 1 0 0 1 6 3Z";
 
     /// <summary>lucide <c>rotate-ccw</c></summary>
-    public const string RotateCcw = "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8 M3 3v5h5";
+    public const string RotateCcw = "M3 12a9 9 0 1 0 9 -9 9.75 9.75 0 0 0 -6.74 2.74L3 8 M3 3v5h5";
 
     /// <summary>lucide <c>rotate-cw</c></summary>
-    public const string RotateCw = "M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8 M21 3v5h-5";
+    public const string RotateCw = "M21 12a9 9 0 1 1 -9 -9c2.52 0 4.93 1 6.74 2.74L21 8 M21 3v5h-5";
 
     /// <summary>lucide <c>zoom-in</c></summary>
     public const string ZoomIn = "M3 11A8 8 0 1 0 19 11A8 8 0 1 0 3 11Z M21 21L16.65 16.65 M11 8L11 14 M8 11L14 11";
@@ -83,6 +83,150 @@ public static partial class JGIconData
     public const string ZoomOut = "M3 11A8 8 0 1 0 19 11A8 8 0 1 0 3 11Z M21 21L16.65 16.65 M8 11L14 11";
 
     /// <summary>lucide <c>square-arrow-out-up-right</c></summary>
-    public const string SquareArrowOutUpRight = "M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6 M21 3l-9 9 M15 3h6v6";
+    public const string SquareArrowOutUpRight = "M21 13v6a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2h6 M21 3l-9 9 M15 3h6v6";
+
+    /// <summary>lucide <c>panel-bottom</c></summary>
+    public const string PanelBottom = "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3Z M3 15h18";
+
+    /// <summary>lucide <c>panel-right</c></summary>
+    public const string PanelRight = "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3Z M15 3v18";
+
+    /// <summary>lucide <c>panel-left</c></summary>
+    public const string PanelLeft = "M5 3H19A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3Z M9 3v18";
+
+    /// <summary>lucide <c>server</c></summary>
+    public const string Server = "M4 2H20A2 2 0 0 1 22 4V8A2 2 0 0 1 20 10H4A2 2 0 0 1 2 8V4A2 2 0 0 1 4 2Z M4 14H20A2 2 0 0 1 22 16V20A2 2 0 0 1 20 22H4A2 2 0 0 1 2 20V16A2 2 0 0 1 4 14Z M6 6L6.01 6 M6 18L6.01 18";
+
+    /// <summary>lucide <c>inbox</c></summary>
+    public const string Inbox = "M22 12L16 12L14 15L10 15L8 12L2 12 M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2 -2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0 -1.79 1.11z";
+
+    /// <summary>lucide <c>archive</c></summary>
+    public const string Archive = "M3 3H21A1 1 0 0 1 22 4V7A1 1 0 0 1 21 8H3A1 1 0 0 1 2 7V4A1 1 0 0 1 3 3Z M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V8 M10 12h4";
+
+    /// <summary>lucide <c>package</c></summary>
+    public const string Package = "M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0 -1 -1.73l-7-4a2 2 0 0 0 -2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z M12 22V12 M3.29 7L12 12L20.71 7 M7.5 4.27l9 5.15";
+
+    /// <summary>lucide <c>house</c></summary>
+    public const string House = "M15 21v-8a1 1 0 0 0 -1 -1h-4a1 1 0 0 0 -1 1v8 M3 10a2 2 0 0 1 .709 -1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2z";
+
+    /// <summary>lucide <c>monitor</c></summary>
+    public const string Monitor = "M4 3H20A2 2 0 0 1 22 5V15A2 2 0 0 1 20 17H4A2 2 0 0 1 2 15V5A2 2 0 0 1 4 3Z M8 21L16 21 M12 17L12 21";
+
+    /// <summary>lucide <c>laptop</c></summary>
+    public const string Laptop = "M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212 .897l1.068 2.127a1 1 0 0 1 -.9 1.45H3.62a1 1 0 0 1 -.9 -1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2 -2z M20.054 15.987H3.946";
+
+    /// <summary>lucide <c>cloud</c></summary>
+    public const string Cloud = "M17.5 19H9a7 7 0 1 1 6.71 -9h1.79a4.5 4.5 0 1 1 0 9Z";
+
+    /// <summary>lucide <c>images</c></summary>
+    public const string Images = "M22 11l-1.296-1.296a2.4 2.4 0 0 0 -3.408 0L11 16 M4 8a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2 M12 7A1 1 0 1 0 14 7A1 1 0 1 0 12 7Z M10 2H20A2 2 0 0 1 22 4V14A2 2 0 0 1 20 16H10A2 2 0 0 1 8 14V4A2 2 0 0 1 10 2Z";
+
+    /// <summary>lucide <c>camera</c></summary>
+    public const string Camera = "M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2H4a2 2 0 0 1 -2 -2V9a2 2 0 0 1 2 -2h1.997a2 2 0 0 0 1.759 -1.048l.489-.904A2 2 0 0 1 10.004 4z M9 13A3 3 0 1 0 15 13A3 3 0 1 0 9 13Z";
+
+    /// <summary>lucide <c>aperture</c></summary>
+    public const string Aperture = "M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12Z M14.31 8l5.74 9.94 M9.69 8h11.48 M7.38 12l5.74-9.94 M9.69 16 3.95 6.06 M14.31 16H2.83 M16.62 12l-5.74 9.94";
+
+    /// <summary>lucide <c>video</c></summary>
+    public const string Video = "M16 13l5.223 3.482a.5 .5 0 0 0 .777 -.416V7.87a.5 .5 0 0 0 -.752 -.432L16 10.5 M4 6H14A2 2 0 0 1 16 8V16A2 2 0 0 1 14 18H4A2 2 0 0 1 2 16V8A2 2 0 0 1 4 6Z";
+
+    /// <summary>lucide <c>tv</c></summary>
+    public const string Tv = "M17 2l-5 5-5-5 M4 7H20A2 2 0 0 1 22 9V20A2 2 0 0 1 20 22H4A2 2 0 0 1 2 20V9A2 2 0 0 1 4 7Z";
+
+    /// <summary>lucide <c>music</c></summary>
+    public const string Music = "M9 18V5l12-2v13 M3 18A3 3 0 1 0 9 18A3 3 0 1 0 3 18Z M15 16A3 3 0 1 0 21 16A3 3 0 1 0 15 16Z";
+
+    /// <summary>lucide <c>list-music</c></summary>
+    public const string ListMusic = "M16 5H3 M11 12H3 M11 19H3 M21 16V5 M15 16A3 3 0 1 0 21 16A3 3 0 1 0 15 16Z";
+
+    /// <summary>lucide <c>headphones</c></summary>
+    public const string Headphones = "M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1 -2 2h-1a2 2 0 0 1 -2 -2v-3a2 2 0 0 1 2 -2h3";
+
+    /// <summary>lucide <c>guitar</c></summary>
+    public const string Guitar = "M11.9 12.1l4.514-4.514 M20.1 2.3a1 1 0 0 0 -1.4 0l-1.114 1.114A2 2 0 0 0 17 4.828v1.344a2 2 0 0 1 -.586 1.414A2 2 0 0 1 17.828 7h1.344a2 2 0 0 0 1.414 -.586L21.7 5.3a1 1 0 0 0 0 -1.4z M6 16l2 2 M8.23 9.85A3 3 0 0 1 11 8a5 5 0 0 1 5 5 3 3 0 0 1 -1.85 2.77l-.92.38A2 2 0 0 0 12 18a4 4 0 0 1 -4 4 6 6 0 0 1 -6 -6 4 4 0 0 1 4 -4 2 2 0 0 0 1.85 -1.23z";
+
+    /// <summary>lucide <c>piano</c></summary>
+    public const string Piano = "M10 13v4 M14 13v4 M18 13v4 M2 13h20 M22 11.5A3.5 3.5 0 0 0 18.5 8a3.52 3.52 0 0 1 -3.173 -2A7 7 0 0 0 2 9v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2 -2z M6 13v4";
+
+    /// <summary>lucide <c>mic</c></summary>
+    public const string Mic = "M12 19v3 M19 10v2a7 7 0 0 1 -14 0v-2 M12 2H12A3 3 0 0 1 15 5V12A3 3 0 0 1 12 15H12A3 3 0 0 1 9 12V5A3 3 0 0 1 12 2Z";
+
+    /// <summary>lucide <c>audio-waveform</c></summary>
+    public const string AudioWaveform = "M2 13a2 2 0 0 0 2 -2V7a2 2 0 0 1 4 0v13a2 2 0 0 0 4 0V4a2 2 0 0 1 4 0v13a2 2 0 0 0 4 0v-4a2 2 0 0 1 2 -2";
+
+    /// <summary>lucide <c>heart</c></summary>
+    public const string Heart = "M2 9.5a5.5 5.5 0 0 1 9.591 -3.676 .56 .56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1 -3 .019L5 15c-1.5-1.5-3-3.2-3-5.5";
+
+    /// <summary>lucide <c>bookmark</c></summary>
+    public const string Bookmark = "M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1 -1.496 .868l-4.512-2.578a2 2 0 0 0 -1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2 -2z";
+
+    /// <summary>lucide <c>tag</c></summary>
+    public const string Tag = "M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0 -2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0 -3.42z M7 7.5A0.5 0.5 0 1 0 8 7.5A0.5 0.5 0 1 0 7 7.5Z";
+
+    /// <summary>lucide <c>flag</c></summary>
+    public const string Flag = "M4 22V4a1 1 0 0 1 .4 -.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1 -.4 .8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0 -4 1.528";
+
+    /// <summary>lucide <c>zap</c></summary>
+    public const string Zap = "M15.914 4a1.5 1.5 0 0 0 -2.474 -1.561l-9 9A1.5 1.5 0 0 0 5.5 14h4.002a.5 .5 0 0 1 .471 .666L8.086 20a1.5 1.5 0 0 0 2.475 1.56l9-9A1.5 1.5 0 0 0 18.5 10h-3.997a.5 .5 0 0 1 -.472 -.667z";
+
+    /// <summary>lucide <c>flame</c></summary>
+    public const string Flame = "M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1 -14 0 5 5 0 0 1 1 -3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4";
+
+    /// <summary>lucide <c>sparkles</c></summary>
+    public const string Sparkles = "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0 -1.594 1.594l-1.051 5.558a1 1 0 0 1 -1.966 0l-1.051-5.558a2 2 0 0 0 -1.594 -1.594l-5.558-1.051a1 1 0 0 1 0 -1.966l5.558-1.051a2 2 0 0 0 1.594 -1.594z M20 2v4 M22 4h-4 M2 20A2 2 0 1 0 6 20A2 2 0 1 0 2 20Z";
+
+    /// <summary>lucide <c>leaf</c></summary>
+    public const string Leaf = "M11 20a10 10 0 0 0 10 -10 25.9 25.9 0 0 0 -1.04 -7.281 1 1 0 0 0 -1.755 -.325C15.833 5.5 13 5.5 9.8 6.1A7 7 0 0 0 11 20 M2 21a5 5 0 0 1 2.911 -4.544C7.613 15.212 8.351 15.24 11 13";
+
+    /// <summary>lucide <c>sun</c></summary>
+    public const string Sun = "M8 12A4 4 0 1 0 16 12A4 4 0 1 0 8 12Z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41";
+
+    /// <summary>lucide <c>moon</c></summary>
+    public const string Moon = "M20.985 12.486a9 9 0 1 1 -9.473 -9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401";
+
+    /// <summary>lucide <c>cloud-sun</c></summary>
+    public const string CloudSun = "M12 2v2 M4.93 4.93l1.41 1.41 M20 12h2 M19.07 4.93l-1.41 1.41 M15.947 12.65a4 4 0 0 0 -5.925 -4.128 M13 22H7a5 5 0 1 1 4.9 -6H13a3 3 0 0 1 0 6Z";
+
+    /// <summary>lucide <c>snowflake</c></summary>
+    public const string Snowflake = "M10 20l-1.25-2.5L6 18 M10 4 8.75 6.5 6 6 M14 20l1.25-2.5L18 18 M14 4l1.25 2.5L18 6 M17 21l-3-6h-4 M17 3l-3 6 1.5 3 M2 12h6.5L10 9 M20 10l-1.5 2 1.5 2 M22 12h-6.5L14 15 M4 10l1.5 2L4 14 M7 21l3-6-1.5-3 M7 3l3 6h4";
+
+    /// <summary>lucide <c>plane</c></summary>
+    public const string Plane = "M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z";
+
+    /// <summary>lucide <c>car</c></summary>
+    public const string Car = "M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2 M5 17A2 2 0 1 0 9 17A2 2 0 1 0 5 17Z M9 17h6 M15 17A2 2 0 1 0 19 17A2 2 0 1 0 15 17Z";
+
+    /// <summary>lucide <c>globe</c></summary>
+    public const string Globe = "M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12Z M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0 -20 M2 12h20";
+
+    /// <summary>lucide <c>map</c></summary>
+    public const string Map = "M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1 -.553 .894l-4.553 2.277a2 2 0 0 1 -1.788 0l-4.212-2.106a2 2 0 0 0 -1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553 -.894l4.553-2.277a2 2 0 0 1 1.788 0z M15 5.764v15 M9 3.236v15";
+
+    /// <summary>lucide <c>user</c></summary>
+    public const string User = "M19 21v-2a4 4 0 0 0 -4 -4H9a4 4 0 0 0 -4 4v2 M8 7A4 4 0 1 0 16 7A4 4 0 1 0 8 7Z";
+
+    /// <summary>lucide <c>users</c></summary>
+    public const string Users = "M16 21v-2a4 4 0 0 0 -4 -4H6a4 4 0 0 0 -4 4v2 M16 3.128a4 4 0 0 1 0 7.744 M22 21v-2a4 4 0 0 0 -3 -3.87 M5 7A4 4 0 1 0 13 7A4 4 0 1 0 5 7Z";
+
+    /// <summary>lucide <c>paw-print</c></summary>
+    public const string PawPrint = "M9 4A2 2 0 1 0 13 4A2 2 0 1 0 9 4Z M16 8A2 2 0 1 0 20 8A2 2 0 1 0 16 8Z M18 16A2 2 0 1 0 22 16A2 2 0 1 0 18 16Z M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1 -6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z";
+
+    /// <summary>lucide <c>gamepad-2</c></summary>
+    public const string Gamepad2 = "M6 11L10 11 M8 9L8 13 M15 12L15.01 12 M18 10L18.01 10 M17.32 5H6.68a4 4 0 0 0 -3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414 .586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3 -3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z";
+
+    /// <summary>lucide <c>palette</c></summary>
+    public const string Palette = "M12 22a1 1 0 0 1 0 -20 10 9 0 0 1 10 9 5 5 0 0 1 -5 5h-2.25a1.75 1.75 0 0 0 -1.4 2.8l.3.4a1.75 1.75 0 0 1 -1.4 2.8z M13 6.5A0.5 0.5 0 1 0 14 6.5A0.5 0.5 0 1 0 13 6.5Z M17 10.5A0.5 0.5 0 1 0 18 10.5A0.5 0.5 0 1 0 17 10.5Z M6 12.5A0.5 0.5 0 1 0 7 12.5A0.5 0.5 0 1 0 6 12.5Z M8 7.5A0.5 0.5 0 1 0 9 7.5A0.5 0.5 0 1 0 8 7.5Z";
+
+    /// <summary>lucide <c>book</c></summary>
+    public const string Book = "M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1 -1 1H6.5a1 1 0 0 1 0 -5H20";
+
+    /// <summary>lucide <c>gift</c></summary>
+    public const string Gift = "M12 7v14 M20 11v8a2 2 0 0 1 -2 2H6a2 2 0 0 1 -2 -2v-8 M7.5 7a1 1 0 0 1 0 -5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5 -5 1 1 0 0 1 0 5 M4 7H20A1 1 0 0 1 21 8V10A1 1 0 0 1 20 11H4A1 1 0 0 1 3 10V8A1 1 0 0 1 4 7Z";
+
+    /// <summary>lucide <c>face-slightly-smiling</c></summary>
+    public const string FaceSlightlySmiling = "M15 10V9 M16.472 15a6 6 0 0 1 -8.943 0 M9 10V9 M2 12A10 10 0 1 0 22 12A10 10 0 1 0 2 12Z";
+
+    /// <summary>lucide <c>image-plus</c></summary>
+    public const string ImagePlus = "M16 5h6 M19 2v6 M21 11.5V19a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2h7.5 M21 15l-3.086-3.086a2 2 0 0 0 -2.828 0L6 21 M7 9A2 2 0 1 0 11 9A2 2 0 1 0 7 9Z";
 
 }

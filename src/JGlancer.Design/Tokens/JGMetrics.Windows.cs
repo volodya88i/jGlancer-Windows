@@ -187,4 +187,58 @@ public static partial class JGMetrics
 
     /// <summary>The key and tempo panel's − and + buttons; Reset below them is as wide as both ("Сбросить" fits).</summary>
     public const double MusicStepWidth = 40;
+
+    /// <summary>The size map (macOS D-127): a folder's name band, the room inside a folder round its contents …</summary>
+    public const double SizeMapHeaderHeight = 16;
+
+    public const double SizeMapPadding = 2;
+
+    /// <summary>… nothing is laid out inside rectangles smaller than this …</summary>
+    public const double SizeMapMinSide = 6;
+
+    /// <summary>… a file shows its name from this width (and the band's height) on …</summary>
+    public const double SizeMapFileLabelMinWidth = 64;
+
+    /// <summary>… and the size of the names (macOS: system 11).</summary>
+    public const double SizeMapTextSize = 11;
+
+    /// <summary>The place under the files (D-127): its height range when dragged, and its default.</summary>
+    public const double BottomModuleMinHeight = 160;
+
+    public const double BottomModuleMaxHeight = 720;
+
+    public const double BottomModuleDefaultHeight = 280;
+
+    /// <summary>The box of a sidebar row's icon: a folder's own symbol, emoji or picture fills it (macOS D-129).</summary>
+    public const double SidebarIconBox = 20;
+
+    /// <summary>The folder icon picker's symbol buttons and its header icon (macOS: the control height).</summary>
+    public const double FolderIconButtonSide = ControlHeight;
+
+    /// <summary>The folded sidebar (macOS D-128): the strip's width …</summary>
+    public const double SidebarStripWidth = 44;
+
+    /// <summary>… a window narrower than this folds the sidebar by itself (the old minimum width) …</summary>
+    public const double SidebarAutoCollapseWidth = WindowMinWidth;
+
+    /// <summary>… so the library window's minimum drops by what the strip saves (960 − (180 − 44) = 824).</summary>
+    public const double LibraryWindowMinWidth = SidebarAutoCollapseWidth - (SidebarMinWidth - SidebarStripWidth);
+
+    /// <summary>Seconds the pointer rests on the strip before the sidebar comes out over the files, and after it left before it goes.</summary>
+    public const double SidebarPeekOpenDelay = 0.2;
+
+    public const double SidebarPeekCloseDelay = 0.3;
+
+    /// <summary>The shadow of the sidebar over the files: black at this opacity, this blur.</summary>
+    public const double SidebarPeekShadowOpacity = 0.24;
+
+    public const double SidebarPeekShadowRadius = 16;
+
+    /// <summary>The fold's spring (SwiftUI's response and damping fraction): a hint of overshoot.</summary>
+    public const double SidebarSpringResponse = 0.34;
+
+    public const double SidebarSpringDamping = 0.84;
+
+    /// <summary>Names fade in this long, starting a third of it after the panel starts to open; they fade out in half of it.</summary>
+    public const double SidebarLabelFade = 0.18;
 }

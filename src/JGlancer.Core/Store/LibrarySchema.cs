@@ -122,5 +122,14 @@ internal static class LibrarySchema
         ("v6-cloud-only", """
             ALTER TABLE asset ADD COLUMN cloud_only INTEGER NOT NULL DEFAULT 0;
             """),
+        // A library folder's own icon (macOS D-129): a symbol's or an emoji's text, or a small picture.
+        ("v7-root-icons", """
+            CREATE TABLE root_icon (
+              root_id INTEGER PRIMARY KEY REFERENCES root_folder(id) ON DELETE CASCADE,
+              kind TEXT NOT NULL,
+              value TEXT NOT NULL DEFAULT '',
+              picture BLOB
+            );
+            """),
     ];
 }

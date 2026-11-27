@@ -65,6 +65,11 @@ Demucs (htdemucs, htdemucs_6s) — MIT
   Copyright (c) Meta Platforms, Inc. and affiliates. https://github.com/facebookresearch/demucs
   The stem splitter's models, converted to ONNX; not part of the installer, downloaded when a split first needs them.
 
+Mel-Band RoFormer vocals model — MIT
+  Copyright (c) Kimberley Jensen. https://huggingface.co/KimberleyJSN/melbandroformer
+  The architecture is Mel-Band RoFormer (Wang et al., 2023). Converted to ONNX; not part of the installer, downloaded
+  when a split into 2 stems at High Quality first needs it.
+
 Lucide icons — ISC
   Copyright (c) Lucide Contributors; parts Copyright (c) Cole Bemis (Feather, MIT). https://lucide.dev
 

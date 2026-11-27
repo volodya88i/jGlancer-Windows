@@ -45,9 +45,11 @@ internal sealed class StemModelWindow : Window
         this[!BackgroundProperty] = this.GetResourceObservable(JGColor.BgPanel.ResourceKey).ToBinding();
         JGWindowChrome.Apply(this);
         var heading = SettingsUi.Text(Title, "heading", JGColor.TextPrimary);
-        var stems = model.Mode == StemMode.Six ? 6 : 4;
-        var text = SettingsUi.Text(L.T("Splitting into {0} stems needs the Demucs model ({1}), downloaded once from GitHub. Nothing else is sent or received: your music stays on this computer.",
-            stems, Core.Localization.ByteFormat.Format(_source.Bytes)), "body", JGColor.TextSecondary, wraps: true);
+        var size = Core.Localization.ByteFormat.Format(_source.Bytes);
+        var text = SettingsUi.Text(model.Network == StemNetwork.Vocals
+            ? L.T("High Quality needs the RoFormer model ({0}), downloaded once from GitHub. Nothing else is sent or received: your music stays on this computer.", size)
+            : L.T("Splitting needs the Demucs model for {0} stems ({1}), downloaded once from GitHub. Nothing else is sent or received: your music stays on this computer.",
+                model.Network == StemNetwork.Six ? 6 : 4, size), "body", JGColor.TextSecondary, wraps: true);
         _line = SettingsUi.Text("", "mono", JGColor.TextSecondary);
         _line.IsVisible = false;
         _bar[!ProgressBar.ForegroundProperty] = this.GetResourceObservable(JGColor.Accent.ResourceKey).ToBinding();

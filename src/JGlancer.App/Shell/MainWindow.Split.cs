@@ -19,6 +19,9 @@ internal sealed partial class MainWindow
 
     public SplitMode Split => _model?.State.Split ?? SplitMode.Off;
 
+    /// <summary>The size map shows: the split view waits until it is closed (they exclude each other for now, D-127).</summary>
+    private bool IsSizeMapShown => _model?.State.SizeMapVisible == true;
+
     private void AttachSplit(LibraryModel model)
     {
         Library.ActivePaneChanged += (_, _) => ActivePaneChanged();

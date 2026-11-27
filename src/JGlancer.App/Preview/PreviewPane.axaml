@@ -8,7 +8,7 @@
              x:Class="JGlancer.App.Preview.PreviewPane"
              Background="{DynamicResource JG.bg.panel}">
   <!-- The selection preview on the right of the library (macOS PreviewPane, FEATURES §2): the previewed file in the
-       mini player with its name and facts, or the count and size of a multiple selection. Resizable by its left edge. -->
+       mini player with its name and facts, or the count and size of a multiple selection. Right of the files or under them (D-127); the library view drags its edge. -->
   <Panel>
     <!-- Audio: the cover as frosted glass behind the pane (a tiny copy stretched), under a strong base wash. -->
     <Panel Name="Backdrop" IsVisible="False" IsHitTestVisible="False" ClipToBounds="True">
@@ -25,10 +25,8 @@
                 ToolTip.Tip="{l:T 'Camera, codec and other details'}" AutomationProperties.Name="{l:T 'Camera, codec and other details'}">
           <d:JGIcon Name="DetailsGlyph" Data="{x:Static d:JGIconData.Info}" />
         </Button>
-        <Button Name="CloseButton" Classes="icon"
-                ToolTip.Tip="{l:T 'Hide Preview'}" AutomationProperties.Name="{l:T 'Hide Preview'}">
-          <d:JGIcon Data="{x:Static d:JGIconData.X}" />
-        </Button>
+        <!-- Move to the other place (D-127), and close. -->
+        <lib:ModuleHeaderButtons Name="HeaderButtons" Module="Preview" />
         </StackPanel>
       </Grid>
 
@@ -61,8 +59,5 @@
       </Panel>
     </DockPanel>
 
-    <!-- The left edge: drag to resize. -->
-    <Border Name="ResizeHandle" HorizontalAlignment="Left" Width="{x:Static d:JGMetrics.ResizeHandleWidth}"
-            Background="Transparent" Cursor="SizeWestEast" />
   </Panel>
 </UserControl>

@@ -283,6 +283,14 @@ internal sealed partial class App : Application
         {
             PreviewCheck.Attach(window, model, previewLog);
         }
+        if (options.SidebarCheck is { } sidebarLog)
+        {
+            SidebarCheck.Attach(window, model, sidebarLog);
+        }
+        if (options.ModuleCheck is { } moduleLog)
+        {
+            ModuleCheck.Attach(window, model, moduleLog);
+        }
         if (options.AlbumCheck is { } albumLog)
         {
             AlbumCheck.Attach(window, model, albumLog);

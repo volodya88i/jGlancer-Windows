@@ -8,7 +8,7 @@ using JGlancer.Design;
 
 namespace JGlancer.App.Preview;
 
-/// <summary>The preview pane (macOS PreviewPane): hidden by its × or View ▸ Show Preview, resized by its left edge.</summary>
+/// <summary>The preview pane (macOS PreviewPane): hidden by its × or View ▸ Show Preview, moved by its header (D-127).</summary>
 internal sealed partial class PreviewPane : UserControl
 {
     /// <summary>Side of the backdrop's tiny copy of the cover (as the audio viewer).</summary>
@@ -17,8 +17,6 @@ internal sealed partial class PreviewPane : UserControl
     private PreviewModel? _model;
     private LibraryModel? _library;
     private Avalonia.Media.Imaging.Bitmap? _backdropFor;
-    private double? _dragStartWidth;
-    private double _dragStartX;
 
     public PreviewPane()
     {
@@ -33,14 +31,6 @@ internal sealed partial class PreviewPane : UserControl
             }
         };
         DetailsButton.Click += (_, _) => Settings.SettingsStore.Current.Update(s => s with { PreviewDetails = !s.PreviewDetails });
-        CloseButton.Click += (_, _) => _library?.SetPreviewVisible(false);
-        ResizeHandle.PointerPressed += OnHandlePressed;
-        ResizeHandle.PointerMoved += OnHandleMoved;
-        ResizeHandle.PointerReleased += (_, e) =>
-        {
-            _dragStartWidth = null;
-            e.Pointer.Capture(null);
-        };
         Player.HostsSurface = true;
         // The label style is in capitals (DESIGN.md §4).
         SelectedLabel.Text = L.T("Selected").ToUpper(System.Globalization.CultureInfo.CurrentUICulture);
@@ -52,6 +42,7 @@ internal sealed partial class PreviewPane : UserControl
         ArgumentNullException.ThrowIfNull(library);
         _model = model;
         _library = library;
+        HeaderButtons.Library = library;
         // Before the player hears of a move itself: it must not take the surface Quick Preview is about to get.
         model.SurfaceMoved += (_, _) => Player.HostsSurface = !model.IsQuickPreviewOpen;
         Player.Model = model;
@@ -118,23 +109,10 @@ internal sealed partial class PreviewPane : UserControl
         Backdrop.IsVisible = cover is not null && Settings.SettingsStore.Current.Settings.CoverBackdrop;
     }
 
-    private void OnHandlePressed(object? sender, PointerPressedEventArgs e)
+    /// <summary>The place it is in (its Move button goes to the other).</summary>
+    public ModuleSlot Slot
     {
-        if (_library is null || !e.GetCurrentPoint(ResizeHandle).Properties.IsLeftButtonPressed)
-        {
-            return;
-        }
-        _dragStartWidth = _library.State.PreviewWidth;
-        _dragStartX = e.GetPosition(null).X;
-        e.Pointer.Capture(ResizeHandle);
-        e.Handled = true;
-    }
-
-    private void OnHandleMoved(object? sender, PointerEventArgs e)
-    {
-        if (_dragStartWidth is { } start && _library is { } library)
-        {
-            library.SetPreviewWidth(start - (e.GetPosition(null).X - _dragStartX));
-        }
+        get => HeaderButtons.Slot;
+        set => HeaderButtons.Slot = value;
     }
 }

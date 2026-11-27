@@ -34,8 +34,22 @@ public sealed record LibraryViewState
     public IReadOnlyList<long> SelectedIds { get; set; } = [];
     public long? FocusedId { get; set; }
 
-    /// <summary>The preview pane on the right: shown, and its width.</summary>
+    /// <summary>The preview pane: shown, and its width.</summary>
     public bool PreviewVisible { get; set; } = true;
+
+    /// <summary>Where the preview shows: right of the files or under them (macOS D-127, <see cref="ModuleDock"/>).</summary>
+    public ModuleSlot PreviewSlot { get; set; } = ModuleSlot.Right;
+
+    /// <summary>The size map (View ▸ Show Size Map): shown, and where.</summary>
+    public bool SizeMapVisible { get; set; }
+
+    public ModuleSlot SizeMapSlot { get; set; } = ModuleSlot.Bottom;
+
+    /// <summary>The height of the place under the files, dragged by its top edge.</summary>
+    public double BottomHeight { get; set; } = 280;
+
+    /// <summary>The sidebar folded into a strip by hand (macOS D-128); a narrow window folds it without changing this.</summary>
+    public bool SidebarCollapsed { get; set; }
 
     /// <summary>The split view: one pane, two side by side, or two stacked (View ▸ Split View).</summary>
     public SplitMode Split { get; set; } = SplitMode.Off;

@@ -11,6 +11,12 @@ public interface IStemSeparator
 
     int SegmentFrames { get; }
 
+    /// <summary>The share of a piece that overlaps the next: Demucs a quarter, RoFormer half.</summary>
+    double Overlap => StemSplitter.Overlap;
+
+    /// <summary>Whether the network takes the audio normalized by its mono mix (Demucs) or as it is (RoFormer).</summary>
+    bool Normalizes => true;
+
     /// <param name="input">2 × <see cref="SegmentFrames"/> samples.</param>
     /// <param name="output">Sources × 2 × <see cref="SegmentFrames"/> samples.</param>
     void Separate(ReadOnlySpan<float> input, Span<float> output);
@@ -22,25 +28,37 @@ public interface IStemSink
     void Write(ReadOnlySpan<float> left, ReadOnlySpan<float> right);
 }
 
+/// <summary>
+/// What a stem is made of: the network's source <paramref name="Source"/>, or with <paramref name="SongWithout"/> the
+/// song less that source (the instrumental is the song less the vocals, so the two add up to the song exactly;
+/// measured as clean as adding the other three sources, macOS D-130).
+/// </summary>
+public readonly record struct StemPart(int Source, bool SongWithout = false);
+
+/// <summary>A stem the splitter writes, and where it goes.</summary>
+public sealed record StemOutput(StemPart Part, IStemSink Sink);
+
 /// <summary>One piece of the song the network runs on.</summary>
 public readonly record struct StemSegment(int Offset, int Length);
 
 /// <summary>
-/// Splits a song as Demucs' own <c>apply_model</c> does (W-85): the audio is normalized by its mono mix, cut into
-/// pieces of the model's length overlapping by a quarter, each piece run through the network (a short last piece
+/// Splits a song as Demucs' own <c>apply_model</c> does (W-85): the audio is normalized by its mono mix (when the
+/// network wants it), cut into pieces of the model's length overlapping as the network wants (Demucs by a quarter,
+/// RoFormer by half), each piece run through the network (a short last piece
 /// gets the audio before it as context, zeros past the end) and joined with triangular cross-fades. Finished audio
 /// goes to the sinks as each piece completes, so a long song never holds its stems in memory at once.
 /// </summary>
 public static class StemSplitter
 {
-    /// <summary>The share of a piece that overlaps the next.</summary>
+    /// <summary>The share of a Demucs piece that overlaps the next.</summary>
     public const double Overlap = 0.25;
 
     /// <summary>The pieces of a song of <paramref name="frames"/> frames.</summary>
-    public static IReadOnlyList<StemSegment> Plan(int frames, int segment)
+    public static IReadOnlyList<StemSegment> Plan(int frames, int segment, double overlap = Overlap)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(segment);
-        var stride = (int)((1 - Overlap) * segment);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(overlap, 1);
+        var stride = (int)((1 - overlap) * segment);
         var plan = new List<StemSegment>();
         for (var offset = 0; offset < frames; offset += stride)
         {
@@ -67,26 +85,28 @@ public static class StemSplitter
     }
 
     /// <summary>
-    /// Splits <paramref name="left"/> / <paramref name="right"/> (at the model's sample rate) and writes the sources
-    /// named by <paramref name="sinks"/> (source index → sink). <paramref name="progress"/> gets the share done after
-    /// each piece; cancellation is checked between pieces.
+    /// Splits <paramref name="left"/> / <paramref name="right"/> (at the model's sample rate) and writes
+    /// <paramref name="outputs"/>. <paramref name="progress"/> gets the share done after each piece; cancellation is
+    /// checked between pieces.
     /// </summary>
-    public static void Split(float[] left, float[] right, IStemSeparator separator, IReadOnlyDictionary<int, IStemSink> sinks,
+    public static void Split(float[] left, float[] right, IStemSeparator separator, IReadOnlyList<StemOutput> outputs,
         Action<double>? progress, CancellationToken cancellation)
     {
         ArgumentNullException.ThrowIfNull(left);
         ArgumentNullException.ThrowIfNull(right);
         ArgumentNullException.ThrowIfNull(separator);
-        ArgumentNullException.ThrowIfNull(sinks);
+        ArgumentNullException.ThrowIfNull(outputs);
         var frames = Math.Min(left.Length, right.Length);
         var segment = separator.SegmentFrames;
-        var (mean, deviation) = Normalization(left, right, frames);
-        var plan = Plan(frames, segment);
+        var (mean, deviation) = separator.Normalizes ? Normalization(left, right, frames) : (0f, 1f);
+        var plan = Plan(frames, segment, separator.Overlap);
         var weights = Weights(segment);
         var input = new float[2 * segment];
         var output = new float[separator.Sources * 2 * segment];
         // Sums of weighted output and of weights, from the first frame not written yet.
-        var sums = sinks.Keys.ToDictionary(source => source, _ => (Left: new float[segment], Right: new float[segment]));
+        var sums = outputs.Select(output => output.Part.Source).Distinct().Order()
+            .ToDictionary(source => source, _ => (Left: new float[segment], Right: new float[segment]));
+        var finished = new Dictionary<int, (float[] Left, float[] Right)>();
         var weightSums = new float[segment];
         var start = 0;
         for (var index = 0; index < plan.Count; index++)
@@ -131,11 +151,30 @@ public static class StemSplitter
                     outLeft[i] = sumLeft[i] / weightSums[i] * deviation + mean;
                     outRight[i] = sumRight[i] / weightSums[i] * deviation + mean;
                 }
-                sinks[source].Write(outLeft, outRight);
+                finished[source] = (outLeft, outRight);
                 Slide(sumLeft, done);
                 Slide(sumRight, done);
             }
             Slide(weightSums, done);
+            foreach (var (part, sink) in outputs)
+            {
+                var (outLeft, outRight) = finished[part.Source];
+                if (part.SongWithout)
+                {
+                    var restLeft = new float[done];
+                    var restRight = new float[done];
+                    for (var i = 0; i < done; i++)
+                    {
+                        restLeft[i] = left[start + i] - outLeft[i];
+                        restRight[i] = right[start + i] - outRight[i];
+                    }
+                    sink.Write(restLeft, restRight);
+                }
+                else
+                {
+                    sink.Write(outLeft, outRight);
+                }
+            }
             start = next;
             progress?.Invoke((double)(index + 1) / plan.Count);
         }

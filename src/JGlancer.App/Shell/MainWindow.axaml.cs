@@ -51,6 +51,53 @@ internal sealed partial class MainWindow : Window, Actions.IActionHost
             SequenceFrames = id => ActiveModel is { } active && active.IsFolded(id) ? active.SequenceOf(id)?.Frames : null,
         };
         Library.AttachPreview(_preview);
+        TitleBar.SidebarToggleRequested += (_, _) => Library.ToggleSidebar();
+        TitleBar.IsSidebarDocked = () => Library.IsSidebarDocked;
+        if (Developer.DeveloperOptions.Current.Sidebar is { } sidebar)
+        {
+            model.SetSidebarCollapsed(sidebar != "docked");
+            if (sidebar == "peek")
+            {
+                model.RefsChanged += (_, _) => Library.PeekSidebar();
+            }
+        }
+        if (Developer.DeveloperOptions.Current.FolderIcon is { } folderIcon)
+        {
+            var given = false;
+            model.RefsChanged += async (_, _) =>
+            {
+                if (given || model.Roots.Count == 0)
+                {
+                    return;
+                }
+                given = true;
+                if (folderIcon == "photo")
+                {
+                    if (model.Refs.Where(r => r.Kind == Core.Model.MediaKind.Photo && r.Id > 0).Select(r => r.Id).FirstOrDefault() is var photo and > 0)
+                    {
+                        await model.SetFolderIconFromAssetAsync(photo);
+                    }
+                }
+                else
+                {
+                    await model.SetRootIconAsync(model.Roots[0].Id, Core.Model.FolderIcon.LastEmoji(folderIcon) is { } emoji
+                        ? new Core.Model.FolderIcon.Emoji(emoji)
+                        : new Core.Model.FolderIcon.Symbol(folderIcon));
+                }
+            };
+        }
+        if (Developer.DeveloperOptions.Current.SizeMap is { } mapSlot)
+        {
+            model.UpdateState(s =>
+            {
+                s.Split = Core.Model.SplitMode.Off;
+                s.SetVisible(Core.Model.LibraryModule.SizeMap, true);
+                if (s.SizeMapSlot != mapSlot)
+                {
+                    s.Move(Core.Model.LibraryModule.SizeMap);
+                }
+            });
+        }
         model.QuickPreviewKey += (_, e) => e.Handled = HandleQuickPreviewKey(e.Key);
         TitleBar.QuickPreviewRequested += (_, _) => ToggleQuickPreview();
         TitleBar.IsQuickPreviewOpen = () => IsQuickPreviewOpen;

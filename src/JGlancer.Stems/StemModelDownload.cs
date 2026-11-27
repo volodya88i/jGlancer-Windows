@@ -7,27 +7,32 @@ namespace JGlancer.Stems;
 public sealed record StemModelSource(Uri Address, string Sha256, long Bytes);
 
 /// <summary>
-/// The one network use of the app (W-85): a Demucs model, downloaded when the user presses
+/// The one network use of the app (W-85): a stem model, downloaded when the user presses
 /// Download and never otherwise. It is written as "&lt;name&gt;.partial", checked against its SHA-256 and only then
 /// renamed into place; a stop, an error or a wrong checksum removes the partial file.
 /// </summary>
 public static class StemModelDownload
 {
     /// <summary>
-    /// The model files (the public repository volodya88i/jGlancer-models, release models-1): <c>scripts/stems/convert_demucs.py</c>, then
-    /// <c>half_weights.py</c> (float16 weights, float32 compute: half the size, 65–125 dB from Demucs itself).
+    /// The model files (the public repository volodya88i/jGlancer-models): Demucs in release models-1
+    /// (<c>scripts/stems/convert_demucs.py</c>), Mel-Band RoFormer in models-2 (<c>convert_roformer.py</c>), each then
+    /// <c>half_weights.py</c> for the compact one (float16 weights, float32 compute: half the size).
     /// </summary>
     public static StemModelSource Source(StemModelInfo model)
     {
         ArgumentNullException.ThrowIfNull(model);
-        var (sha, bytes) = (model.Mode, model.IsFull) switch
+        var (sha, bytes) = (model.Network, model.IsFull) switch
         {
-            (StemMode.Six, true) => ("2f8d1e48cd6a4328f85f43afee3f73f53662450b3ecda0cb546e1508055d8a00", 114_560_305L),
-            (StemMode.Six, false) => ("982cbe0b6a8e8715d2a142b9c5aae36d7d0c087b9c1382fab57d8e6d3aebfcd1", 59_959_882L),
+            (StemNetwork.Vocals, true) => ("134b471a78cbd36755a8a48478ac34505adf98e8fbda26b9e164e53511f5a3a0", 918_412_650L),
+            (StemNetwork.Vocals, false) => ("06ff6a79e0cfa8fb535062d82b48f8a20463e66dfdcac4853e623e783e3998d0", 461_981_015L),
+            (StemNetwork.Six, true) => ("2f8d1e48cd6a4328f85f43afee3f73f53662450b3ecda0cb546e1508055d8a00", 114_560_305L),
+            (StemNetwork.Six, false) => ("982cbe0b6a8e8715d2a142b9c5aae36d7d0c087b9c1382fab57d8e6d3aebfcd1", 59_959_882L),
             (_, true) => ("6941830d664bbf4a8238dbe9dec242b8c2799ce651a7dfbe7997b1e36b70c56f", 174_264_723L),
             _ => ("4782234fdd0ce38d94ae198746c680c898e1cb6c35d062c2042a3318871c113a", 90_555_550L),
         };
-        return new(new Uri("https://github.com/volodya88i/jGlancer-models/releases/download/models-1/" + model.FileName), sha, bytes);
+        // Demucs is in the first release, RoFormer in the second (W-120).
+        var release = model.Network == StemNetwork.Vocals ? "models-2" : "models-1";
+        return new(new Uri($"https://github.com/volodya88i/jGlancer-models/releases/download/{release}/" + model.FileName), sha, bytes);
     }
 
     /// <summary>The model's file in <paramref name="folder"/> (it may not exist yet).</summary>

@@ -30,6 +30,8 @@ internal sealed partial class TitleBar : UserControl
         StatusBarItem.Click += (_, _) => Settings.SettingsStore.Current.Update(s => s with { ShowStatusBar = !s.ShowStatusBar });
         SubfoldersItem.Click += (_, _) => Model?.SetIncludeSubfolders(!Model.State.IncludeSubfolders);
         ShowPreviewItem.Click += (_, _) => Primary?.SetPreviewVisible(!Primary.State.PreviewVisible);
+        ShowSidebarItem.Click += (_, _) => SidebarToggleRequested?.Invoke(this, EventArgs.Empty);
+        ShowSizeMapItem.Click += (_, _) => Primary?.SetModuleVisible(Core.Model.LibraryModule.SizeMap, !Primary.State.SizeMapVisible);
         SplitOffItem.Click += (_, _) => SplitRequested?.Invoke(this, Core.Model.SplitMode.Off);
         SplitSideItem.Click += (_, _) => SplitRequested?.Invoke(this, Core.Model.SplitMode.SideBySide);
         SplitStackedItem.Click += (_, _) => SplitRequested?.Invoke(this, Core.Model.SplitMode.Stacked);
@@ -54,6 +56,7 @@ internal sealed partial class TitleBar : UserControl
         ViewMenu.SubmenuOpened += (_, _) =>
         {
             QuickPreviewItem.IsChecked = IsQuickPreviewOpen?.Invoke() == true;
+            ShowSidebarItem.IsChecked = IsSidebarDocked?.Invoke() == true;
             StatusBarItem.IsChecked = Settings.SettingsStore.Current.Settings.ShowStatusBar;
             var split = CurrentSplit?.Invoke() ?? Core.Model.SplitMode.Off;
             SplitOffItem.IsChecked = split == Core.Model.SplitMode.Off;
@@ -75,7 +78,9 @@ internal sealed partial class TitleBar : UserControl
             (ShowInExplorerItem, Core.Actions.ShortcutCommand.ShowInExplorer), (CopyPathItem, Core.Actions.ShortcutCommand.CopyPath),
             (MoveToItem, Core.Actions.ShortcutCommand.MoveTo), (CopyToItem, Core.Actions.ShortcutCommand.CopyTo),
             (RenameItem, Core.Actions.ShortcutCommand.Rename), (TrashItem, Core.Actions.ShortcutCommand.MoveToTrash),
-            (ShowPreviewItem, Core.Actions.ShortcutCommand.TogglePreview), (ShowNamesItem, Core.Actions.ShortcutCommand.ShowNames),
+            (ShowPreviewItem, Core.Actions.ShortcutCommand.TogglePreview), (ShowSizeMapItem, Core.Actions.ShortcutCommand.ToggleSizeMap),
+            (ShowSidebarItem, Core.Actions.ShortcutCommand.ToggleSidebar),
+            (ShowNamesItem, Core.Actions.ShortcutCommand.ShowNames),
             (SubfoldersItem, Core.Actions.ShortcutCommand.IncludeSubfolders), (FindItem, Core.Actions.ShortcutCommand.Find),
             (SplitOffItem, Core.Actions.ShortcutCommand.SplitView), (SplitSideItem, Core.Actions.ShortcutCommand.SplitSideBySide),
             (SplitStackedItem, Core.Actions.ShortcutCommand.SplitStacked),
@@ -165,6 +170,12 @@ internal sealed partial class TitleBar : UserControl
     /// <summary>Edit ▸ Find Duplicates….</summary>
     public event EventHandler? DuplicatesRequested;
 
+    /// <summary>View ▸ Show Sidebar: fold or dock the sidebar (the library view does it).</summary>
+    public event EventHandler? SidebarToggleRequested;
+
+    /// <summary>Whether the sidebar is docked (Show Sidebar's check).</summary>
+    public Func<bool>? IsSidebarDocked { get; set; }
+
     /// <summary>View ▸ Split View ▸ a choice (the window makes or removes the second pane).</summary>
     public event EventHandler<Core.Model.SplitMode>? SplitRequested;
 
@@ -215,6 +226,11 @@ internal sealed partial class TitleBar : UserControl
         StatusBarItem.IsChecked = Settings.SettingsStore.Current.Settings.ShowStatusBar;
         SubfoldersItem.IsChecked = _model?.State.IncludeSubfolders == true;
         ShowPreviewItem.IsChecked = Primary?.State.PreviewVisible == true;
+        ShowSizeMapItem.IsChecked = Primary?.State.SizeMapVisible == true;
+        // The size map and the split view exclude each other for now (D-127).
+        var split = Primary?.State.Split ?? Core.Model.SplitMode.Off;
+        ShowSizeMapItem.IsEnabled = _model is not null && split == Core.Model.SplitMode.Off;
+        SplitItem.IsEnabled = Primary?.State.SizeMapVisible != true;
         ShowNamesItem.IsEnabled = SubfoldersItem.IsEnabled = ShowPreviewItem.IsEnabled = QuickPreviewItem.IsEnabled = _model is not null;
     }
 

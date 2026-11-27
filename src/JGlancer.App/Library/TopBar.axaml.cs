@@ -282,8 +282,10 @@ internal sealed partial class TopBar : UserControl
     }
 
     /// <summary>
-    /// In a narrow window the slider steps aside first, then the kind chips become icons, then the sort menu goes
-    /// (macOS ViewThatFits order). Icons also when Settings → Appearance → Kind Filters says so.
+    /// In a narrow pane the controls give way in the Mac's order (MAC-047): the size slider, then the sort menu, then the
+    /// kind chips' words (icons instead), and last the grid / list toggle (View ▸ as Grid / as List and their keys still
+    /// switch), so the narrowest bar fits the pane's minimum width. Icons also when Settings → Appearance → Kind Filters
+    /// says so.
     /// </summary>
     private void Fit()
     {
@@ -295,12 +297,14 @@ internal sealed partial class TopBar : UserControl
         Action[] steps =
         [
             () => SizeSlider.IsVisible = false,
-            () => (KindIcons.IsVisible, KindChips.IsVisible) = (true, false),
             () => SortButton.IsVisible = false,
+            () => (KindIcons.IsVisible, KindChips.IsVisible) = (true, false),
+            () => ViewModes.IsVisible = false,
         ];
         SizeSlider.IsVisible = _showsSizeSlider;
         (KindIcons.IsVisible, KindChips.IsVisible) = (iconsChosen, !iconsChosen);
         SortButton.IsVisible = sortAllowed;
+        ViewModes.IsVisible = true;
         foreach (var step in steps)
         {
             Controls.Measure(Size.Infinity);

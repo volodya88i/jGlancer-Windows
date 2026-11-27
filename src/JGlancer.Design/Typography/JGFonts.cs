@@ -19,6 +19,9 @@ public static class JGFonts
     /// <summary>Windows caption glyphs (minimize, maximize, restore, close) as in native title bars.</summary>
     public static FontFamily Caption { get; } = new("Segoe Fluent Icons, Segoe MDL2 Assets");
 
+    /// <summary>Emoji in color (library folder icons, macOS D-129): Windows' own emoji font.</summary>
+    public static FontFamily Emoji { get; } = new("Segoe UI Emoji");
+
     public static FontFamily For(JGFontFamily family) => family switch
     {
         JGFontFamily.Display => Display,

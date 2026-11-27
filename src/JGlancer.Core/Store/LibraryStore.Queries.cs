@@ -49,6 +49,18 @@ public sealed partial class LibraryStore
         return (reader.GetInt32(0), (long)reader.GetDouble(1));
     });
 
+    /// <summary>The files of <paramref name="query"/> for the size map (macOS D-127); none for an album.</summary>
+    public Task<IReadOnlyList<SizeEntry>> SizeEntriesAsync(AssetQuery query) => ReadAsync<IReadOnlyList<SizeEntry>>(connection =>
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        if (query.Scope is QueryScope.AlbumScope || Filter(query) is not { } filter)
+        {
+            return [];
+        }
+        return Sql.Rows(connection, $"SELECT asset.id, asset.folder_id, asset.size, asset.kind, asset.name FROM asset WHERE {filter.Sql}",
+            r => new SizeEntry(r.GetInt64(0), r.GetInt64(1), r.GetInt64(2), (MediaKind)r.GetInt32(3), r.GetString(4)), filter.Parameters);
+    });
+
     /// <summary>Total size in bytes of the given assets.</summary>
     public Task<long> TotalSizeAsync(IReadOnlyList<long> ids) => ReadAsync(connection =>
     {

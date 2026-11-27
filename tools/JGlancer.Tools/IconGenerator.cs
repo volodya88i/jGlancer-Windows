@@ -53,7 +53,7 @@ internal static partial class IconGenerator
             var a = node[1];
             parts.Add(kind switch
             {
-                "path" => Absolute(a.GetProperty("d").GetString()!),
+                "path" => Absolute(SpacedArcFlags(a.GetProperty("d").GetString()!)),
                 "line" => $"M{N(a, "x1")} {N(a, "y1")}L{N(a, "x2")} {N(a, "y2")}",
                 "polyline" => Poly(a.GetProperty("points").GetString()!, close: false),
                 "polygon" => Poly(a.GetProperty("points").GetString()!, close: true),
@@ -86,6 +86,78 @@ internal static partial class IconGenerator
         var point = $"M{match.Groups[1].Value} {match.Groups[2].Value}";
         var rest = trimmed[match.Length..].TrimStart(' ', ',');
         return rest.Length == 0 ? point : char.IsLetter(rest[0]) ? point + rest : point + "l" + rest;
+    }
+
+    /// <summary>
+    /// SVG lets an arc's two flags run into the numbers around them ("a1.5 1.5 0 00-2.474-1.561": large-arc 0, sweep 0,
+    /// then x −2.474); not every path parser reads that, so every arc's seven arguments are written apart.
+    /// </summary>
+    internal static string SpacedArcFlags(string d)
+    {
+        var output = new StringBuilder();
+        var i = 0;
+        void Skip()
+        {
+            while (i < d.Length && (char.IsWhiteSpace(d[i]) || d[i] == ','))
+            {
+                i++;
+            }
+        }
+        string Number()
+        {
+            var start = i;
+            if (i < d.Length && d[i] is '-' or '+')
+            {
+                i++;
+            }
+            var dot = false;
+            while (i < d.Length && (char.IsAsciiDigit(d[i]) || (d[i] == '.' && !dot)))
+            {
+                dot |= d[i] == '.';
+                i++;
+            }
+            if (i < d.Length && d[i] is 'e' or 'E')
+            {
+                i++;
+                if (i < d.Length && d[i] is '-' or '+')
+                {
+                    i++;
+                }
+                while (i < d.Length && char.IsAsciiDigit(d[i]))
+                {
+                    i++;
+                }
+            }
+            return i > start ? d[start..i] : throw new InvalidDataException($"unreadable arc in {d}");
+        }
+        while (i < d.Length)
+        {
+            var c = d[i++];
+            output.Append(c);
+            if (c is not ('A' or 'a'))
+            {
+                continue;
+            }
+            // Groups of seven arguments: rx ry rotation large-arc sweep x y; the flags are one character each.
+            var first = true;
+            while (true)
+            {
+                Skip();
+                if (i >= d.Length || char.IsLetter(d[i]))
+                {
+                    break;
+                }
+                var group = new string[7];
+                for (var k = 0; k < 7; k++)
+                {
+                    Skip();
+                    group[k] = k is 3 or 4 && i < d.Length && d[i] is '0' or '1' ? d[i++].ToString() : Number();
+                }
+                output.Append(first ? "" : " ").Append(string.Join(' ', group));
+                first = false;
+            }
+        }
+        return output.ToString();
     }
 
     // "m" then two numbers (SVG number syntax: sign, digits, optional fraction, separated by space, comma or a sign).
